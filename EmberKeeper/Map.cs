@@ -276,25 +276,49 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     private Point _gaStartMouse;
     private double _gaStartX, _gaStartY, _gaStartW, _gaStartH;
     private bool _gaMoving, _gaDragCornerX, _gaDragCornerY;
+    private int _gaOrigCell;
+    private double _gaOrigOffX, _gaOrigOffY;
+    private int _gaOrigCols, _gaOrigRows;
 
     public void StartGridAdjust()
     {
+        if (GridAdjusting) return;
         GridAdjusting = true;
-        Tool = "select";
+        _gaOrigCell = Doc.GridSize;
+        _gaOrigOffX = Doc.GridOffX;
+        _gaOrigOffY = Doc.GridOffY;
+        _gaOrigCols = Doc.Cols;
+        _gaOrigRows = Doc.Rows;
+
         double cell = Math.Max(16, Doc.GridSize);
-        // прямоугольник в центре вида
         double cx = (Bounds.Width / 2 - _off.X) / Zoom;
         double cy = (Bounds.Height / 2 - _off.Y) / Zoom;
-        _gaX = Math.Floor(cx / cell) * cell;
-        _gaY = Math.Floor(cy / cell) * cell;
+        // выравниваем по линиям текущей сетки: линии в (c+off)*cell
+        int cc = (int)Math.Floor(cx / cell - Doc.GridOffX);
+        int rc = (int)Math.Floor(cy / cell - Doc.GridOffY);
+        _gaX = (cc + Doc.GridOffX) * cell;
+        _gaY = (rc + Doc.GridOffY) * cell;
         _gaW = cell;
         _gaH = cell;
+        Focus();
         InvalidateVisual();
     }
 
-    public void StopGridAdjust()
+    /// <summary>Выйти из режима подгонки; revert=true — вернуть прежнюю сетку.</summary>
+    public void StopGridAdjust(bool revert = false)
     {
+        if (!GridAdjusting) return;
         GridAdjusting = false;
+        if (revert)
+        {
+            Doc.GridSize = _gaOrigCell;
+            Doc.GridOffX = _gaOrigOffX;
+            Doc.GridOffY = _gaOrigOffY;
+            Doc.Cols = _gaOrigCols;
+            Doc.Rows = _gaOrigRows;
+            Doc.EnsureVision();
+            ResetVisionCache();
+        }
         InvalidateVisual();
     }
 
@@ -350,8 +374,12 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         double dy = (p.Y - _gaStartMouse.Y) / Zoom;
         if (_gaMoving)
         {
-            _gaX = _gaStartX + dx;
-            _gaY = _gaStartY + dy;
+            double cell = Math.Max(16, _gaOrigCell);
+            double nx = _gaStartX + dx;
+            double ny = _gaStartY + dy;
+            // двигаем целыми клетками текущей сетки
+            _gaX = (Math.Round(nx / cell - _gaOrigOffX) + _gaOrigOffX) * cell;
+            _gaY = (Math.Round(ny / cell - _gaOrigOffY) + _gaOrigOffY) * cell;
         }
         else
         {
@@ -1245,16 +1273,14 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             if (e.Key == Key.Enter)
             {
                 ApplyGridRect();
-                GridAdjusting = false;
+                StopGridAdjust(false);
                 Save?.Invoke();
-                InvalidateVisual();
                 e.Handled = true;
                 return;
             }
             if (e.Key == Key.Escape)
             {
-                GridAdjusting = false;
-                InvalidateVisual();
+                StopGridAdjust(true);
                 e.Handled = true;
                 return;
             }

@@ -78,17 +78,18 @@ public partial class MapPage : UserControl
                 try
                 {
                     _view.StartGridAdjust();
-                    string dbg = $"start zoom={_view.Zoom:F2} cell={_doc.GridSize} ";
+                    int cellBefore = _doc.GridSize;
                     _view.GridAdjustPress(new Avalonia.Point(300, 300));
-                    dbg += $"afterPress cell={_doc.GridSize} ";
                     _view.GridAdjustMove(new Avalonia.Point(420, 380));
-                    dbg += $"afterMove cell={_doc.GridSize} ";
                     _view.GridAdjustRelease();
-                    dbg += $"afterRelease cell={_doc.GridSize} ";
-                    System.IO.File.AppendAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "ga_test.txt"), dbg + "\n");
+                    int cellAfter = _doc.GridSize;
+                    _view.StopGridAdjust(true);
+                    int cellRevert = _doc.GridSize;
+                    bool adjusting = _view.GridAdjusting;
+                    _view.StartGridAdjust();
                     System.IO.File.WriteAllText(
                         System.IO.Path.Combine(AppContext.BaseDirectory, "ga_test.txt"),
-                        dbg + $" | final cell={_doc.GridSize} offX={_doc.GridOffX:F2} offY={_doc.GridOffY:F2} cols={_doc.Cols} rows={_doc.Rows}");
+                        $"before={cellBefore} after={cellAfter} revert={cellRevert} adjusting={adjusting} nowAdjusting={_view.GridAdjusting}");
                 }
                 catch (Exception ex)
                 {
@@ -756,7 +757,33 @@ public partial class MapPage : UserControl
 
     private void OnManualGrid(object? sender, RoutedEventArgs e)
     {
+        if (_view.GridAdjusting)
+        {
+            OnGridAdjustDone(sender, e);
+            return;
+        }
         _view.StartGridAdjust();
+        if (GridAdjustActions != null) GridAdjustActions.IsVisible = true;
+        if (BtnManualGrid != null) BtnManualGrid.Content = "Подгонка включена — тяните клетку";
+    }
+
+    private void OnGridAdjustDone(object? sender, RoutedEventArgs e)
+    {
+        _view.StopGridAdjust(false);
+        if (GridAdjustActions != null) GridAdjustActions.IsVisible = false;
+        if (BtnManualGrid != null) BtnManualGrid.Content = "Настроить вручную (мышью)";
+        SaveAll();
+        Sync();
+        _view.InvalidateVisual();
+    }
+
+    private void OnGridAdjustCancel(object? sender, RoutedEventArgs e)
+    {
+        _view.StopGridAdjust(true);
+        if (GridAdjustActions != null) GridAdjustActions.IsVisible = false;
+        if (BtnManualGrid != null) BtnManualGrid.Content = "Настроить вручную (мышью)";
+        Sync();
+        _view.InvalidateVisual();
     }
 
     private async void OnManualGridDialog(object? sender, RoutedEventArgs e)
