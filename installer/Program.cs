@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -141,7 +141,23 @@ internal static class Program
         if (!noShortcuts) CreateShortcuts(dir);
         if (!noRegistry) WriteRegistry(dir);
 
-        if (silent) return;
+        if (silent)
+        {
+            if (Has(args, "/relaunch"))
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo(exePath)
+                    {
+                        WorkingDirectory = dir,
+                        UseShellExecute = true,
+                    });
+                    TryLog("relaunch: " + exePath);
+                }
+                catch (Exception ex) { TryLog("relaunch FAIL: " + ex.Message); }
+            }
+            return;
+        }
 
         var run = MessageBoxW(IntPtr.Zero,
             $"{AppName} {Version} установлен.\n\nЗапустить сейчас?",

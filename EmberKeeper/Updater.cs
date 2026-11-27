@@ -143,6 +143,8 @@ public static class Updater
             if (!resp.IsSuccessStatusCode) return (null, "Не удалось скачать файл: " + (int)resp.StatusCode);
 
             var total = resp.Content.Headers.ContentLength ?? info.Size;
+            if (info.Size > 0 && total > 0 && total != info.Size)
+                return (null, "Размер загрузки не совпадает: " + total + " вместо " + info.Size + ".");
             await using var src = await resp.Content.ReadAsStreamAsync(ct);
             await using var dst = new FileStream(target, FileMode.Create, FileAccess.Write, FileShare.None);
 
@@ -156,23 +158,42 @@ public static class Updater
                 if (total > 0) progress?.Report((double)read / total);
             }
 
+            var fi = new FileInfo(target);
+            if (fi.Length < 1024) return (null, "Скачанный файл слишком мал — вероятно, ошибка GitHub.");
+            using (var chk = File.OpenRead(target))
+            {
+                if (chk.ReadByte() != 0x4D || chk.ReadByte() != 0x5A)
+                    return (null, "Скачанный файл не является исполняемым (.exe повреждён).");
+            }
             return (target, "");
         }
         catch (OperationCanceledException) { return (null, "Загрузка отменена."); }
         catch (Exception ex) { return (null, "Ошибка загрузки: " + ex.Message); }
     }
 
-    /// <summary>Запускает установщик в тихом режиме и закрывает программу.</summary>
-    public static bool RunInstaller(string setupPath, out string error)
+    /// <summary>Запускает установщик в тихом режиме с перезапуском программы.</summary>
+    public static bool RunInstaller(string setupPath, string installDir, out string error)
     {
         error = "";
         try
         {
             if (!File.Exists(setupPath)) { error = "Файл обновления не найден."; return false; }
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(setupPath, "/silent")
+            var psi = new System.Diagnostics.ProcessStartInfo(setupPath)
             {
-                UseShellExecute = true,
-            });
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WorkingDirectory = Path.GetDirectoryName(setupPath) ?? AppContext.BaseDirectory,
+                Arguments = "/silent /relaunch /dir=\"" + installDir.TrimEnd('\\') + "\"",
+            };
+            try
+            {
+                var logDir = Path.Combine(DownloadDir, "log");
+                Directory.CreateDirectory(logDir);
+                psi.EnvironmentVariables["EMBERKEEPER_LOG_DIR"] = logDir;
+            }
+            catch { }
+            var proc = System.Diagnostics.Process.Start(psi);
+            if (proc == null) { error = "Не удалось запустить установщик."; return false; }
             return true;
         }
         catch (Exception ex) { error = ex.Message; return false; }

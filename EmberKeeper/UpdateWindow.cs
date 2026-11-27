@@ -175,15 +175,16 @@ public sealed class UpdateWindow : Window
             return;
         }
 
-        _status.Text = "Запускаю установщик — программа закроется и обновится…";
-        if (!Updater.RunInstaller(path, out var runError))
+        _status.Text = "Устанавливаю — программа закроется и запустится снова…";
+        var installDir = AppContext.BaseDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar);
+        if (!Updater.RunInstaller(path, installDir, out var runError))
         {
             _status.Text = "Не удалось запустить установщик: " + runError;
             _installBtn.IsVisible = true;
             return;
         }
 
-        await Task.Delay(600);
+        await Task.Delay(1500);
         if (Application.Current?.ApplicationLifetime is
             Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime life)
             life.Shutdown();
