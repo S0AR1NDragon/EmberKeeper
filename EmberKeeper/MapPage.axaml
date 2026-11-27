@@ -91,6 +91,7 @@
         <Button x:Name="ToolFog" Classes="tool" Content="Туман" Click="OnTool" Tag="fog" />
         <Button x:Name="ToolTemplate" Classes="tool" Content="Шаблон" Click="OnTool" Tag="template" />
         <Button x:Name="ToolProp" Classes="tool" Content="Проп" Click="OnTool" Tag="prop" />
+          <ComboBox x:Name="CbProp" Width="128" SelectionChanged="OnPropPick" VerticalAlignment="Center" />
         <Button x:Name="ToolRuler" Classes="tool" Content="Линейка" Click="OnTool" Tag="ruler" />
         <Border Width="1" Background="{DynamicResource C_2a211a}" Margin="6,2,12,8" />
         <Button Classes="tool" Content="−" Click="OnZoomOut" />
@@ -198,6 +199,7 @@
               <CheckBox x:Name="CbGridVisible" Content="Показывать сетку" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnGridVisibleChanged" />
               <CheckBox x:Name="CbSnap" Content="Привязка к клеткам" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnSnapChanged" />
               <CheckBox x:Name="CbFog" Content="Туман войны" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnFogChanged" />
+              <CheckBox x:Name="CbVisionMode" Content="Зрение токенов (свет / ночное зрение)" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnVisionModeChanged" />
 
               <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
                 <Button Classes="tool" Content="Открыть всё" Click="OnRevealAll" Margin="0,0,6,0" />

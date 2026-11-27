@@ -53,6 +53,9 @@ public partial class MapPage : UserControl
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
+        CbProp.ItemsSource = new[] { "Сундук", "Дверь", "Лодка", "Костёр", "Статуя", "Дерево", "Кровать", "Гроб" };
+        CbProp.SelectedIndex = 0;
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_MAP_PLAYER") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -234,6 +237,7 @@ public partial class MapPage : UserControl
         CbGridVisible.IsChecked = _doc.GridVisible;
         CbSnap.IsChecked = _doc.Snap;
         CbFog.IsChecked = _doc.FogOn;
+        CbVisionMode.IsChecked = _doc.VisionMode;
         EdGridOffX.Value = (decimal)_doc.GridOffX;
         EdGridOffY.Value = (decimal)_doc.GridOffY;
 
@@ -454,6 +458,32 @@ public partial class MapPage : UserControl
     }
 
     /* ---------------- инструменты ---------------- */
+
+    private void OnPropPick(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_view == null) return;
+        _view.PropIcon = CbProp.SelectedIndex switch
+        {
+            0 => "box",
+            1 => "door",
+            2 => "boat",
+            3 => "fire",
+            4 => "statue",
+            5 => "tree",
+            6 => "bed",
+            7 => "coffin",
+            _ => "box",
+        };
+        _view.Tool = "prop";
+    }
+
+    private void OnVisionModeChanged(object? sender, RoutedEventArgs e)
+    {
+        if (_syncing) return;
+        _doc.VisionMode = CbVisionMode.IsChecked == true;
+        SaveAll();
+        _view?.InvalidateVisual();
+    }
 
     private void OnTool(object? sender, RoutedEventArgs e)
     {
