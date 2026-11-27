@@ -144,6 +144,9 @@ public static class ClassInfo
                 while (j < lines.Count && added < 6 && !IsKnownLabel(lines[j]))
                 {
                     var nxt = lines[j];
+                    if (nxt.StartsWith("Уровень ", StringComparison.OrdinalIgnoreCase) ||
+                        nxt.Contains("умения", StringComparison.OrdinalIgnoreCase) && nxt.Contains("таблиц", StringComparison.OrdinalIgnoreCase))
+                        break;
                     if (sb.Length + nxt.Length > 420) break;
                     sb.Append(" ").Append(nxt);
                     j++;
@@ -270,7 +273,7 @@ public static class ClassInfo
         {
             var levels = new SortedSet<int>();
             foreach (var s in x.Subs)
-                foreach (var f in SubclassFeatures(s.H)) levels.Add(f.Level);
+                foreach (var f in SubclassFeatures(s.H)) if (f.Level > 0) levels.Add(f.Level);
             if (levels.Count == 0) { levels.Add(3); levels.Add(6); levels.Add(10); levels.Add(14); }
             foreach (var lv in levels) list.Add((lv, "", "", true));
         }

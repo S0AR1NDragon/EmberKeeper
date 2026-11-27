@@ -53,7 +53,7 @@ public partial class LibraryView : UserControl
         Reload();
         if (libTest == "subs") { _tab = "subs"; RenderDetail(); }
         else if (libTest == "sub") { _sub = 0; _tab = "features"; RenderDetail(); }
-        else if (libTest.StartsWith("class:"))
+        else if (libTest != null && libTest.StartsWith("class:"))
         {
             var parts = libTest.Split(':');
             if (parts.Length >= 3)
@@ -64,7 +64,7 @@ public partial class LibraryView : UserControl
                 Reload();
                 int ci = _view.FindIndex(e => e.N == parts[2]);
                 if (ci >= 0) LibList.SelectedIndex = ci;
-                _tab = "features";
+                _tab = parts.Length > 3 ? string.Join(":", parts.Skip(3)) : "features";
                 RenderDetail();
             }
         }
@@ -488,11 +488,13 @@ public partial class LibraryView : UserControl
         }
 
         // вкладки
+        var extras = ClassExtras.For(x, _edition);
         var tabs = new List<(string Key, string Title)>
         {
             ("features", "Умения"),
             ("desc", "Описание"),
         };
+        for (int i = 0; i < extras.Count; i++) tabs.Add(("extra:" + i, extras[i].Tab));
         if (x.Tb is { Count: > 0 }) tabs.Add(("table", "Таблица"));
 
         var tabRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 2) };
@@ -510,6 +512,12 @@ public partial class LibraryView : UserControl
             Margin = new Thickness(0, 0, 0, 6),
             Child = tabRow,
         });
+
+        if (_tab.StartsWith("extra:", StringComparison.Ordinal))
+        {
+            int ei = int.Parse(_tab.Substring(6));
+            if (ei >= 0 && ei < extras.Count) { RenderExtra(extras[ei]); return; }
+        }
 
         if (_tab == "table" && x.Tb is { Count: > 0 }) { DetailHost.Children.Add(DataTable(x.Tb)); return; }
         if (_tab == "desc")
@@ -575,6 +583,43 @@ public partial class LibraryView : UserControl
             Padding = new Thickness(0, 8),
             Child = sp,
         };
+    }
+
+    /// <summary>Список опций класса: воззвания, боевые стили, метамагия и т.п.</summary>
+    private void RenderExtra(ClassExtras.Section sec)
+    {
+        DetailHost.Children.Add(SectionTitle(sec.Tab));
+        for (int i = 0; i < sec.Items.Count; i++)
+        {
+            var it = sec.Items[i];
+            var sp = new StackPanel { Spacing = 3 };
+            sp.Children.Add(new TextBlock
+            {
+                Text = it.Name,
+                FontSize = 14,
+                FontWeight = FontWeight.SemiBold,
+                Foreground = Pal.B("#f0c27b"),
+                TextWrapping = TextWrapping.Wrap,
+            });
+            foreach (var paragraph in SplitParagraphs(it.Text))
+                sp.Children.Add(new TextBlock
+                {
+                    Text = paragraph,
+                    FontSize = 13,
+                    LineHeight = 20,
+                    Foreground = Pal.B("#c9b8a4"),
+                    TextWrapping = TextWrapping.Wrap,
+                });
+
+            DetailHost.Children.Add(new Border
+            {
+                Background = i % 2 == 0 ? Brushes.Transparent : Pal.B("#15110e"),
+                BorderBrush = Pal.B("#241d18"),
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                Padding = new Thickness(0, 9),
+                Child = sp,
+            });
+        }
     }
 
     private static Control SectionTitle(string text) => new TextBlock
