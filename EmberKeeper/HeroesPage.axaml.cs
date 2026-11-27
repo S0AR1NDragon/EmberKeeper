@@ -189,6 +189,27 @@ public partial class HeroesPage : UserControl
         HeroList.SelectedItem = h;
     }
 
+    /// <summary>Создать персонажа из библиотеки: класс и подкласс уже заполнены.</summary>
+    public void CreateFromClass(string klass, string subclass, int hitDie)
+    {
+        var h = new Hero
+        {
+            Name = "Новый " + (string.IsNullOrWhiteSpace(klass) ? "герой" : klass.ToLowerInvariant()),
+            Class = klass,
+            Subclass = subclass,
+            Level = "1",
+            Hp = Math.Max(1, hitDie),
+            MaxHp = Math.Max(1, hitDie),
+            HitDice = "1к" + hitDie,
+            HitDiceCurrent = 1,
+            HitDiceMax = 1,
+        };
+        _heroes.Add(h);
+        HeroStore.Save(_heroes);
+        Refresh();
+        OpenSheet(h);
+    }
+
     private void OpenSheet(Hero h)
     {
         var owner = TopLevel.GetTopLevel(this) as Window;

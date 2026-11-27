@@ -40,6 +40,7 @@ public partial class LibraryView : UserControl
     private int? _sub;
 
     public Action<string, string, string>? AddToMap;
+    public Action<string, string, int>? CreateHero;
 
     public LibraryView()
     {
@@ -51,6 +52,7 @@ public partial class LibraryView : UserControl
         BuildChips();
         Reload();
         if (libTest == "subs") { _tab = "subs"; RenderDetail(); }
+        else if (libTest == "sub") { _sub = 0; _tab = "features"; RenderDetail(); }
         else if (libTest == "table") { _tab = "table"; RenderDetail(); }
     }
 
@@ -259,6 +261,7 @@ public partial class LibraryView : UserControl
         DetailHost.Children.Clear();
         if (_cur == null) return;
         var x = _cur;
+        if (_cat == 0) { RenderClass(x); return; }
 
         // заголовок
         var titles = new StackPanel { Spacing = 2 };
@@ -369,6 +372,222 @@ public partial class LibraryView : UserControl
             btn.Click += (_, _) => AddToMap?.Invoke(n, cr, mt);
             DetailHost.Children.Add(btn);
         }
+    }
+
+    /* ==================== класс: подклассы, умения, персонаж ==================== */
+
+    private void RenderClass(LibEntry x)
+    {
+        // заголовок + кнопки
+        var titles = new StackPanel { Spacing = 2 };
+        titles.Children.Add(new TextBlock
+        {
+            Text = x.N,
+            FontFamily = new FontFamily("Georgia"),
+            FontSize = 30,
+            FontWeight = FontWeight.Bold,
+            Foreground = Pal.B("#f6e7cf"),
+            TextWrapping = TextWrapping.Wrap,
+        });
+        if (!string.IsNullOrWhiteSpace(x.E))
+            titles.Children.Add(new TextBlock { Text = x.E, FontStyle = FontStyle.Italic, FontSize = 13, Foreground = Pal.B("#9c8b78") });
+
+        var headRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto") };
+        headRow.Children.Add(new Border { Width = 3, CornerRadius = new CornerRadius(2), Background = Pal.B("#d99b4a"), Margin = new Thickness(0, 3, 12, 3) });
+        Grid.SetColumn(titles, 1);
+        headRow.Children.Add(titles);
+
+        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Top };
+        var createBtn = new Button
+        {
+            Content = "Создать персонажа",
+            Background = Pal.B("#cf9245"),
+            Foreground = Pal.B("#241505"),
+            BorderBrush = Pal.B("#e0b072"),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(9),
+            Padding = new Thickness(14, 8),
+            FontWeight = FontWeight.SemiBold,
+            FontSize = 12.5,
+        };
+        var newSub = _sub != null && x.Subs != null && _sub < x.Subs.Count ? x.Subs[_sub.Value].N : "";
+        var klassName = x.N;
+        createBtn.Click += (_, _) => CreateHero?.Invoke(klassName, newSub, ClassInfo.HitDie(x, _edition));
+        actions.Children.Add(createBtn);
+
+        var copyBtn = new Button { Content = "Копировать", Classes = { "chip" }, Padding = new Thickness(12, 6), FontSize = 12 };
+        copyBtn.Click += async (_, _) =>
+        {
+            var clip = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clip != null) await clip.SetTextAsync(x.N + Environment.NewLine + Environment.NewLine + x.H);
+        };
+        actions.Children.Add(copyBtn);
+        Grid.SetColumn(actions, 2);
+        headRow.Children.Add(actions);
+        DetailHost.Children.Add(headRow);
+
+        var meta = new WrapPanel { Orientation = Orientation.Horizontal };
+        meta.Children.Add(Badge(_edition, "#d99b4a"));
+        meta.Children.Add(Spacer());
+        meta.Children.Add(Badge("Классы", "#b7a794"));
+        if (x.Subs is { Count: > 0 }) { meta.Children.Add(Spacer()); meta.Children.Add(Badge(x.Subs.Count + " подклассов", "#b58fc9")); }
+        DetailHost.Children.Add(meta);
+
+        // инфо-таблица класса
+        var basics = ClassInfo.Basics(x, _edition);
+        if (basics.Count > 0)
+            DetailHost.Children.Add(ParamTable(basics.Select(b => b.Label + ": " + b.Value).ToList()));
+
+        // выбор подкласса сверху
+        var subs = x.Subs ?? new List<LibSub>();
+        if (subs.Count > 0)
+        {
+            DetailHost.Children.Add(new TextBlock
+            {
+                Text = "ПОДКЛАСС",
+                FontSize = 9.5,
+                LetterSpacing = 0.8,
+                Foreground = Pal.B("#8d7a66"),
+                Margin = new Thickness(0, 8, 0, 0),
+            });
+            var wrap = new WrapPanel { Orientation = Orientation.Horizontal };
+            wrap.Children.Add(SubChip("Не выбран", _sub == null, () => { _sub = null; RenderDetail(); }));
+            for (int i = 0; i < subs.Count; i++)
+            {
+                int idx = i;
+                wrap.Children.Add(SubChip(subs[i].N, _sub == idx, () => { _sub = idx; RenderDetail(); }));
+            }
+            DetailHost.Children.Add(wrap);
+        }
+
+        // вкладки
+        var tabs = new List<(string Key, string Title)>
+        {
+            ("features", "Умения"),
+            ("desc", "Описание"),
+        };
+        if (x.Tb is { Count: > 0 }) tabs.Add(("table", "Таблица"));
+
+        var tabRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 10, 0, 2) };
+        foreach (var (key, title) in tabs)
+        {
+            var b = new Button { Content = title, Classes = { "tab" } };
+            b.Classes.Set("on", _tab == key || (_tab == "main" && key == "features"));
+            b.Click += (_, _) => { _tab = key; RenderDetail(); };
+            tabRow.Children.Add(b);
+        }
+        DetailHost.Children.Add(new Border
+        {
+            BorderBrush = Pal.B("#2a211a"),
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Margin = new Thickness(0, 0, 0, 6),
+            Child = tabRow,
+        });
+
+        if (_tab == "table" && x.Tb is { Count: > 0 }) { DetailHost.Children.Add(DataTable(x.Tb)); return; }
+        if (_tab == "desc")
+        {
+            foreach (var paragraph in SplitParagraphs(x.H))
+                DetailHost.Children.Add(ParagraphBlock(paragraph));
+            return;
+        }
+
+        // УМЕНИЯ: общие из таблицы прогрессии
+        var classFeats = ClassInfo.ClassFeatures(x);
+        if (classFeats.Count > 0)
+        {
+            DetailHost.Children.Add(SectionTitle("Умения класса"));
+            foreach (var (level, title) in classFeats)
+                DetailHost.Children.Add(FeatureRow(level, title, ""));
+        }
+
+        // умения подкласса
+        DetailHost.Children.Add(SectionTitle("Умения подкласса"));
+        if (_sub == null)
+        {
+            DetailHost.Children.Add(new Border
+            {
+                Background = Pal.B("#15110e"),
+                BorderBrush = Pal.B("#352a21"),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(14, 12),
+                Child = new TextBlock
+                {
+                    Text = "Выберите подкласс выше — здесь появятся его умения по уровням. Без подкласса персонаж играется только с базовыми умениями класса.",
+                    FontSize = 13,
+                    Foreground = Pal.B("#9c8b78"),
+                    TextWrapping = TextWrapping.Wrap,
+                },
+            });
+            return;
+        }
+
+        var sub = subs[_sub.Value];
+        var feats = ClassInfo.SubclassFeatures(sub.H);
+        if (feats.Count == 0)
+        {
+            foreach (var paragraph in SplitParagraphs(sub.H))
+                DetailHost.Children.Add(ParagraphBlock(paragraph));
+            return;
+        }
+
+        foreach (var (level, title, body) in feats)
+            DetailHost.Children.Add(FeatureRow(level, title, body));
+    }
+
+    private static Control SectionTitle(string text) => new TextBlock
+    {
+        Text = text,
+        FontFamily = new FontFamily("Georgia"),
+        FontSize = 18,
+        FontWeight = FontWeight.Bold,
+        Foreground = Pal.B("#f0c27b"),
+        Margin = new Thickness(0, 14, 0, 2),
+    };
+
+    private static Control FeatureRow(int level, string title, string body)
+    {
+        var sp = new StackPanel { Spacing = 3 };
+        var head = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        if (level > 0)
+            head.Children.Add(new Border
+            {
+                Background = Pal.B("#2a211a"),
+                BorderBrush = Pal.B("#4a3728"),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(7, 2),
+                Child = new TextBlock { Text = level + " ур.", FontSize = 10.5, Foreground = Pal.B("#d99b4a") },
+            });
+        head.Children.Add(new TextBlock
+        {
+            Text = title,
+            FontSize = 13.5,
+            FontWeight = FontWeight.SemiBold,
+            Foreground = Pal.B("#f6e7cf"),
+            TextWrapping = TextWrapping.Wrap,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        sp.Children.Add(head);
+        if (!string.IsNullOrWhiteSpace(body))
+            sp.Children.Add(new TextBlock
+            {
+                Text = body,
+                FontSize = 13,
+                LineHeight = 20,
+                Foreground = Pal.B("#c9b8a4"),
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 2, 0, 0),
+            });
+
+        return new Border
+        {
+            BorderBrush = Pal.B("#241d18"),
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Padding = new Thickness(0, 8),
+            Child = sp,
+        };
     }
 
     private void RenderSubclasses(LibEntry x)
