@@ -24,6 +24,35 @@ public static class ClassExtras
 
     private sealed record Spec(string Tab, string[] Keywords);
 
+    private sealed class FileEntry
+    {
+        public string Edition { get; set; } = "";
+        public string Cls { get; set; } = "";
+        public string Tab { get; set; } = "";
+        public List<Option> Items { get; set; } = new();
+    }
+
+    private static List<FileEntry>? _file;
+
+    /// <summary>Разделы, выгруженные с dnd.su (data/class-options.json).</summary>
+    private static List<FileEntry> FileData()
+    {
+        if (_file != null) return _file;
+        _file = new List<FileEntry>();
+        try
+        {
+            var path = System.IO.Path.Combine(DataStore.Dir, "class-options.json");
+            if (System.IO.File.Exists(path))
+            {
+                var list = System.Text.Json.JsonSerializer.Deserialize<List<FileEntry>>(System.IO.File.ReadAllText(path),
+                    new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (list != null) _file = list;
+            }
+        }
+        catch { }
+        return _file;
+    }
+
     private static readonly Dictionary<string, Spec[]> Map = new(StringComparer.CurrentCultureIgnoreCase)
     {
         ["Колдун"] = new[] { new Spec("Воззвания", new[] { "таинственные воззвания", "воззвания" }) },
@@ -48,7 +77,18 @@ public static class ClassExtras
     public static List<Section> For(LibEntry x, string edition)
     {
         var res = new List<Section>();
-        if (!Map.TryGetValue(x.N.Trim(), out var specs)) return res;
+
+        // сначала разделы, скачанные с dnd.su
+        var name = x.N.Trim();
+        foreach (var fe in FileData())
+        {
+            if (!string.Equals(fe.Edition, edition, StringComparison.Ordinal)) continue;
+            if (!string.Equals(fe.Cls, name, StringComparison.CurrentCultureIgnoreCase)) continue;
+            if (fe.Items.Count < 2) continue;
+            res.Add(new Section { Tab = fe.Tab, Items = fe.Items });
+        }
+
+        if (!Map.TryGetValue(name, out var specs)) return res;
 
         var text = x.H ?? "";
         foreach (var spec in specs)
@@ -65,6 +105,7 @@ public static class ClassExtras
                 continue;
             }
 
+            if (res.Any(r => r.Tab == spec.Tab)) continue;
             var parsed = ParseSection(text, spec.Keywords);
             if (parsed.Count >= 2) res.Add(new Section { Tab = spec.Tab, Items = parsed });
         }
