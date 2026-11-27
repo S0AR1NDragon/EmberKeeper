@@ -26,6 +26,8 @@ public sealed class PlayerWindow : Window
 
     // текущие элементы панели инициативы (пересоздаются в BuildMap)
     private MapView? _map;
+    private int _fittedCols = -1;
+    private int _fittedRows = -1;
     private StackPanel? _initHost;
     private TextBlock? _roundText;
     private TextBlock? _nowText;
@@ -97,6 +99,7 @@ public sealed class PlayerWindow : Window
             PlayerMode = true,
             ActiveName = BattleState.CurrentName,
         };
+        _map.Loaded += (_, _) => FitPlayerMap();
 
         _roundText = new TextBlock { Text = "РАУНД 1", FontSize = 10, LetterSpacing = 1.4, Foreground = Pal.B("#9c8b78") };
         _nowText = new TextBlock
@@ -155,6 +158,15 @@ public sealed class PlayerWindow : Window
         return root;
     }
 
+    /// <summary>Показать игрокам всю карту целиком.</summary>
+    private void FitPlayerMap()
+    {
+        if (_map == null || _map.Bounds.Width <= 10 || _map.Bounds.Height <= 10) return;
+        _map.ResetView(_map.Bounds.Width, _map.Bounds.Height);
+        _fittedCols = _doc.Cols;
+        _fittedRows = _doc.Rows;
+    }
+
     private void RefreshMap()
     {
         if (Live.Screen != PlayerScreen.Map) return;
@@ -167,6 +179,8 @@ public sealed class PlayerWindow : Window
             _nowText.Text = BattleState.CurrentName ?? "—";
 
             _map.ActiveName = BattleState.CurrentName;
+            if (_map.Bounds.Width > 10 && (_fittedCols != _doc.Cols || _fittedRows != _doc.Rows))
+                FitPlayerMap();
             _map.InvalidateVisual();
 
             _initHost.Children.Clear();
