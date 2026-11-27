@@ -773,6 +773,29 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             return;
         }
 
+        if (e.KeyModifiers == KeyModifiers.None)
+        {
+            string? t = e.Key switch
+            {
+                Key.V => "select",
+                Key.S => "wall",
+                Key.F => "fog",
+                Key.T => "template",
+                Key.P => "prop",
+                Key.R => "ruler",
+                Key.Escape => "select",
+                _ => null,
+            };
+            if (t != null)
+            {
+                Tool = t;
+                if (e.Key == Key.Escape) Selected = null;
+                InvalidateVisual();
+                e.Handled = true;
+                return;
+            }
+        }
+
         if (e.Key == Key.Delete && Selected != null)
         {
             BeforeChange?.Invoke();

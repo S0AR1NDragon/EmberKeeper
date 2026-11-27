@@ -86,13 +86,13 @@
         <Button Classes="tool" Content="Удалить" Click="OnDeleteLocation" />
         <Button Classes="tool" Content="Имя" Click="OnRenameLocation" />
         <Border Width="1" Background="{DynamicResource C_2a211a}" Margin="6,2,12,8" />
-        <Button x:Name="ToolSelect" Classes="tool on" Content="Выбор" Click="OnTool" Tag="select" />
-        <Button x:Name="ToolWall" Classes="tool" Content="Стена" Click="OnTool" Tag="wall" />
-        <Button x:Name="ToolFog" Classes="tool" Content="Туман" Click="OnTool" Tag="fog" />
-        <Button x:Name="ToolTemplate" Classes="tool" Content="Шаблон" Click="OnTool" Tag="template" />
-        <Button x:Name="ToolProp" Classes="tool" Content="Проп" Click="OnTool" Tag="prop" />
+        <Button x:Name="ToolSelect" Classes="tool on" Content="Выбор" Click="OnTool" Tag="select" ToolTip.Tip="Выбор — V" />
+        <Button x:Name="ToolWall" Classes="tool" Content="Стена" Click="OnTool" Tag="wall" ToolTip.Tip="Стена — S" />
+        <Button x:Name="ToolFog" Classes="tool" Content="Туман" Click="OnTool" Tag="fog" ToolTip.Tip="Туман — F" />
+        <Button x:Name="ToolTemplate" Classes="tool" Content="Шаблон" Click="OnTool" Tag="template" ToolTip.Tip="Шаблон — T" />
+        <Button x:Name="ToolProp" Classes="tool" Content="Проп" Click="OnTool" Tag="prop" ToolTip.Tip="Предмет — P" />
           <ComboBox x:Name="CbProp" Width="128" SelectionChanged="OnPropPick" VerticalAlignment="Center" />
-        <Button x:Name="ToolRuler" Classes="tool" Content="Линейка" Click="OnTool" Tag="ruler" />
+        <Button x:Name="ToolRuler" Classes="tool" Content="Линейка" Click="OnTool" Tag="ruler" ToolTip.Tip="Линейка — R" />
         <Border Width="1" Background="{DynamicResource C_2a211a}" Margin="6,2,12,8" />
         <Button Classes="tool" Content="−" Click="OnZoomOut" />
         <Button Classes="tool" Content="+" Click="OnZoomIn" />
@@ -111,7 +111,7 @@
           <TextBlock x:Name="HintBar" HorizontalAlignment="Left" VerticalAlignment="Bottom"
                      Margin="10,0,0,8" FontSize="10.5" Foreground="{DynamicResource C_8d7a66}"
                      Background="{DynamicResource C_e60b0908}" Padding="6,2"
-                     Text="тащи токен мышью · Shift+клик — удалить пропс/шаблон · клик по двери — открыть/закрыть · Alt+ЛКМ/СКМ — панорама · колесо — масштаб · Ctrl+Z — отмена · Delete — удалить токен" />
+                     Text="тащи токен мышью · Shift+клик — удалить пропс/шаблон · клик по двери — открыть/закрыть · Alt+ЛКМ/СКМ — панорама · колесо — масштаб · Ctrl+Z — отмена · Delete — удалить токен · V/S/F/T/P/R — инструменты" />
         </Grid>
       </Border>
 
