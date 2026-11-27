@@ -361,7 +361,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             }
             bool[,] vis = _vis;
             var darkBrush = new SolidColorBrush(Color.FromArgb(238, 6, 5, 4));
-            var memBrush = new SolidColorBrush(Color.FromArgb(150, 9, 7, 6));
+            var memBrush = new SolidColorBrush(Color.FromArgb((byte)(PlayerMode ? 228 : 150), 9, 7, 6));
             bool exploredChanged = false;
 
             for (int r = 0; r < Doc.Rows; r++)
