@@ -77,17 +77,19 @@ public partial class MapPage : UserControl
                 {
                     var heroes = HeroStore.Load();
                     var h = heroes.FirstOrDefault();
-                    if (h != null)
+                    if (h == null)
                     {
-                        h.Darkvision = 60;
-                        HeroStore.Save(heroes);
-                        TokenSync.SyncHero(h);
-                        _view.InvalidateVisual();
-                        var tok = _doc.Tokens.FirstOrDefault(t => t.Type == "player");
-                        System.IO.File.WriteAllText(
-                            System.IO.Path.Combine(AppContext.BaseDirectory, "sync_test.txt"),
-                            $"hero={h.Name} darkvision={h.Darkvision}; token VisionFt={(tok?.VisionFt ?? -1)}; tokens={_doc.Tokens.Count}");
+                        h = new Hero { Id = "test-hero-1", Name = "Ивар", Race = "Человек", Class = "Воин", Level = "5", Hp = 39, MaxHp = 39, Ac = 18, Str = 17, Dex = 13, Con = 16, Int = 10, Wis = 12, Cha = 8 };
+                        heroes.Add(h);
                     }
+                    h.Darkvision = 60;
+                    HeroStore.Save(heroes);
+                    TokenSync.SyncHero(h);
+                    _view.InvalidateVisual();
+                    var tok = _doc.Tokens.FirstOrDefault(t => t.Type == "player");
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(AppContext.BaseDirectory, "sync_test.txt"),
+                        $"hero={h.Name} darkvision={h.Darkvision}; token VisionFt={(tok?.VisionFt ?? -1)}; tokens={_doc.Tokens.Count}");
                 }
                 catch (Exception ex)
                 {
