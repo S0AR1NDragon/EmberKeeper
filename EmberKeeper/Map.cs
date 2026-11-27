@@ -179,6 +179,10 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     public string Tool { get; set; } = "select";
     public Token? Selected { get; private set; }
     public Action? Changed;
+    /// <summary>Перед изменением документа — снимок для отмены.</summary>
+    public Action? BeforeChange;
+    /// <summary>Запрошена отмена (Ctrl+Z).</summary>
+    public Action? Undo;
     public Action? Save;
     public Action? DoubleClick;
 
@@ -712,6 +716,30 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     private Point _lastPointer;
     private bool _shiftHeld;
 
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (PlayerMode) return;
+
+        if (e.Key == Key.Z && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        {
+            Undo?.Invoke();
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key == Key.Delete && Selected != null)
+        {
+            BeforeChange?.Invoke();
+            Doc.Tokens.Remove(Selected);
+            Selected = null;
+            Save?.Invoke();
+            Changed?.Invoke();
+            InvalidateVisual();
+            e.Handled = true;
+        }
+    }
+
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -729,6 +757,8 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             e.Pointer.Capture(this);
             return;
         }
+
+        BeforeChange?.Invoke();
 
         if (Tool == "wall")
         {

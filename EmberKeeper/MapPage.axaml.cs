@@ -16,6 +16,7 @@ public partial class MapPage : UserControl
     private MapBook _book;
     private MapDoc _doc;
     private MapView _view;
+    private readonly List<string> _undo = new();
     public Action<string, string>? OpenSheet;
 
     private bool _syncing;
@@ -28,6 +29,29 @@ public partial class MapPage : UserControl
         _doc = _book.Maps[_book.Active];
         _view = new MapView(_doc) { DoubleClick = () => OpenCurrent() };
         InitializeComponent();
+
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_UNDO") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    int before = _doc.Props.Count;
+                    Snapshot();
+                    _doc.Props.Add(new Prop { Name = "Тест отмены", X = 2, Y = 2, Cells = 1 });
+                    UndoLast();
+                    int after = _doc.Props.Count;
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(AppContext.BaseDirectory, "undo_test.txt"),
+                        $"props: {before} -> после отмены {after}; ok={before == after}");
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(AppContext.BaseDirectory, "undo_test.txt"), "ошибка: " + ex.Message);
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
 
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_BATTLE") == "1")
         {
@@ -65,6 +89,8 @@ public partial class MapPage : UserControl
         }
         Live.AttachDoc(_doc);
         _view.Save = SaveAll;
+        _view.BeforeChange = Snapshot;
+        _view.Undo = UndoLast;
         _view.Changed += Sync;
         BattleState.Changed += OnBattleChanged;
         OnBattleChanged();
@@ -75,6 +101,53 @@ public partial class MapPage : UserControl
         Loaded += (_, _) => _view.ResetView(_view.Bounds.Width, _view.Bounds.Height);
         Sync();
         SaveAll();
+    }
+
+    /// <summary>Снимок текущей карты для отмены (Ctrl+Z).</summary>
+    private void Snapshot()
+    {
+        try
+        {
+            _undo.Add(System.Text.Json.JsonSerializer.Serialize(_doc));
+            while (_undo.Count > 40) _undo.RemoveAt(0);
+        }
+        catch { }
+    }
+
+    private void UndoLast()
+    {
+        if (_undo.Count == 0) return;
+        var json = _undo[^1];
+        _undo.RemoveAt(_undo.Count - 1);
+        try
+        {
+            var d = System.Text.Json.JsonSerializer.Deserialize<MapDoc>(json);
+            if (d == null) return;
+            _doc.Cols = d.Cols;
+            _doc.Rows = d.Rows;
+            _doc.GridSize = d.GridSize;
+            _doc.FeetPerCell = d.FeetPerCell;
+            _doc.Tokens = d.Tokens ?? new List<Token>();
+            _doc.Walls = d.Walls ?? new List<Wall>();
+            _doc.Props = d.Props ?? new List<Prop>();
+            _doc.Templates = d.Templates ?? new List<Template>();
+            _doc.Fog = d.Fog ?? new List<bool>();
+            _doc.Explored = d.Explored ?? new List<bool>();
+            _doc.GridVisible = d.GridVisible;
+            _doc.Snap = d.Snap;
+            _doc.GridShape = d.GridShape;
+            _doc.GridOffX = d.GridOffX;
+            _doc.GridOffY = d.GridOffY;
+            _doc.FogOn = d.FogOn;
+            _doc.VisionMode = d.VisionMode;
+            _doc.Background = d.Background;
+            _doc.EnsureVision();
+            _view.SetSelected(null);
+            SaveAll();
+            Sync();
+            _view.InvalidateVisual();
+        }
+        catch { }
     }
 
     private void SaveAll()
@@ -139,6 +212,8 @@ public partial class MapPage : UserControl
 
         var view = new MapView(doc) { DoubleClick = () => OpenCurrent() };
         view.Save = SaveAll;
+        view.BeforeChange = Snapshot;
+        view.Undo = UndoLast;
         view.FogBrush = Math.Clamp((int)(EdFogBrush?.Value ?? 1), 1, 6);
         view.Changed += Sync;
         view.Tool = tool;
