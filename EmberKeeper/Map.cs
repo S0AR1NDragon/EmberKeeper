@@ -506,6 +506,20 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             var nt = new FormattedText(t.Name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                 new Typeface("Segoe UI"), 11, new SolidColorBrush(Pal.C("#efe3d2")));
             ctx.DrawText(nt, new Point(center.X - nt.Width / 2, center.Y + radius + 2));
+
+            // полоска хитов (у раненых и у выделенного)
+            if (t.MaxHp > 0 && (t.Hp < t.MaxHp || on))
+            {
+                double bw = Math.Max(20, size * 0.72), bh = Math.Max(4, size * 0.08);
+                double bx = center.X - bw / 2, by = center.Y + radius + 16;
+                ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(210, 18, 13, 10)),
+                    new Rect(bx, by, bw, bh), 2);
+                double frac = Math.Clamp(t.Hp / (double)Math.Max(1, t.MaxHp), 0, 1);
+                Color hpCol = frac > 0.5 ? Color.FromArgb(235, 108, 158, 98)
+                    : frac > 0.25 ? Color.FromArgb(235, 208, 158, 78)
+                    : Color.FromArgb(235, 192, 78, 68);
+                if (frac > 0) ctx.FillRectangle(new SolidColorBrush(hpCol), new Rect(bx, by, Math.Max(1, bw * frac), bh), 2);
+            }
         }
 
         // пропсы
@@ -709,6 +723,19 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             if (victim != null)
             {
                 Doc.Props.Remove(victim);
+                Save?.Invoke();
+                InvalidateVisual();
+                return;
+            }
+
+            var tplVictim = Doc.Templates.FirstOrDefault(tp =>
+            {
+                double rr = Math.Max(0.6, tp.SizeFt / Math.Max(1, Doc.FeetPerCell));
+                return Math.Sqrt((m.X - tp.X) * (m.X - tp.X) + (m.Y - tp.Y) * (m.Y - tp.Y)) <= rr;
+            });
+            if (tplVictim != null)
+            {
+                Doc.Templates.Remove(tplVictim);
                 Save?.Invoke();
                 InvalidateVisual();
                 return;
