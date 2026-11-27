@@ -203,7 +203,7 @@ public static class ClassInfo
     {
         if (string.IsNullOrWhiteSpace(line)) return false;
         if (line.Contains("Бонус владения") || line.Contains("Классовые умения") ||
-            line.Contains("Ячейки заклинаний на") || line.Contains("Очки чародейства") ||
+            line.Contains("Ячейки заклинаний") || line.Contains("Очки чародейства") ||
             line.Contains("Известные заговоры") || line.Contains("Подготовленные заклинания"))
             return true;
         int digits = line.Count(char.IsDigit);
@@ -213,37 +213,36 @@ public static class ClassInfo
         return false;
     }
 
+    /// <summary>Вступительный текст класса: только повествовательные абзацы.</summary>
     public static string ClassText(LibEntry x)
     {
         var h = x.H ?? "";
-        // убираем вставки таблиц прогрессии из текста
         var lines = h.Replace("\r\n", "\n").Split('\n');
-        var kept = new System.Collections.Generic.List<string>();
-        foreach (var line in lines)
+        var paragraphs = new System.Collections.Generic.List<string>();
+
+        foreach (var raw in lines)
         {
-            if (IsTableDump(line.Trim())) continue;
-            kept.Add(line);
-        }
-        h = string.Join("\n", kept);
-        int cut = -1;
+            var line = raw.Trim();
+            if (line.Length == 0) continue;
+            if (IsTableDump(line)) continue;
+            if (line.StartsWith("Уровень", StringComparison.OrdinalIgnoreCase)) continue;
+            if (line.StartsWith("Типы", StringComparison.OrdinalIgnoreCase)) continue;
+            if (line.StartsWith("Источник", StringComparison.OrdinalIgnoreCase)) continue;
+            if (line.StartsWith("Любые", StringComparison.OrdinalIgnoreCase)) continue;
+            if (line.StartsWith("как персонаж", StringComparison.OrdinalIgnoreCase)) continue;
+            if (line.StartsWith("как мультикласс", StringComparison.OrdinalIgnoreCase)) continue;
+            if (line.StartsWith("Получая", StringComparison.OrdinalIgnoreCase)) continue;
+            if (line.StartsWith("Ключевые атрибуты", StringComparison.OrdinalIgnoreCase)) continue;
 
-        // первое умение по уровням
-        var m = Regex.Match(h, @"^\s*Уровень\s*\d+\s*:", RegexOptions.Multiline);
-        if (m.Success && m.Index > 200) cut = m.Index;
-
-        // начало «как персонаж 1-го уровня»
-        int i2 = h.IndexOf("Получая первый уровень", StringComparison.OrdinalIgnoreCase);
-        if (i2 > 200 && (cut < 0 || i2 < cut)) cut = i2;
-
-        // текст подклассов
-        foreach (var sub in x.Subs ?? new List<LibSub>())
-        {
-            if (string.IsNullOrWhiteSpace(sub.N) || sub.N.Length < 4) continue;
-            int idx = h.IndexOf(sub.N, StringComparison.OrdinalIgnoreCase);
-            if (idx > 200 && (cut < 0 || idx < cut)) cut = idx;
+            // только связный текст
+            int letters = line.Count(char.IsLetter);
+            if (letters < 80) continue;
+            if (!line.Contains('.') && !line.Contains('!') && !line.Contains('?')) continue;
+            paragraphs.Add(line);
+            if (paragraphs.Count >= 6) break;
         }
 
-        return cut > 0 ? h[..cut].TrimEnd() : h;
+        return string.Join("\n\n", paragraphs);
     }
 
     /// <summary>Умения класса из текста: «Уровень 3: Название» (стиль 2024).</summary>
