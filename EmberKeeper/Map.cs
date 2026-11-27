@@ -85,6 +85,9 @@ public sealed class MapDoc
     public List<bool> Explored { get; set; } = new();
     public string Background { get; set; } = "";
     public string GridShape { get; set; } = "square";
+    /// <summary>Сдвиг сетки относительно фона, в клетках (калибровка).</summary>
+    public double GridOffX { get; set; }
+    public double GridOffY { get; set; }
     public bool GridVisible { get; set; } = true;
     public bool Snap { get; set; } = true;
 
@@ -253,8 +256,8 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
     // ВАЖНО: и ToMap, и ToScreen работают в КЛЕТКАХ (1 = длина клетки),
     // поэтому все объекты карты (токены, стены, пропсы, шаблоны, туман) живут в одной системе координат.
-    private Point ToMap(Point p) => new((p.X - _off.X) / (Doc.GridSize * Zoom), (p.Y - _off.Y) / (Doc.GridSize * Zoom));
-    private Point ToScreen(double cellX, double cellY) => new(_off.X + cellX * Doc.GridSize * Zoom, _off.Y + cellY * Doc.GridSize * Zoom);
+    private Point ToMap(Point p) => new((p.X - _off.X) / (Doc.GridSize * Zoom) - Doc.GridOffX, (p.Y - _off.Y) / (Doc.GridSize * Zoom) - Doc.GridOffY);
+    private Point ToScreen(double cellX, double cellY) => new(_off.X + (cellX + Doc.GridOffX) * Doc.GridSize * Zoom, _off.Y + (cellY + Doc.GridOffY) * Doc.GridSize * Zoom);
 
     private double HexR => Doc.GridSize * Zoom / 2.0;
     private double HexH => HexR * Math.Sqrt(3);
@@ -312,6 +315,9 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             _bg = ImageCache.Get(Doc.Background, 2400);
         }
 
+        double oxG = ox + Doc.GridOffX * g;
+        double oyG = oy + Doc.GridOffY * g;
+
         var mapRect = new Rect(ox, oy, Doc.Cols * g, Doc.Rows * g);
         if (_bg != null)
             ctx.DrawImage(_bg, mapRect);
@@ -331,9 +337,9 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         {
             var gridPen = new Pen(new SolidColorBrush(Pal.C("#2a211a")), 1);
             for (int c = 0; c <= Doc.Cols; c++)
-                ctx.DrawLine(gridPen, new Point(ox + c * g, oy), new Point(ox + c * g, oy + Doc.Rows * g));
+                ctx.DrawLine(gridPen, new Point(oxG + c * g, oyG), new Point(oxG + c * g, oyG + Doc.Rows * g));
             for (int r = 0; r <= Doc.Rows; r++)
-                ctx.DrawLine(gridPen, new Point(ox, oy + r * g), new Point(ox + Doc.Cols * g, oy + r * g));
+                ctx.DrawLine(gridPen, new Point(oxG, oyG + r * g), new Point(oxG + Doc.Cols * g, oyG + r * g));
         }
 
         // туман войны: темнота, освещённое/увиденное открывается
@@ -355,16 +361,26 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
                         continue;
                     }
                     // в памяти игроков клетка уже была — рисуем полумраком
-                    if (Doc.ExploredAt(c, r)) ctx.FillRectangle(memBrush, new Rect(ox + c * g, oy + r * g, g, g));
-                    else ctx.FillRectangle(darkBrush, new Rect(ox + c * g, oy + r * g, g, g));
+                    if (Doc.ExploredAt(c, r)) ctx.FillRectangle(memBrush, new Rect(oxG + c * g, oyG + r * g, g, g));
+                    else ctx.FillRectangle(darkBrush, new Rect(oxG + c * g, oyG + r * g, g, g));
                 }
             }
             if (exploredChanged) Save?.Invoke();
+
+            // у мастера — лёгкая подсветка зоны, которую реально видят игроки
+            if (!PlayerMode)
+            {
+                var visTint = new SolidColorBrush(Color.FromArgb(22, 240, 194, 123));
+                for (int r = 0; r < Doc.Rows; r++)
+                    for (int c = 0; c < Doc.Cols; c++)
+                        if (vis[c, r])
+                            ctx.FillRectangle(visTint, new Rect(oxG + c * g, oyG + r * g, g, g));
+            }
         }
 
         // шаблоны
         foreach (var tp in Doc.Templates)
-            DrawTemplate(ctx, tp, ox, oy, g);
+            DrawTemplate(ctx, tp, oxG, oyG, g);
 
         // СЃС‚РµРЅС‹
         foreach (var w in Doc.Walls)
@@ -587,7 +603,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
         if (Tool == "wall")
         {
-            _wallStart = m;
+            _wallStart = new Point(Math.Round(m.X * 2) / 2, Math.Round(m.Y * 2) / 2);
             e.Pointer.Capture(this);
             return;
         }
@@ -753,7 +769,9 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             {
                 double x2 = Math.Abs(dx) > Math.Abs(dy) ? m.X : ws.X;
                 double y2 = Math.Abs(dx) > Math.Abs(dy) ? ws.Y : m.Y;
-                Doc.Walls.Add(new Wall { X1 = ws.X, Y1 = ws.Y, X2 = x2, Y2 = y2 });
+                double sx = Math.Round(x2 * 2) / 2, sy = Math.Round(y2 * 2) / 2;
+            if (Math.Abs(sx - ws.X) < 0.5 && Math.Abs(sy - ws.Y) < 0.5) return;
+            Doc.Walls.Add(new Wall { X1 = ws.X, Y1 = ws.Y, X2 = sx, Y2 = sy });
                 Save?.Invoke();
             }
             _wallStart = null;

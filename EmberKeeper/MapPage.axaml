@@ -204,8 +204,21 @@
                 <Button Classes="tool" Content="Скрыть всё" Click="OnHideAll" />
               </WrapPanel>
 
+              <TextBlock Classes="lbl" Text="СДВИГ СЕТКИ (КЛЕТКИ)" Margin="0,8,0,0" />
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <StackPanel>
+                  <TextBlock Classes="lbl" Text="ПО X" />
+                  <NumericUpDown x:Name="EdGridOffX" Minimum="-3" Maximum="3" Increment="0.05" FormatString="0.00" HorizontalAlignment="Stretch" ValueChanged="OnGridOffX" />
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                  <TextBlock Classes="lbl" Text="ПО Y" />
+                  <NumericUpDown x:Name="EdGridOffY" Minimum="-3" Maximum="3" Increment="0.05" FormatString="0.00" HorizontalAlignment="Stretch" ValueChanged="OnGridOffY" />
+                </StackPanel>
+              </Grid>
+
               <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
                 <Button Classes="tool" Content="Очистить стены" Click="OnClearWalls" />
+                <Button Classes="tool" Content="Отменить стену" Click="OnUndoWall" />
                 <Button Classes="tool" Content="Очистить шаблоны" Click="OnClearTemplates" />
               </StackPanel>
             </StackPanel>

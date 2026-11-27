@@ -201,6 +201,8 @@ public partial class MapPage : UserControl
         CbGridVisible.IsChecked = _doc.GridVisible;
         CbSnap.IsChecked = _doc.Snap;
         CbFog.IsChecked = _doc.FogOn;
+        EdGridOffX.Value = (decimal)_doc.GridOffX;
+        EdGridOffY.Value = (decimal)_doc.GridOffY;
 
         // токен
         if (sel != null)
@@ -469,6 +471,30 @@ public partial class MapPage : UserControl
     }
 
     private void RefreshList() => TokenList.ItemsSource = _doc.Tokens.ToList();
+
+    private void OnGridOffX(object? sender, NumericUpDownValueChangedEventArgs e)
+    {
+        if (_syncing) return;
+        _doc.GridOffX = (double)(EdGridOffX.Value ?? 0);
+        SaveAll();
+        _view.InvalidateVisual();
+    }
+
+    private void OnGridOffY(object? sender, NumericUpDownValueChangedEventArgs e)
+    {
+        if (_syncing) return;
+        _doc.GridOffY = (double)(EdGridOffY.Value ?? 0);
+        SaveAll();
+        _view.InvalidateVisual();
+    }
+
+    private void OnUndoWall(object? sender, RoutedEventArgs e)
+    {
+        if (_doc.Walls.Count == 0) return;
+        _doc.Walls.RemoveAt(_doc.Walls.Count - 1);
+        SaveAll();
+        _view.InvalidateVisual();
+    }
 
     private void OnClearWalls(object? sender, RoutedEventArgs e)
     {
