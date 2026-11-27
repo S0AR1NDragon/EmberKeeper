@@ -548,7 +548,11 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             var b = _rulerEnd;
             ctx.DrawLine(new Pen(new SolidColorBrush(Pal.C("#f0c27b")), 2), a, b);
             double distFt = Math.Sqrt(Math.Pow(_rulerEnd.X - a.X, 2) + Math.Pow(_rulerEnd.Y - a.Y, 2)) / g * Doc.FeetPerCell;
-            var label = new FormattedText($"{distFt:F0} фт", CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+            double cells = distFt / Math.Max(1, Doc.FeetPerCell);
+            string labelText = $"{distFt:F0} фт · {cells:F1} кл.";
+            // если между точками стена — помечаем
+            if (MapVision.Blocked(Doc, rs, ToMap(_rulerEnd))) labelText += " · сквозь стену";
+            var label = new FormattedText(labelText, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                 new Typeface("Segoe UI"), 12, new SolidColorBrush(Pal.C("#f6e7cf")));
             var bg = new Rect(b.X + 8, b.Y + 8, label.Width + 12, label.Height + 6);
             ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(200, 20, 16, 12)), bg);
