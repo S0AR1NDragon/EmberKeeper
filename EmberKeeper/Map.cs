@@ -96,6 +96,11 @@ public sealed class MapDoc
     public double GridOffX { get; set; }
     public double GridOffY { get; set; }
     public bool GridVisible { get; set; } = true;
+    // видимость слоёв
+    public bool ShowWalls { get; set; } = true;
+    public bool ShowProps { get; set; } = true;
+    public bool ShowTemplates { get; set; } = true;
+    public bool ShowTokens { get; set; } = true;
     public bool Snap { get; set; } = true;
 
     public static string Path => AppPaths.File("map.json");
@@ -423,6 +428,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         // шаблоны
         foreach (var tp in Doc.Templates)
         {
+            if (!Doc.ShowTemplates) break;
             if (PlayerMode && Doc.FogOn && !CellSeen(tp.X, tp.Y)) continue;
             DrawTemplate(ctx, tp, oxG, oyG, g);
         }
@@ -464,6 +470,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         // Р°СѓСЂС‹ Рё СЃРІРµС‚
         foreach (var t in Doc.Tokens)
         {
+            if (!Doc.ShowTokens) break;
             if (PlayerMode && t.Hidden) continue;
             if (PlayerMode && Doc.FogOn && _vis != null && !TokenVisible(t)) continue;
             var cc = CellCenter(t.X + t.Cells / 2.0, t.Y + t.Cells / 2.0);
@@ -485,6 +492,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         // С‚РѕРєРµРЅС‹
         foreach (var t in Doc.Tokens)
         {
+            if (!Doc.ShowTokens) break;
             if (PlayerMode && t.Hidden) continue;
             double size = t.Cells * g;
             var center = CellCenter(t.X + t.Cells / 2.0, t.Y + t.Cells / 2.0);
@@ -569,6 +577,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         }
 
         // пропсы
+        if (Doc.ShowProps)
         foreach (var pr in Doc.Props)
         {
             if (PlayerMode && Doc.FogOn && !CellSeen(pr.X, pr.Y)) continue;

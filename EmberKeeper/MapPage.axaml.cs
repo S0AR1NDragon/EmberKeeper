@@ -30,6 +30,22 @@ public partial class MapPage : UserControl
         _view = new MapView(_doc) { DoubleClick = () => OpenCurrent() };
         InitializeComponent();
 
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_PREVIEW") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    var path = System.IO.Path.Combine(AppContext.BaseDirectory, "preview_test.png");
+                    if (!System.IO.File.Exists(path)) path = "";
+                    var bmp = string.IsNullOrEmpty(path) ? null : ImageCache.Get(path, 4000);
+                    if (bmp != null)
+                        new BackgroundPreviewDialog(path, bmp.PixelSize, _doc).Show();
+                }
+                catch { }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_UNDO") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -313,6 +329,13 @@ public partial class MapPage : UserControl
         CbSnap.IsChecked = _doc.Snap;
         CbFog.IsChecked = _doc.FogOn;
         CbVisionMode.IsChecked = _doc.VisionMode;
+        if (CbLayerWalls != null)
+        {
+            CbLayerWalls.IsChecked = _doc.ShowWalls;
+            CbLayerProps.IsChecked = _doc.ShowProps;
+            CbLayerTemplates.IsChecked = _doc.ShowTemplates;
+            CbLayerTokens.IsChecked = _doc.ShowTokens;
+        }
         EdGridOffX.Value = (decimal)_doc.GridOffX;
         EdGridOffY.Value = (decimal)_doc.GridOffY;
 
@@ -550,6 +573,17 @@ public partial class MapPage : UserControl
             _ => "box",
         };
         _view.Tool = "prop";
+    }
+
+    private void OnLayerToggled(object? sender, RoutedEventArgs e)
+    {
+        if (_syncing) return;
+        _doc.ShowWalls = CbLayerWalls.IsChecked == true;
+        _doc.ShowProps = CbLayerProps.IsChecked == true;
+        _doc.ShowTemplates = CbLayerTemplates.IsChecked == true;
+        _doc.ShowTokens = CbLayerTokens.IsChecked == true;
+        SaveAll();
+        _view?.InvalidateVisual();
     }
 
     private void OnVisionModeChanged(object? sender, RoutedEventArgs e)

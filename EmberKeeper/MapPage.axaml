@@ -203,6 +203,14 @@
               <CheckBox x:Name="CbGridVisible" Content="Показывать сетку" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnGridVisibleChanged" />
               <CheckBox x:Name="CbSnap" Content="Привязка к клеткам" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnSnapChanged" />
               <CheckBox x:Name="CbFog" Content="Туман войны" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnFogChanged" />
+              <TextBlock Classes="lbl" Text="СЛОИ" Margin="0,8,0,0" />
+              <WrapPanel Orientation="Horizontal" ItemSpacing="10" LineSpacing="4">
+                <CheckBox x:Name="CbLayerWalls" Content="Стены" Foreground="{DynamicResource C_efe3d2}" IsChecked="True" IsCheckedChanged="OnLayerToggled" />
+                <CheckBox x:Name="CbLayerProps" Content="Пропсы" Foreground="{DynamicResource C_efe3d2}" IsChecked="True" IsCheckedChanged="OnLayerToggled" />
+                <CheckBox x:Name="CbLayerTemplates" Content="Шаблоны" Foreground="{DynamicResource C_efe3d2}" IsChecked="True" IsCheckedChanged="OnLayerToggled" />
+                <CheckBox x:Name="CbLayerTokens" Content="Токены" Foreground="{DynamicResource C_efe3d2}" IsChecked="True" IsCheckedChanged="OnLayerToggled" />
+              </WrapPanel>
+
               <CheckBox x:Name="CbVisionMode" Content="Зрение токенов (свет / ночное зрение)" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnVisionModeChanged" />
 
               <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
