@@ -383,6 +383,8 @@ public partial class LibraryView : UserControl
 
         if (_cat == 6)
         {
+            DetailHost.Children.Add(new Border { Height = 40 });
+
             var btn = new Button
             {
                 Content = "→ на карту",

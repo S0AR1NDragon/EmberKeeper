@@ -201,17 +201,24 @@ public static class ClassInfo
     public static string ClassText(LibEntry x)
     {
         var h = x.H ?? "";
-        // описание заканчивается там, где начинаются умения по уровням
-        var m = Regex.Match(h, @"^\s*Уровень\s*1\s*:", RegexOptions.Multiline);
-        if (m.Success && m.Index > 200) return h[..m.Index].TrimEnd();
-
         int cut = -1;
+
+        // первое умение по уровням
+        var m = Regex.Match(h, @"^\s*Уровень\s*\d+\s*:", RegexOptions.Multiline);
+        if (m.Success && m.Index > 200) cut = m.Index;
+
+        // начало «как персонаж 1-го уровня»
+        int i2 = h.IndexOf("Получая первый уровень", StringComparison.OrdinalIgnoreCase);
+        if (i2 > 200 && (cut < 0 || i2 < cut)) cut = i2;
+
+        // текст подклассов
         foreach (var sub in x.Subs ?? new List<LibSub>())
         {
             if (string.IsNullOrWhiteSpace(sub.N) || sub.N.Length < 4) continue;
             int idx = h.IndexOf(sub.N, StringComparison.OrdinalIgnoreCase);
             if (idx > 200 && (cut < 0 || idx < cut)) cut = idx;
         }
+
         return cut > 0 ? h[..cut].TrimEnd() : h;
     }
 

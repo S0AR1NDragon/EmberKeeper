@@ -124,7 +124,7 @@
       </Border>
 
       <Border Grid.Column="1" Classes="card" Margin="0,0,0,12">
-        <ScrollViewer x:Name="DetailScroll" Padding="26,20,30,40" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer x:Name="DetailScroll" Padding="26,20,30,80" HorizontalScrollBarVisibility="Disabled">
           <StackPanel x:Name="DetailHost" Spacing="10" />
         </ScrollViewer>
       </Border>
