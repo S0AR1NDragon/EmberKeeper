@@ -110,7 +110,7 @@
           <TextBlock x:Name="HintBar" HorizontalAlignment="Left" VerticalAlignment="Bottom"
                      Margin="10,0,0,8" FontSize="10.5" Foreground="{DynamicResource C_8d7a66}"
                      Background="{DynamicResource C_e60b0908}" Padding="6,2"
-                     Text="тащи токен мышью · Shift — привязка к клетке · Alt+ЛКМ/СКМ — панорама · колесо — масштаб · двойной клик — открыть" />
+                     Text="тащи токен мышью · Shift+клик — удалить пропс/шаблон · клик по двери — открыть/закрыть · Alt+ЛКМ/СКМ — панорама · колесо — масштаб" />
         </Grid>
       </Border>
 

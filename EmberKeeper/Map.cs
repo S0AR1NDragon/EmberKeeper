@@ -496,6 +496,13 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
                 new Typeface("Segoe UI", FontStyle.Normal, FontWeight.SemiBold), radius * 1.05, Brushes.White);
             ctx.DrawText(ft, new Point(center.X - ft.Width / 2, center.Y - ft.Height / 2));
 
+            // предупреждение мастеру: токен стоит в стене
+            if (!PlayerMode && TokenInWall(t))
+            {
+                ctx.DrawEllipse(null, new Pen(new SolidColorBrush(Color.FromArgb(230, 210, 80, 68)), 2,
+                    new DashStyle(new double[] { 3, 3 }, 0)), center, radius + 3, radius + 3);
+            }
+
             // ореол активного хода
             if (!string.IsNullOrEmpty(ActiveName) && string.Equals(ActiveName, t.Name, StringComparison.OrdinalIgnoreCase))
             {
@@ -628,6 +635,19 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         for (int c = c0; c <= c1; c++)
             for (int r = r0; r <= r1; r++)
                 if (_vis[c, r]) return true;
+        return false;
+    }
+
+    /// <summary>Стоит ли токен на стене (предупреждение мастеру).</summary>
+    private bool TokenInWall(Token t)
+    {
+        var c = new Point(t.X + t.Cells / 2.0, t.Y + t.Cells / 2.0);
+        foreach (var w in Doc.Walls)
+        {
+            if (w.Kind == "door" && w.Open) continue;
+            if (w.Kind == "elev") continue;
+            if (DistToSegment(c, new Point(w.X1, w.Y1), new Point(w.X2, w.Y2)) < 0.3) return true;
+        }
         return false;
     }
 
