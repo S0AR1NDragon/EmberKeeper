@@ -72,7 +72,9 @@ public static class MapStore
         int n = d.Cols * d.Rows;
         if (d.Fog == null || d.Fog.Count != n)
         {
+            // новая карта открыта: мастер сам включит темноту кнопкой «Скрыть всё»
             d.Fog = new List<bool>(new bool[n]);
+            for (int i = 0; i < n; i++) d.Fog[i] = true;
         }
         if (d.Explored == null || d.Explored.Count != n)
             d.Explored = new List<bool>(new bool[n]);
