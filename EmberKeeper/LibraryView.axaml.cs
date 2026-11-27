@@ -145,6 +145,20 @@ public partial class LibraryView : UserControl
     private void Reload()
     {
         _all = DataStore.Load(_edition, Cats[_cat].Key);
+        if (Cats[_cat].Key == "bestiary")
+        {
+            foreach (var pm in PersonalBestiary.Load())
+            {
+                _all.Add(new LibEntry
+                {
+                    N = pm.Name,
+                    H = pm.Notes,
+                    Src = "Личный бестиарий",
+                    Cr = pm.Cr,
+                    Typ = pm.Type,
+                });
+            }
+        }
         _fLevel = _fSchool = _fClass = _fRarity = _fType = _fCr = _fMtype = "все";
         UpdateChips();
         BuildFilters();

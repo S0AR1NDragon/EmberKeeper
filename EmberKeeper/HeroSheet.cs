@@ -392,7 +392,11 @@ public sealed class HeroSheet : Window
             _skillMods[i].Text = Fmt(_h.SkillMod(Hero.SkillsList[i].Key));
     }
 
-    private void Save() => _save();
+    private void Save()
+    {
+        _save();
+        TokenSync.SyncHero(_h);
+    }
 
     /* ---------------- хелперы UI ---------------- */
 

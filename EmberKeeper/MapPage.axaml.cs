@@ -69,6 +69,34 @@ public partial class MapPage : UserControl
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_SYNC") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    var heroes = HeroStore.Load();
+                    var h = heroes.FirstOrDefault();
+                    if (h != null)
+                    {
+                        h.Darkvision = 60;
+                        HeroStore.Save(heroes);
+                        TokenSync.SyncHero(h);
+                        _view.InvalidateVisual();
+                        var tok = _doc.Tokens.FirstOrDefault(t => t.Type == "player");
+                        System.IO.File.WriteAllText(
+                            System.IO.Path.Combine(AppContext.BaseDirectory, "sync_test.txt"),
+                            $"hero={h.Name} darkvision={h.Darkvision}; token VisionFt={(tok?.VisionFt ?? -1)}; tokens={_doc.Tokens.Count}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(AppContext.BaseDirectory, "sync_test.txt"), "ошибка: " + ex.Message);
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_CALIB") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -194,6 +222,11 @@ public partial class MapPage : UserControl
         _view.PropPicked = SyncProp;
         _view.TemplatePicked = SyncTemplate;
         _view.Calibrated = ApplyCalibration;
+        TokenSync.TokensUpdated += () =>
+        {
+            _view.InvalidateVisual();
+            Sync();
+        };
         _view.Changed += Sync;
         BattleState.Changed += OnBattleChanged;
         OnBattleChanged();
@@ -791,6 +824,11 @@ public partial class MapPage : UserControl
             Y = 5 + _doc.Tokens.Count / 10,
             Color = "#70a3a2",
         };
+        if (string.IsNullOrEmpty(t.Ref))
+        {
+            var pm = PersonalBestiary.Register(t.Name, "", "", t.Hp, t.Ac, t.Init, t.Notes);
+            t.Ref = pm.Id;
+        }
         _doc.Tokens.Add(t);
         SaveAll();
         _view.SetSelected(t);
