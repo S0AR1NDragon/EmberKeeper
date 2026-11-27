@@ -185,6 +185,14 @@
                 <CheckBox x:Name="CbPropAlways" Content="Виден всегда (даже вне зрения)" Foreground="{DynamicResource C_efe3d2}" IsEnabled="False" IsCheckedChanged="OnPropFlagsToggled" />
                 <CheckBox x:Name="CbPropHidden" Content="Скрыт от игроков" Foreground="{DynamicResource C_efe3d2}" IsEnabled="False" IsCheckedChanged="OnPropFlagsToggled" />
                 <Button Classes="tool" x:Name="BtnDeleteProp" Content="Удалить предмет" IsEnabled="False" Click="OnDeleteProp" />
+
+              <StackPanel x:Name="TplPanel" Spacing="6" Margin="0,16,0,0">
+                <TextBlock Classes="sec" Text="Шаблон" />
+                <TextBlock x:Name="TplName" Foreground="{DynamicResource C_f6e7cf}" FontSize="13" FontWeight="SemiBold" Text="Выберите шаблон на карте" TextWrapping="Wrap" />
+                <CheckBox x:Name="CbTplAlways" Content="Виден всегда (даже вне зрения)" Foreground="{DynamicResource C_efe3d2}" IsEnabled="False" IsCheckedChanged="OnTplFlagsToggled" />
+                <CheckBox x:Name="CbTplHidden" Content="Скрыт от игроков" Foreground="{DynamicResource C_efe3d2}" IsEnabled="False" IsCheckedChanged="OnTplFlagsToggled" />
+                <Button Classes="tool" x:Name="BtnDeleteTpl" Content="Удалить шаблон" IsEnabled="False" Click="OnDeleteTpl" />
+              </StackPanel>
               </StackPanel>
             </StackPanel>
 

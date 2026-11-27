@@ -62,6 +62,10 @@ public sealed class Template
     public double Y { get; set; }
     public double SizeFt { get; set; } = 30;
     public double Angle { get; set; }
+    /// <summary>Виден игрокам даже вне обзора.</summary>
+    public bool AlwaysVisible { get; set; }
+    /// <summary>Полностью скрыт от игроков.</summary>
+    public bool Hidden { get; set; }
 }
 
 public sealed class Prop
@@ -227,6 +231,10 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     public string PropIcon { get; set; } = "box";
     /// <summary>Выбранный предмет.</summary>
     public Prop? SelectedProp { get; set; }
+    /// <summary>Выбранный шаблон.</summary>
+    public Template? SelectedTemplate { get; set; }
+    /// <summary>Шаблон выбран — обновить панель.</summary>
+    public Action? TemplatePicked;
     /// <summary>Предмет выбран — обновить панель.</summary>
     public Action? PropPicked;
     private Point? _tplStart;
@@ -376,10 +384,12 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
                 ctx.DrawLine(gridPen, new Point(oxG, oyG + r * g), new Point(oxG + Doc.Cols * g, oyG + r * g));
         }
 
-        // шаблоны
+        // шаблоны (обычные — скрываются туманом)
         foreach (var tp in Doc.Templates)
         {
             if (!Doc.ShowTemplates) break;
+            if (tp.AlwaysVisible) continue;
+            if (PlayerMode && tp.Hidden) continue;
             if (PlayerMode && Doc.FogOn && !CellSeen(tp.X, tp.Y)) continue;
             DrawTemplate(ctx, tp, oxG, oyG, g);
         }
@@ -547,6 +557,25 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             if (!pr.AlwaysVisible) continue;
             if (PlayerMode && pr.Hidden) continue;
             DrawProp(ctx, pr, oxG, oyG, g);
+        }
+
+        // шаблоны, видимые всегда (поверх тумана)
+        if (Doc.ShowTemplates)
+        foreach (var tp in Doc.Templates)
+        {
+            if (!tp.AlwaysVisible) continue;
+            if (PlayerMode && tp.Hidden) continue;
+            DrawTemplate(ctx, tp, oxG, oyG, g);
+        }
+
+        // подсветка выбранного шаблона
+        if (!PlayerMode && SelectedTemplate != null && Doc.Templates.Contains(SelectedTemplate))
+        {
+            var st = SelectedTemplate;
+            double rr = Math.Max(0.7, st.SizeFt / Math.Max(1, Doc.FeetPerCell));
+            var c2 = CellCenter(st.X, st.Y);
+            ctx.DrawEllipse(null, new Pen(new SolidColorBrush(Color.FromArgb(200, 126, 170, 210)), 1.6,
+                new DashStyle(new double[] { 4, 4 }, 0)), c2, rr * g, rr * g);
         }
 
         // подсветка выбранного предмета у мастера
@@ -1101,6 +1130,21 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             }
             SelectedProp = null;
             PropPicked?.Invoke();
+
+            var pickedTpl = Doc.Templates.LastOrDefault(tp =>
+            {
+                double rr = Math.Max(0.7, tp.SizeFt / Math.Max(1, Doc.FeetPerCell));
+                return Math.Sqrt((m.X - tp.X) * (m.X - tp.X) + (m.Y - tp.Y) * (m.Y - tp.Y)) <= rr;
+            });
+            if (pickedTpl != null)
+            {
+                SelectedTemplate = pickedTpl;
+                TemplatePicked?.Invoke();
+                InvalidateVisual();
+                return;
+            }
+            SelectedTemplate = null;
+            TemplatePicked?.Invoke();
         }
 
         if (Tool == "select" && e.KeyModifiers.HasFlag(KeyModifiers.Shift))

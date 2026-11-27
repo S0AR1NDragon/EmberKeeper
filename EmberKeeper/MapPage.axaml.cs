@@ -170,6 +170,7 @@ public partial class MapPage : UserControl
         _view.BeforeChange = Snapshot;
         _view.Undo = UndoLast;
         _view.PropPicked = SyncProp;
+        _view.TemplatePicked = SyncTemplate;
         _view.Changed += Sync;
         BattleState.Changed += OnBattleChanged;
         OnBattleChanged();
@@ -294,6 +295,7 @@ public partial class MapPage : UserControl
         view.BeforeChange = Snapshot;
         view.Undo = UndoLast;
         view.PropPicked = SyncProp;
+        view.TemplatePicked = SyncTemplate;
         view.FogBrush = Math.Clamp((int)(EdFogBrush?.Value ?? 1), 1, 6);
         view.Changed += Sync;
         view.Tool = tool;
@@ -622,6 +624,50 @@ public partial class MapPage : UserControl
     /* ---------------- инструменты ---------------- */
 
     /// <summary>Обновить панель предмета.</summary>
+    /// <summary>Обновить панель шаблона.</summary>
+    private void SyncTemplate()
+    {
+        var tp = _view?.SelectedTemplate;
+        bool has = tp != null;
+        if (TplName != null)
+            TplName.Text = has
+                ? (tp!.Kind switch { "cone" => "Конус", "line" => "Линия", "square" => "Квадрат", _ => "Круг" })
+                  + $" · {tp.SizeFt:F0} фт"
+                : "Выберите шаблон на карте";
+        if (CbTplAlways != null)
+        {
+            _syncing = true;
+            CbTplAlways.IsChecked = has && tp!.AlwaysVisible;
+            CbTplHidden.IsChecked = has && tp!.Hidden;
+            _syncing = false;
+            CbTplAlways.IsEnabled = has;
+            CbTplHidden.IsEnabled = has;
+        }
+        if (BtnDeleteTpl != null) BtnDeleteTpl.IsEnabled = has;
+    }
+
+    private void OnTplFlagsToggled(object? sender, RoutedEventArgs e)
+    {
+        if (_syncing) return;
+        var tp = _view?.SelectedTemplate;
+        if (tp == null) return;
+        tp.AlwaysVisible = CbTplAlways.IsChecked == true;
+        tp.Hidden = CbTplHidden.IsChecked == true;
+        SaveAll();
+        _view!.InvalidateVisual();
+    }
+
+    private void OnDeleteTpl(object? sender, RoutedEventArgs e)
+    {
+        var tp = _view?.SelectedTemplate;
+        if (tp == null) return;
+        _doc.Templates.Remove(tp);
+        _view!.SelectedTemplate = null;
+        SyncTemplate();
+        SaveAll();
+        _view!.InvalidateVisual();
+    }
+
     private void SyncProp()
     {
         var pr = _view?.SelectedProp;
