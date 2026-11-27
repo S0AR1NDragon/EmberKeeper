@@ -112,6 +112,7 @@ public partial class MapPage : UserControl
 
         var view = new MapView(doc) { DoubleClick = () => OpenCurrent() };
         view.Save = SaveAll;
+        view.FogBrush = Math.Clamp((int)(EdFogBrush?.Value ?? 1), 1, 6);
         view.Changed += Sync;
         view.Tool = tool;
         view.TplKind = tpl;
@@ -480,6 +481,11 @@ public partial class MapPage : UserControl
     }
 
     private void RefreshList() => TokenList.ItemsSource = _doc.Tokens.ToList();
+
+    private void OnFogBrushChanged(object? sender, NumericUpDownValueChangedEventArgs e)
+    {
+        _view.FogBrush = Math.Clamp((int)(EdFogBrush.Value ?? 1), 1, 6);
+    }
 
     private void OnGridOffX(object? sender, NumericUpDownValueChangedEventArgs e)
     {

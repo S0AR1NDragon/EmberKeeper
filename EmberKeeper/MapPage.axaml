@@ -204,6 +204,11 @@
                 <Button Classes="tool" Content="Скрыть всё" Click="OnHideAll" />
               </WrapPanel>
 
+              <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                <TextBlock Classes="lbl" Text="КИСТЬ ТУМАНА, КЛЕТОК" VerticalAlignment="Center" />
+                <NumericUpDown x:Name="EdFogBrush" Grid.Column="1" Minimum="1" Maximum="6" Width="110" Value="1" ValueChanged="OnFogBrushChanged" />
+              </Grid>
+
               <TextBlock Classes="lbl" Text="СДВИГ СЕТКИ (КЛЕТКИ)" Margin="0,8,0,0" />
               <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                 <StackPanel>

@@ -663,11 +663,16 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         return Math.Sqrt((p.X - px) * (p.X - px) + (p.Y - py) * (p.Y - py));
     }
 
+    /// <summary>Размер кисти тумана в клетках (радиус).</summary>
+    public int FogBrush { get; set; } = 1;
+
     private void PaintFog(Point m)
     {
         int c = (int)Math.Floor(m.X), r = (int)Math.Floor(m.Y);
         if (c < 0 || r < 0 || c >= Doc.Cols || r >= Doc.Rows) return;
-        Doc.SetFog(c, r, _fogErase);
+        for (int dc = -FogBrush; dc <= FogBrush; dc++)
+            for (int dr = -FogBrush; dr <= FogBrush; dr++)
+                Doc.SetFog(c + dc, r + dr, _fogErase);
         InvalidateVisual();
     }
 
