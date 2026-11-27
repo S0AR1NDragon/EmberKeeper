@@ -155,7 +155,7 @@ public sealed class HeroSheet : Window
         nameBox.FontWeight = FontWeight.Bold;
         nameBox.TextChanged += (_, _) => { _h.Name = nameBox.Text ?? ""; Title = "Лист персонажа — " + _h.Name; Save(); };
         nameRow.Children.Add(nameBox);
-        var lvl = Num(_h.LevelNum, 1, 20, 64);
+        var lvl = Num(_h.LevelNum, 1, 20, 96);
         lvl.ValueChanged += (_, _) => { _h.Level = ((int)(lvl.Value ?? 1)).ToString(); Save(); RefreshMods(); };
         var lvlBox = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Margin = new Thickness(8, 0, 0, 0) };
         lvlBox.Children.Add(new TextBlock { Text = "ур.", Foreground = new SolidColorBrush(Muted), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
@@ -200,7 +200,7 @@ public sealed class HeroSheet : Window
             int idx = i;
             var cell = new StackPanel { Spacing = 3, Margin = new Thickness(0, 0, 6, 0) };
             cell.Children.Add(new TextBlock { Text = Hero.AbilNames[i].ToUpperInvariant(), FontSize = 9.5, Foreground = new SolidColorBrush(Muted), HorizontalAlignment = HorizontalAlignment.Center });
-            var n = Num(_h.Ability(Hero.AbilKeys[i]), 1, 30, 70);
+            var n = Num(_h.Ability(Hero.AbilKeys[i]), 1, 30, 104);
             n.HorizontalAlignment = HorizontalAlignment.Center;
             n.ValueChanged += (_, _) =>
             {
@@ -313,7 +313,7 @@ public sealed class HeroSheet : Window
             int idx = i - 1;
             var cell = new StackPanel { Spacing = 2 };
             cell.Children.Add(new TextBlock { Text = i.ToString(), FontSize = 11, Foreground = new SolidColorBrush(Muted), HorizontalAlignment = HorizontalAlignment.Center });
-            var n = Num(_h.Slots[idx], 0, 20, 52);
+            var n = Num(_h.Slots[idx], 0, 20, 88);
             n.HorizontalAlignment = HorizontalAlignment.Center;
             n.ValueChanged += (_, _) => { _h.Slots[idx] = (int)(n.Value ?? 0); Save(); };
             cell.Children.Add(n);
@@ -435,7 +435,7 @@ public sealed class HeroSheet : Window
     {
         var sp = new StackPanel { Spacing = 2, Margin = new Thickness(0, 0, 8, 0) };
         sp.Children.Add(new TextBlock { Text = label.ToUpperInvariant(), FontSize = 9.5, Foreground = new SolidColorBrush(Muted) });
-        var n = Num(value, -999, 9999, 88);
+        var n = Num(value, -999, 9999, 120);
         n.ValueChanged += (_, _) => onChange((int)(n.Value ?? 0));
         sp.Children.Add(n);
         return sp;
@@ -459,6 +459,7 @@ public sealed class HeroSheet : Window
         Minimum = min,
         Maximum = max,
         Width = width,
+        MinWidth = 96,
         Background = new SolidColorBrush(Panel2),
         Foreground = new SolidColorBrush(Ink),
         BorderBrush = new SolidColorBrush(Line),
