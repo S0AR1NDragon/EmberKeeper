@@ -803,8 +803,8 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         }
 
         bool[,] vis = _visFine;
-        var darkBrush = new SolidColorBrush(Color.FromArgb(240, 6, 5, 4));
-        var memBrush = new SolidColorBrush(Color.FromArgb((byte)(PlayerMode ? 205 : 130), 9, 7, 6));
+        var darkBrush = new SolidColorBrush(Color.FromArgb(255, 6, 5, 4));
+        var memBrush = new SolidColorBrush(Color.FromArgb((byte)(PlayerMode ? 250 : 130), 9, 7, 6));
         double s = g / sub;
 
         // дистанция до ближайшей видимой подсетки — для плавного края
@@ -847,7 +847,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
                     if (mem) brush = memBrush;
                     else
                     {
-                        byte a = (byte)(d == 1 ? 110 : d == 2 ? 195 : 240);
+                        byte a = (byte)(d == 1 ? 175 : d == 2 ? 235 : 255);
                         brush = new SolidColorBrush(Color.FromArgb(a, 6, 5, 4));
                     }
                     ctx.FillRectangle(brush, new Rect(ox + c * s, oy + r * s, (c2 - c) * s + 0.5, s + 0.5));
