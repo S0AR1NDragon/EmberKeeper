@@ -201,6 +201,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     private Point _rulerEnd;
     private bool _fogErase;
     private Prop? _propHit;
+    private bool[,]? _vis;
     private Point _propDragStart;
     private Point _propTokenStart;
 
@@ -339,6 +340,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         if (Doc.FogOn)
         {
             bool[,] vis = MapVision.Compute(Doc);
+            _vis = vis;
             var darkBrush = new SolidColorBrush(Color.FromArgb(238, 6, 5, 4));
             var memBrush = new SolidColorBrush(Color.FromArgb(150, 9, 7, 6));
             bool exploredChanged = false;
@@ -383,6 +385,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         foreach (var t in Doc.Tokens)
         {
             if (PlayerMode && t.Hidden) continue;
+            if (PlayerMode && Doc.FogOn && _vis != null && !TokenVisible(t)) continue;
             var cc = CellCenter(t.X + t.Cells / 2.0, t.Y + t.Cells / 2.0);
             double cx = cc.X, cy = cc.Y;
             if (t.AuraOn)
@@ -524,6 +527,20 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     {
         double cells = Math.Sqrt(Math.Pow(b.X - a.X, 2) + Math.Pow(b.Y - a.Y, 2));
         return Math.Max(5, cells * Doc.FeetPerCell);
+    }
+
+    /// <summary>Виден ли токен игрокам (хотя бы одна клетка под ним в обзоре).</summary>
+    private bool TokenVisible(Token t)
+    {
+        if (_vis == null) return true;
+        int c0 = Math.Max(0, (int)Math.Floor(t.X));
+        int r0 = Math.Max(0, (int)Math.Floor(t.Y));
+        int c1 = Math.Min(Doc.Cols - 1, (int)Math.Ceiling(t.X + t.Cells) - 1);
+        int r1 = Math.Min(Doc.Rows - 1, (int)Math.Ceiling(t.Y + t.Cells) - 1);
+        for (int c = c0; c <= c1; c++)
+            for (int r = r0; r <= r1; r++)
+                if (_vis[c, r]) return true;
+        return false;
     }
 
     private void PaintFog(Point m)
