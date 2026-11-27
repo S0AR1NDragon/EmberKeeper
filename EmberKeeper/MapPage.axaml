@@ -171,6 +171,8 @@
 
               <StackPanel Orientation="Horizontal" Spacing="6">
                 <Button Classes="tool" Content="+ Токен" Click="OnAddToken" />
+                <Button Classes="tool" x:Name="BtnTokenImage" Content="Картинка…" Click="OnTokenImage" />
+                <Button Classes="tool" x:Name="BtnTokenImage" Content="Картинка…" Click="OnTokenImage" />
                 <Button Classes="tool" Content="Удалить" Click="OnDeleteToken" />
               </StackPanel>
               <Button x:Name="OpenBtn" Classes="goldbtn" Content="Открыть лист" Click="OnOpenSheet" Margin="0,8,0,0" HorizontalAlignment="Stretch" />

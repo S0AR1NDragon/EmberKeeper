@@ -8,6 +8,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 
 namespace EmberKeeper;
 
@@ -34,6 +35,8 @@ public sealed class Token
     public int Ac { get; set; }
     public string Speed { get; set; } = "";
     public string Notes { get; set; } = "";
+    /// <summary>Картинка токена (если пусто — буква на жетоне).</summary>
+    public string ImagePath { get; set; } = "";
     /// <summary>Токен не виден на экране игроков.</summary>
     public bool Hidden { get; set; }
 }
@@ -494,11 +497,23 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
                 new Pen(new SolidColorBrush(on ? Pal.C("#f0c27b") : Alpha(accent, 255)), on ? 3 : 1.5),
                 center, radius, radius);
 
-            // буква на жетоне
-            string letter = string.IsNullOrEmpty(t.Name) ? "?" : t.Name.Substring(0, 1).ToUpperInvariant();
-            var ft = new FormattedText(letter, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-                new Typeface("Segoe UI", FontStyle.Normal, FontWeight.SemiBold), radius * 1.05, Brushes.White);
-            ctx.DrawText(ft, new Point(center.X - ft.Width / 2, center.Y - ft.Height / 2));
+            // картинка токена (если задана) или буква
+            Bitmap? portrait = null;
+            if (!string.IsNullOrEmpty(t.ImagePath) && File.Exists(t.ImagePath))
+                portrait = ImageCache.Get(t.ImagePath, 512);
+
+            if (portrait != null)
+            {
+                using (ctx.PushClip(new RoundedRect(new Rect(center.X - radius, center.Y - radius, radius * 2, radius * 2), radius, radius)))
+                    ctx.DrawImage(portrait, new Rect(center.X - radius, center.Y - radius, radius * 2, radius * 2));
+            }
+            else
+            {
+                string letter = string.IsNullOrEmpty(t.Name) ? "?" : t.Name.Substring(0, 1).ToUpperInvariant();
+                var ft = new FormattedText(letter, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+                    new Typeface("Segoe UI", FontStyle.Normal, FontWeight.SemiBold), radius * 1.05, Brushes.White);
+                ctx.DrawText(ft, new Point(center.X - ft.Width / 2, center.Y - ft.Height / 2));
+            }
 
             // предупреждение мастеру: токен стоит в стене
             if (!PlayerMode && TokenInWall(t))

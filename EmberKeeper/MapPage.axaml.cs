@@ -588,6 +588,17 @@ public partial class MapPage : UserControl
         _view.InvalidateVisual();
     }
 
+    private async void OnTokenImage(object? sender, RoutedEventArgs e)
+    {
+        if (_view?.Selected == null) return;
+        var owner = TopLevel.GetTopLevel(this) as Window;
+        var path = await FilePickerDialog.Pick(owner, "Картинка токена", "*.png;*.jpg;*.jpeg;*.bmp;*.webp");
+        if (string.IsNullOrEmpty(path)) return;
+        _view.Selected.ImagePath = path;
+        SaveAll();
+        _view.InvalidateVisual();
+    }
+
     private void OnDeleteToken(object? sender, RoutedEventArgs e)
     {
         if (_view.Selected == null) return;
