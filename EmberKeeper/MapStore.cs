@@ -62,7 +62,7 @@ public static class MapStore
     public static MapDoc NewMap(string name)
     {
         var d = new MapDoc { Name = name };
-        d.Tokens.Add(new Token { Name = "Герой", X = 4, Y = 4, Color = "#d99b4a", Type = "player", Ref = "hero" });
+        d.Tokens.Add(new Token { Name = "Герой", X = 4, Y = 4, Color = "#d99b4a", Type = "player", Ref = "hero", LightOn = true, LightFt = 30 });
         Normalize(d);
         return d;
     }
@@ -74,7 +74,8 @@ public static class MapStore
         if (d.Fog == null || d.Fog.Count != n)
         {
             d.Fog = new List<bool>(new bool[n]);
-            for (int i = 0; i < n; i++) d.Fog[i] = true;
         }
+        if (d.Explored == null || d.Explored.Count != n)
+            d.Explored = new List<bool>(new bool[n]);
     }
 }
