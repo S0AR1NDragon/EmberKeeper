@@ -111,6 +111,7 @@ public partial class HeroesPage : UserControl
 
         _view = src.OrderBy(h => h.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
         HeroList.ItemsSource = _view;
+        if (EmptyHint != null) EmptyHint.IsVisible = _view.Count == 0;
         HeroList.ItemTemplate = new FuncDataTemplate<Hero>((h, _) => Row(h), true);
         CountText.Text = $"{_view.Count} из {_heroes.Count}";
         if (_view.Count > 0 && HeroList.SelectedIndex < 0) HeroList.SelectedIndex = 0;

@@ -29,6 +29,7 @@ public partial class InitPage : UserControl
     private void Render()
     {
         List.Children.Clear();
+        if (EmptyHint != null) EmptyHint.IsVisible = _list.Count == 0;
         BattleState.Set(_list, _turn, _round);
         RoundText.Text = $"Раунд {_round}";
         TurnText.Text = _list.Count == 0 ? "" : $"Ход: {_list[_turn % _list.Count].Name}";

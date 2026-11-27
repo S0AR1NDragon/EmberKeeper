@@ -76,7 +76,14 @@
     </StackPanel>
 
     <Border Grid.Row="1" Classes="card">
-      <ListBox x:Name="HeroList" SelectionChanged="OnSelect" Background="Transparent" BorderThickness="0" Margin="8" />
+      <Grid>
+        <ListBox x:Name="HeroList" SelectionChanged="OnSelect" Background="Transparent" BorderThickness="0" Margin="8" />
+        <StackPanel x:Name="EmptyHint" IsVisible="False" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+          <TextBlock Text="Героев пока нет" FontFamily="Georgia" FontSize="22" Foreground="{DynamicResource C_f6e7cf}" HorizontalAlignment="Center" />
+          <TextBlock Text="Нажмите «+ Герой», чтобы создать лист персонажа." Foreground="{DynamicResource C_9c8b78}" FontSize="12.5" HorizontalAlignment="Center" />
+          <TextBlock Text="Или «Импорт JSON…» — загрузить готовый лист." Foreground="{DynamicResource C_8d7a66}" FontSize="11.5" HorizontalAlignment="Center" />
+        </StackPanel>
+      </Grid>
     </Border>
   </Grid>
 </UserControl>

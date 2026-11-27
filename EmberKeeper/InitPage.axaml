@@ -78,9 +78,15 @@
     </StackPanel>
 
     <Border Grid.Row="1" Classes="card">
-      <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-        <StackPanel x:Name="List" Spacing="4" Margin="12" />
-      </ScrollViewer>
+      <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel x:Name="List" Spacing="4" Margin="12" />
+        </ScrollViewer>
+        <StackPanel x:Name="EmptyHint" IsVisible="False" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+          <TextBlock Text="Бой ещё не начат" FontFamily="Georgia" FontSize="22" Foreground="{DynamicResource C_f6e7cf}" HorizontalAlignment="Center" />
+          <TextBlock Text="Добавьте бойцов сверху или нажмите «С карты»." Foreground="{DynamicResource C_9c8b78}" FontSize="12.5" HorizontalAlignment="Center" />
+        </StackPanel>
+      </Grid>
     </Border>
   </Grid>
 </UserControl>
