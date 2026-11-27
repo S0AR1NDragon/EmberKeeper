@@ -78,22 +78,18 @@ public partial class MapPage : UserControl
                 try
                 {
                     _view.StartGridAdjust();
-                    int cellBefore = _doc.GridSize;
-                    _view.GridAdjustPress(new Avalonia.Point(300, 300));
-                    _view.GridAdjustMove(new Avalonia.Point(420, 380));
-                    bool draggingBefore = _view.IsGridDragging;
+                    int before = _doc.GridSize;
+                    var r = _view.GetAdjustRectScreen();
+                    bool dragStarted = _view.BeginGridDrag(new Avalonia.Point(r.Right - 2, r.Bottom - 2));
+                    _view.GridAdjustMove(new Avalonia.Point(r.Right + 58, r.Bottom + 58));
+                    int during = _doc.GridSize;
                     _view.EndGridDrag();
-                    bool draggingAfter = _view.IsGridDragging;
-                    System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "ga_drag.txt"),
-                        $"draggingBefore={draggingBefore} draggingAfter={draggingAfter}");
-                    int cellAfter = _doc.GridSize;
+                    int after = _doc.GridSize;
                     _view.StopGridAdjust(true);
-                    int cellRevert = _doc.GridSize;
-                    bool adjusting = _view.GridAdjusting;
+                    int revert = _doc.GridSize;
                     _view.StartGridAdjust();
-                    System.IO.File.WriteAllText(
-                        System.IO.Path.Combine(AppContext.BaseDirectory, "ga_test.txt"),
-                        $"before={cellBefore} after={cellAfter} revert={cellRevert} adjusting={adjusting} nowAdjusting={_view.GridAdjusting}");
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "ga_test.txt"),
+                        $"before={before} during={during} after={after} revert={revert} dragStarted={dragStarted} adjusting={_view.GridAdjusting}");
                 }
                 catch (Exception ex)
                 {

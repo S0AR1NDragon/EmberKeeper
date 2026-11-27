@@ -329,16 +329,17 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         InvalidateVisual();
     }
 
-    public void GridAdjustPress(Point p)
+    /// <summary>Нажатие: вернуть true, если начали перетаскивание.</summary>
+    public bool GridAdjustPress(Point p)
     {
+        double cell = Math.Max(16, Doc.GridSize);
         var a = new Point(_off.X + _gaX * Zoom, _off.Y + _gaY * Zoom);
         var b = new Point(a.X + _gaW * Zoom, a.Y + _gaH * Zoom);
-        bool inside = p.X >= a.X && p.X <= b.X && p.Y >= a.Y && p.Y <= b.Y;
 
-        // попали в угол — растягиваем от противоположного угла
+        // угол клетки — растягивание
         var corners = new[] { a, new Point(b.X, a.Y), b, new Point(a.X, b.Y) };
         int hit = -1;
-        double best = 14;
+        double best = 16;
         for (int i = 0; i < 4; i++)
         {
             double d = Math.Sqrt((p.X - corners[i].X) * (p.X - corners[i].X) + (p.Y - corners[i].Y) * (p.Y - corners[i].Y));
@@ -347,11 +348,9 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
         _gaStartMouse = p;
         _gaStartX = _gaX; _gaStartY = _gaY; _gaStartW = _gaW; _gaStartH = _gaH;
-        _gaMoving = hit < 0 && inside;
 
         if (hit >= 0)
         {
-            // противоположный угол становится неподвижным
             var opp = hit switch
             {
                 0 => b,
@@ -361,18 +360,31 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             };
             _gaAnchorX = (opp.X - _off.X) / Zoom;
             _gaAnchorY = (opp.Y - _off.Y) / Zoom;
-            _gaX = Math.Min(_gaAnchorX, (p.X - _off.X) / Zoom);
-            _gaY = Math.Min(_gaAnchorY, (p.Y - _off.Y) / Zoom);
+            _gaMoving = false;
+            InvalidateVisual();
+            return true;
         }
-        else if (!inside)
+
+        bool inside = p.X >= a.X && p.X <= b.X && p.Y >= a.Y && p.Y <= b.Y;
+        if (inside)
         {
-            // клик вне клетки — начинаем новую
-            _gaAnchorX = (p.X - _off.X) / Zoom;
-            _gaAnchorY = (p.Y - _off.Y) / Zoom;
-            _gaX = _gaAnchorX; _gaY = _gaAnchorY;
-            _gaW = 6; _gaH = 6;
+            _gaMoving = true;
+            InvalidateVisual();
+            return true;
         }
+
+        // клик мимо — подсвечиваем клетку, в которую попали (выбор зоны)
+        double mx = (p.X - _off.X) / Zoom;
+        double my = (p.Y - _off.Y) / Zoom;
+        int cc = (int)Math.Floor(mx / cell - Doc.GridOffX);
+        int rc = (int)Math.Floor(my / cell - Doc.GridOffY);
+        _gaX = (cc + Doc.GridOffX) * cell;
+        _gaY = (rc + Doc.GridOffY) * cell;
+        _gaW = cell;
+        _gaH = cell;
+        _gaMoving = false;
         InvalidateVisual();
+        return false;
     }
 
     public void GridAdjustMove(Point p)
@@ -398,7 +410,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             _gaW = side;
             _gaH = side;
         }
-        ApplyGridRect();
+        InvalidateVisual();
     }
 
     public void GridAdjustRelease()
@@ -417,6 +429,18 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     }
 
     public bool IsGridDragging => _gaDragging;
+
+    /// <summary>Начать перетаскивание из точки (для обработчика/тестов).</summary>
+    public bool BeginGridDrag(Point p)
+    {
+        if (!GridAdjustPress(p)) return false;
+        _gaDragging = true;
+        return true;
+    }
+
+    /// <summary>Текущий прямоугольник подгонки в экранных координатах.</summary>
+    public Rect GetAdjustRectScreen() =>
+        new(_off.X + _gaX * Zoom, _off.Y + _gaY * Zoom, _gaW * Zoom, _gaH * Zoom);
 
     /// <summary>Задать прямоугольник подгонки (в пикселях карты) и применить.</summary>
     public void SetGridRect(double x, double y, double w, double h)
@@ -1384,9 +1408,8 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         {
             if (_gaDoneRect.Contains(p)) { GridAdjustRelease(); StopGridAdjust(false); Save?.Invoke(); e.Handled = true; return; }
             if (_gaCancelRect.Contains(p)) { StopGridAdjust(true); e.Handled = true; return; }
-            GridAdjustPress(p);
-            _gaDragging = true;
-            e.Pointer.Capture(this);
+            if (BeginGridDrag(p))
+                e.Pointer.Capture(this);
             return;
         }
 
