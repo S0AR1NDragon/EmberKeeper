@@ -298,6 +298,51 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         InvalidateVisual();
     }
 
+    public void GridAdjustPress(Point p)
+    {
+        var a = new Point(_off.X + _gaX * Zoom, _off.Y + _gaY * Zoom);
+        var b = new Point(a.X + _gaW * Zoom, a.Y + _gaH * Zoom);
+        bool inside = p.X >= a.X - 8 && p.X <= b.X + 8 && p.Y >= a.Y - 8 && p.Y <= b.Y + 8;
+        _gaStartMouse = p;
+        _gaStartX = _gaX; _gaStartY = _gaY; _gaStartW = _gaW; _gaStartH = _gaH;
+        _gaMoving = inside;
+        if (!inside)
+        {
+            _gaAnchorX = (p.X - _off.X) / Zoom;
+            _gaAnchorY = (p.Y - _off.Y) / Zoom;
+            _gaX = _gaAnchorX; _gaY = _gaAnchorY;
+            _gaW = 6; _gaH = 6;
+        }
+        InvalidateVisual();
+    }
+
+    public void GridAdjustMove(Point p)
+    {
+        double dx = (p.X - _gaStartMouse.X) / Zoom;
+        double dy = (p.Y - _gaStartMouse.Y) / Zoom;
+        if (_gaMoving)
+        {
+            _gaX = _gaStartX + dx;
+            _gaY = _gaStartY + dy;
+        }
+        else
+        {
+            double cx = (p.X - _off.X) / Zoom;
+            double cy = (p.Y - _off.Y) / Zoom;
+            _gaX = Math.Min(_gaAnchorX, cx);
+            _gaY = Math.Min(_gaAnchorY, cy);
+            _gaW = Math.Max(6, Math.Abs(cx - _gaAnchorX));
+            _gaH = Math.Max(6, Math.Abs(cy - _gaAnchorY));
+        }
+        ApplyGridRect();
+    }
+
+    public void GridAdjustRelease()
+    {
+        ApplyGridRect();
+        InvalidateVisual();
+    }
+
     /// <summary>Задать прямоугольник подгонки (в пикселях карты) и применить.</summary>
     public void SetGridRect(double x, double y, double w, double h)
     {
@@ -1240,6 +1285,13 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         var m = ToMap(p);
         var props = e.GetCurrentPoint(this).Properties;
 
+        if (GridAdjusting)
+        {
+            GridAdjustPress(p);
+            e.Pointer.Capture(this);
+            return;
+        }
+
         if (props.IsMiddleButtonPressed || e.KeyModifiers.HasFlag(KeyModifiers.Alt))
         {
             _panning = true;
@@ -1473,6 +1525,12 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         var p = e.GetPosition(this);
         _lastPointer = p;
         _shiftHeld = (e.KeyModifiers & KeyModifiers.Shift) != 0;
+
+        if (GridAdjusting)
+        {
+            GridAdjustMove(p);
+            return;
+        }
 
         if (_panning)
         {

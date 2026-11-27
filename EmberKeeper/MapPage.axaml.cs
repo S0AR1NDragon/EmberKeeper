@@ -78,7 +78,9 @@ public partial class MapPage : UserControl
                 try
                 {
                     _view.StartGridAdjust();
-                    _view.SetGridRect(120, 90, 70, 70);
+                    _view.GridAdjustPress(new Avalonia.Point(600, 400));
+                    _view.GridAdjustMove(new Avalonia.Point(680, 470));
+                    _view.GridAdjustRelease();
                     System.IO.File.WriteAllText(
                         System.IO.Path.Combine(AppContext.BaseDirectory, "ga_test.txt"),
                         $"cell={_doc.GridSize} offX={_doc.GridOffX:F2} offY={_doc.GridOffY:F2} cols={_doc.Cols} rows={_doc.Rows}");
