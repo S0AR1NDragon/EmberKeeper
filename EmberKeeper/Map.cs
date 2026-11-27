@@ -211,6 +211,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     private bool _fogErase;
     private Prop? _propHit;
     private bool[,]? _vis;
+    private DateTime _lastExploredSave = DateTime.MinValue;
     private Point _propDragStart;
     private Point _propTokenStart;
 
@@ -371,7 +372,12 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
                     else ctx.FillRectangle(darkBrush, new Rect(oxG + c * g, oyG + r * g, g, g));
                 }
             }
-            if (exploredChanged) Save?.Invoke();
+            // сохраняем «разведанное» не чаще раза в 2 секунды (иначе запись на каждый кадр)
+            if (exploredChanged && (DateTime.UtcNow - _lastExploredSave).TotalSeconds > 2)
+            {
+                _lastExploredSave = DateTime.UtcNow;
+                Save?.Invoke();
+            }
 
             // у мастера — лёгкая подсветка зоны, которую реально видят игроки
             if (!PlayerMode)
