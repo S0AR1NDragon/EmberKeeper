@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -69,6 +70,14 @@ public partial class MapPage : UserControl
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_GRIDDLG") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try { new GridSetupDialog(_doc).Show(); } catch { }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_CELL") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -79,7 +88,7 @@ public partial class MapPage : UserControl
                     {
                     double z1 = _view.Zoom;
                     int c1 = _doc.Cols;
-                    EdGridPx.Value = 80;
+                    SldGridPx.Value = 80;
                     Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
                         double z2 = _view.Zoom;
@@ -475,7 +484,7 @@ public partial class MapPage : UserControl
         }, true);
 
         // карта
-        EdGridPx.Value = _doc.GridSize;
+        if (SldGridPx != null) { SldGridPx.Value = _doc.GridSize; GridPxText.Text = _doc.GridSize.ToString(); }
         EdFeet.Value = _doc.FeetPerCell;
         EdGridType.SelectedIndex = _doc.GridShape == "hex" ? 1 : 0;
         CbGridVisible.IsChecked = _doc.GridVisible;
@@ -661,11 +670,43 @@ public partial class MapPage : UserControl
 
     /* ---------------- настройки карты ---------------- */
 
+    private void OnGridSliderChanged(object? sender, RangeBaseValueChangedEventArgs e)
+    {
+        if (_syncing) return;
+        _doc.GridSize = (int)Math.Round(SldGridPx.Value);
+        if (GridPxText != null) GridPxText.Text = _doc.GridSize.ToString();
+        FitCellsToBackground();
+        SaveAll();
+        _view?.InvalidateVisual();
+    }
+
+    private async void OnManualGrid(object? sender, RoutedEventArgs e)
+    {
+        var owner = TopLevel.GetTopLevel(this) as Window;
+        var dlg = new GridSetupDialog(_doc);
+        bool ok = owner != null ? await dlg.ShowDialog<bool>(owner) : false;
+        if (!ok) return;
+
+        _doc.GridSize = dlg.CellPx;
+        _doc.GridOffX = dlg.OffX;
+        _doc.GridOffY = dlg.OffY;
+        if (dlg.FitToImage) FitCellsToBackground();
+        else
+        {
+            _doc.Cols = dlg.Cols;
+            _doc.Rows = dlg.Rows;
+            _doc.EnsureVision();
+        }
+        SaveAll();
+        Sync();
+        _view?.InvalidateVisual();
+    }
+
     private void OnGridPxChanged(object? sender, NumericUpDownValueChangedEventArgs e)
     {
         if (_syncing) return;
         if (_syncing) return;
-        _doc.GridSize = (int)(EdGridPx.Value ?? 64);
+        _doc.GridSize = (int)Math.Round(SldGridPx.Value);
         FitCellsToBackground();
         SaveAll();
         _view.InvalidateVisual();

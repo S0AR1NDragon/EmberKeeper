@@ -202,8 +202,12 @@
               <Grid ColumnDefinitions="*,*" Margin="0,0,0,8">
                 <StackPanel>
                   <TextBlock Classes="lbl" Text="КЛЕТКА НА КАРТИНКЕ, PX" />
-                  <NumericUpDown x:Name="EdGridPx" Minimum="20" Maximum="200" Width="86" ValueChanged="OnGridPxChanged" />
-                <TextBlock Classes="lbl" Text="Меняет число клеток под фон, камера не двигается" FontSize="10" Opacity="0.8" TextWrapping="Wrap" />
+                  <Grid ColumnDefinitions="*,Auto">
+                    <Slider x:Name="SldGridPx" Minimum="16" Maximum="200" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="OnGridSliderChanged" VerticalAlignment="Center" />
+                    <TextBlock x:Name="GridPxText" Grid.Column="1" Foreground="{DynamicResource C_f0c27b}" FontSize="12" VerticalAlignment="Center" Margin="8,0,0,0" Text="64" />
+                  </Grid>
+                  <Button Classes="tool" Content="Настроить вручную" HorizontalAlignment="Stretch" Margin="0,6,0,0" Click="OnManualGrid" />
+                  <TextBlock Classes="lbl" Text="Меняет число клеток под фон, камера не двигается" FontSize="10" Opacity="0.8" TextWrapping="Wrap" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                   <TextBlock Classes="lbl" Text="ФУТОВ В КЛЕТКЕ" />

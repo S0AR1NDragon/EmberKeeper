@@ -367,7 +367,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         // фон карты
         if (_bg == null && !string.IsNullOrEmpty(Doc.Background) && File.Exists(Doc.Background))
         {
-            _bg = ImageCache.Get(Doc.Background, 2400);
+            _bg = ImageCache.Get(Doc.Background, 8000);
         }
 
         double oxG = ox + Doc.GridOffX * g;
@@ -375,7 +375,12 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
         var mapRect = new Rect(ox, oy, Doc.Cols * g, Doc.Rows * g);
         if (_bg != null)
-            ctx.DrawImage(_bg, mapRect);
+        {
+            // фон в натуральном масштабе: 1 px картинки = 1 px карты (зум применяется отдельно)
+            ctx.FillRectangle(new SolidColorBrush(Pal.C("#1c1714")), mapRect);
+            var bgRect = new Rect(ox, oy, _bg.PixelSize.Width * Zoom, _bg.PixelSize.Height * Zoom);
+            ctx.DrawImage(_bg, bgRect);
+        }
         else
             ctx.FillRectangle(new SolidColorBrush(Pal.C("#1c1714")), mapRect);
 
