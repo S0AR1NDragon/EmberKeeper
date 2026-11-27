@@ -520,24 +520,117 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             }
         }
 
-        // пропсы
+        // пропсы — маленькие векторные иконки
         if (Doc.ShowProps)
         foreach (var pr in Doc.Props)
         {
             if (PlayerMode && Doc.FogOn && !CellSeen(pr.X, pr.Y)) continue;
             double size = pr.Cells * g;
-            var center = new Point(ox + (pr.X + pr.Cells / 2.0) * g, oy + (pr.Y + pr.Cells / 2.0) * g);
-            double r = Math.Max(6, size * 0.34);
-            ctx.DrawEllipse(new SolidColorBrush(Color.FromArgb(215, 44, 34, 26)),
-                new Pen(new SolidColorBrush(Pal.C("#8c7030")), 1.4), center, r, r);
-            var letter = new FormattedText(
-                (pr.Name.Length > 0 ? pr.Name.Substring(0, 1) : "?").ToUpperInvariant(),
-                CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-                new Typeface("Georgia"), Math.Max(10, r * 1.1), new SolidColorBrush(Pal.C("#f0c27b")));
-            ctx.DrawText(letter, new Point(center.X - letter.Width / 2, center.Y - letter.Height / 2));
+            var center = new Point(oxG + (pr.X + pr.Cells / 2.0) * g, oyG + (pr.Y + pr.Cells / 2.0) * g);
+            double half = Math.Max(9, size * 0.36);
+            var box = new Rect(center.X - half, center.Y - half, half * 2, half * 2);
+
+            // подложка
+            ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(225, 38, 30, 22)), box);
+            ctx.DrawRectangle(null, new Pen(new SolidColorBrush(Color.FromArgb(190, 140, 112, 48)), 1.3), box);
+
+            var gold = new SolidColorBrush(Pal.C("#f0c27b"));
+            var pen = new Pen(gold, Math.Max(1.2, half * 0.10));
+            string icon = string.IsNullOrEmpty(pr.Icon) ? "box" : pr.Icon;
+            double k = half; // масштаб иконки
+
+            switch (icon)
+            {
+                case "door":
+                    ctx.DrawRectangle(null, pen, new Rect(center.X - k * 0.55, center.Y - k * 0.75, k * 1.1, k * 1.5));
+                    ctx.DrawEllipse(gold, null, new Point(center.X + k * 0.25, center.Y), k * 0.12, k * 0.12);
+                    break;
+                case "boat":
+                {
+                    var g1 = new Avalonia.Media.StreamGeometry();
+                    using (var gc = g1.Open())
+                    {
+                        gc.BeginFigure(new Point(center.X - k * 0.8, center.Y + k * 0.1), false);
+                        gc.LineTo(new Point(center.X + k * 0.8, center.Y + k * 0.1));
+                        gc.LineTo(new Point(center.X + k * 0.45, center.Y + k * 0.7));
+                        gc.LineTo(new Point(center.X - k * 0.45, center.Y + k * 0.7));
+                        gc.EndFigure(true);
+                    }
+                    ctx.DrawGeometry(null, pen, g1);
+                    ctx.DrawLine(pen, new Point(center.X, center.Y + k * 0.1), new Point(center.X, center.Y - k * 0.75));
+                    break;
+                }
+                case "fire":
+                {
+                    var g2 = new Avalonia.Media.StreamGeometry();
+                    using (var gc = g2.Open())
+                    {
+                        gc.BeginFigure(new Point(center.X, center.Y - k * 0.8), false);
+                        gc.LineTo(new Point(center.X + k * 0.55, center.Y + k * 0.15));
+                        gc.LineTo(new Point(center.X + k * 0.2, center.Y + k * 0.75));
+                        gc.LineTo(new Point(center.X - k * 0.2, center.Y + k * 0.75));
+                        gc.LineTo(new Point(center.X - k * 0.55, center.Y + k * 0.15));
+                        gc.EndFigure(true);
+                    }
+                    ctx.DrawGeometry(null, pen, g2);
+                    break;
+                }
+                case "statue":
+                    ctx.DrawEllipse(null, pen, new Point(center.X, center.Y - k * 0.35), k * 0.3, k * 0.3);
+                    ctx.DrawRectangle(null, pen, new Rect(center.X - k * 0.55, center.Y + k * 0.15, k * 1.1, k * 0.6));
+                    break;
+                case "tree":
+                {
+                    var g3 = new Avalonia.Media.StreamGeometry();
+                    using (var gc = g3.Open())
+                    {
+                        gc.BeginFigure(new Point(center.X, center.Y - k * 0.85), false);
+                        gc.LineTo(new Point(center.X + k * 0.6, center.Y + k * 0.25));
+                        gc.LineTo(new Point(center.X - k * 0.6, center.Y + k * 0.25));
+                        gc.EndFigure(true);
+                    }
+                    ctx.DrawGeometry(null, pen, g3);
+                    ctx.DrawLine(pen, new Point(center.X, center.Y + k * 0.25), new Point(center.X, center.Y + k * 0.8));
+                    break;
+                }
+                case "bed":
+                    ctx.DrawRectangle(null, pen, new Rect(center.X - k * 0.8, center.Y - k * 0.5, k * 1.6, k * 1.0));
+                    ctx.DrawRectangle(gold, null, new Rect(center.X - k * 0.65, center.Y - k * 0.35, k * 0.5, k * 0.7));
+                    break;
+                case "coffin":
+                {
+                    var g4 = new Avalonia.Media.StreamGeometry();
+                    using (var gc = g4.Open())
+                    {
+                        gc.BeginFigure(new Point(center.X, center.Y - k * 0.85), false);
+                        gc.LineTo(new Point(center.X + k * 0.5, center.Y - k * 0.4));
+                        gc.LineTo(new Point(center.X + k * 0.5, center.Y + k * 0.8));
+                        gc.LineTo(new Point(center.X - k * 0.5, center.Y + k * 0.8));
+                        gc.LineTo(new Point(center.X - k * 0.5, center.Y - k * 0.4));
+                        gc.EndFigure(true);
+                    }
+                    ctx.DrawGeometry(null, pen, g4);
+                    break;
+                }
+                case "mark-excl":
+                case "mark-quest":
+                {
+                    string mark = icon == "mark-excl" ? "!" : "?";
+                    var ft = new FormattedText(mark, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+                        new Typeface("Georgia", FontStyle.Normal, FontWeight.Bold), k * 1.9, gold);
+                    ctx.DrawText(ft, new Point(center.X - ft.Width / 2, center.Y - ft.Height / 2 - k * 0.05));
+                    break;
+                }
+                default: // box / chest
+                    ctx.DrawRectangle(null, pen, new Rect(center.X - k * 0.75, center.Y - k * 0.55, k * 1.5, k * 1.1));
+                    ctx.DrawLine(pen, new Point(center.X - k * 0.75, center.Y - k * 0.15), new Point(center.X + k * 0.75, center.Y - k * 0.15));
+                    ctx.DrawEllipse(gold, null, new Point(center.X, center.Y + k * 0.2), k * 0.1, k * 0.1);
+                    break;
+            }
+
             var pn = new FormattedText(pr.Name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                 new Typeface("Segoe UI"), 10, new SolidColorBrush(Pal.C("#b7a794")));
-            ctx.DrawText(pn, new Point(center.X - pn.Width / 2, center.Y + size / 2 + 2));
+            ctx.DrawText(pn, new Point(center.X - pn.Width / 2, center.Y + half + 3));
         }
 
                 DrawFog(ctx, oxG, oyG, g);
@@ -868,6 +961,8 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         "tree" => "Дерево",
         "bed" => "Кровать",
         "coffin" => "Гроб",
+        "mark-excl" => "Метка «!»",
+        "mark-quest" => "Метка «?»",
         _ => "Объект",
     };
 

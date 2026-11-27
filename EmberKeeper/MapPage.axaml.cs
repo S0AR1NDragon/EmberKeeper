@@ -137,7 +137,7 @@ public partial class MapPage : UserControl
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
-        CbProp.ItemsSource = new[] { "Сундук", "Дверь", "Лодка", "Костёр", "Статуя", "Дерево", "Кровать", "Гроб" };
+        CbProp.ItemsSource = new[] { "Сундук", "Дверь", "Лодка", "Костёр", "Статуя", "Дерево", "Кровать", "Гроб", "Метка «!»", "Метка «?»" };
         CbProp.SelectedIndex = 0;
 
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_MAP_PLAYER") == "1")
@@ -614,9 +614,10 @@ public partial class MapPage : UserControl
             5 => "tree",
             6 => "bed",
             7 => "coffin",
+            8 => "mark-excl",
+            9 => "mark-quest",
             _ => "box",
         };
-        _view.Tool = "prop";
     }
 
     private void OnLayerToggled(object? sender, RoutedEventArgs e)
