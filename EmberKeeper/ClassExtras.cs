@@ -19,6 +19,8 @@ public static class ClassExtras
     public sealed class Section
     {
         public string Tab { get; set; } = "";
+        public string Kind { get; set; } = "options";
+        public List<string> Columns { get; set; } = new();
         public List<Option> Items { get; set; } = new();
     }
 
@@ -29,6 +31,8 @@ public static class ClassExtras
         public string Edition { get; set; } = "";
         public string Cls { get; set; } = "";
         public string Tab { get; set; } = "";
+        public string Kind { get; set; } = "options";
+        public List<string> Columns { get; set; } = new();
         public List<Option> Items { get; set; } = new();
     }
 
@@ -85,7 +89,7 @@ public static class ClassExtras
             if (!string.Equals(fe.Edition, edition, StringComparison.Ordinal)) continue;
             if (!string.Equals(fe.Cls, name, StringComparison.CurrentCultureIgnoreCase)) continue;
             if (fe.Items.Count < 2) continue;
-            res.Add(new Section { Tab = fe.Tab, Items = fe.Items });
+            res.Add(new Section { Tab = fe.Tab, Kind = string.IsNullOrEmpty(fe.Kind) ? "options" : fe.Kind, Columns = fe.Columns ?? new List<string>(), Items = fe.Items });
         }
 
         if (!Map.TryGetValue(name, out var specs)) return res;

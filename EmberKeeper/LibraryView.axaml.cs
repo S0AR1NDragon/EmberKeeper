@@ -589,6 +589,71 @@ public partial class LibraryView : UserControl
     private void RenderExtra(ClassExtras.Section sec)
     {
         DetailHost.Children.Add(SectionTitle(sec.Tab));
+
+        if (sec.Kind == "table")
+        {
+            var cols = sec.Columns.Count >= 2 ? sec.Columns : new List<string> { "", "" };
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(90)));
+            grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+
+            int row = 0;
+            for (int c = 0; c < 2; c++)
+            {
+                var head = new Border
+                {
+                    Background = Pal.B("#2a211a"),
+                    BorderBrush = Pal.B("#2a211a"),
+                    BorderThickness = new Thickness(0, 0, 1, 1),
+                    Padding = new Thickness(10, 7),
+                    Child = new TextBlock { Text = cols[c], FontSize = 11.5, FontWeight = FontWeight.Bold, Foreground = Pal.B("#f0c27b") },
+                };
+                Grid.SetRow(head, 0);
+                Grid.SetColumn(head, c);
+                grid.Children.Add(head);
+            }
+            row = 1;
+            foreach (var it in sec.Items)
+            {
+                var dice = new Border
+                {
+                    Background = row % 2 == 0 ? Pal.B("#15110e") : Brushes.Transparent,
+                    BorderBrush = Pal.B("#241d18"),
+                    BorderThickness = new Thickness(0, 0, 1, 1),
+                    Padding = new Thickness(10, 7),
+                    Child = new TextBlock { Text = it.Name, FontSize = 12, Foreground = Pal.B("#d99b4a") },
+                };
+                Grid.SetRow(dice, row);
+                Grid.SetColumn(dice, 0);
+                grid.Children.Add(dice);
+
+                var effect = new Border
+                {
+                    Background = row % 2 == 0 ? Pal.B("#15110e") : Brushes.Transparent,
+                    BorderBrush = Pal.B("#241d18"),
+                    BorderThickness = new Thickness(0, 0, 0, 1),
+                    Padding = new Thickness(10, 7),
+                    Child = new TextBlock { Text = it.Text, FontSize = 12.5, Foreground = Pal.B("#e9dccb"), TextWrapping = TextWrapping.Wrap },
+                };
+                Grid.SetRow(effect, row);
+                Grid.SetColumn(effect, 1);
+                grid.Children.Add(effect);
+                row++;
+            }
+            for (int i = 0; i < row; i++) grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+
+            DetailHost.Children.Add(new Border
+            {
+                Background = Pal.B("#1c1714"),
+                BorderBrush = Pal.B("#2a211a"),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(10),
+                Margin = new Thickness(0, 10, 0, 0),
+                ClipToBounds = true,
+                Child = grid,
+            });
+            return;
+        }
         for (int i = 0; i < sec.Items.Count; i++)
         {
             var it = sec.Items[i];
