@@ -699,6 +699,25 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         if (!PlayerMode) DrawMinimap(ctx);
 
 // линейка
+        // прямоугольник подгонки клетки
+        if (GridAdjusting)
+        {
+            var ga = new Point(_off.X + _gaX * Zoom, _off.Y + _gaY * Zoom);
+            var gb = new Point(ga.X + _gaW * Zoom, ga.Y + _gaH * Zoom);
+            var garect = new Rect(ga, gb);
+            ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(55, 240, 194, 123)), garect);
+            ctx.DrawRectangle(null, new Pen(new SolidColorBrush(Color.FromArgb(235, 240, 194, 123)), 2), garect);
+            foreach (var hpt in new[] { ga, new Point(gb.X, ga.Y), gb, new Point(ga.X, gb.Y) })
+                ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(240, 240, 194, 123)),
+                    new Rect(hpt.X - 4, hpt.Y - 4, 8, 8));
+            var hint = new FormattedText("подгоните клетку мышью · Enter — готово · Esc — отмена",
+                CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+                new Typeface("Segoe UI"), 12, new SolidColorBrush(Pal.C("#f6e7cf")));
+            var hbg = new Rect(Bounds.Width / 2 - hint.Width / 2 - 10, 12, hint.Width + 20, hint.Height + 10);
+            ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(210, 20, 16, 12)), hbg);
+            ctx.DrawText(hint, new Point(hbg.X + 10, hbg.Y + 5));
+        }
+
         if (_rulerStart is Point rs)
         {
             var a = ToScreen(rs.X, rs.Y);
