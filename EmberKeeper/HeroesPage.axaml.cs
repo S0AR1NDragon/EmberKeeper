@@ -37,6 +37,44 @@ public partial class HeroesPage : UserControl
         _heroes = HeroStore.Load();
         BuildFilters();
         Refresh();
+
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_SHEET") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    var h = new Hero
+                    {
+                        Name = "Ивар Светлый",
+                        Race = "Человек",
+                        Class = "Воин",
+                        Subclass = "",
+                        Background = "Солдат",
+                        Level = "5",
+                        Hp = 39,
+                        MaxHp = 39,
+                        Ac = 18,
+                        Str = 17,
+                        Dex = 13,
+                        Con = 16,
+                        Int = 10,
+                        Wis = 12,
+                        Cha = 8,
+                        Darkvision = 0,
+                    };
+                    _heroes.Add(h);
+                    HeroStore.Save(_heroes);
+                    Refresh();
+                    OpenSheet(h);
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(AppContext.BaseDirectory, "sheet_test.txt"), "ошибка: " + ex.Message);
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
     }
 
     private void BuildFilters()
