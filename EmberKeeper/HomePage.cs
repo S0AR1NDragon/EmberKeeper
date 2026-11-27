@@ -154,7 +154,7 @@ public sealed class HomePage : UserControl
 
         stack.Children.Add(new TextBlock
         {
-            Text = "EmberKeeper " + Updater.Version + " · Лицензия: " + License.Describe(),
+            Text = "EmberKeeper " + Updater.Version + (Updater.Version.StartsWith("1.0") ? " demo" : "") + " · Лицензия: " + License.Describe(),
             FontSize = 10.5,
             Foreground = new SolidColorBrush(Muted),
             Margin = new Thickness(2, 0, 0, 2),
