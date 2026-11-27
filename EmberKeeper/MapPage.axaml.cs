@@ -865,19 +865,30 @@ public partial class MapPage : UserControl
         var path = await FilePickerDialog.Pick(owner, "Выбрать фон карты", "*.png;*.jpg;*.jpeg;*.bmp;*.webp;*.gif");
         if (string.IsNullOrEmpty(path)) return;
 
-        var img = ImageCache.Get(path, 4000);
-        if (img != null)
+        PixelSize orig = ImageSize(path);
+        if (ImageCache.Get(path, 4000) != null)
         {
-            var dlg = new BackgroundPreviewDialog(path, img.PixelSize, _doc);
+            var dlg = new BackgroundPreviewDialog(path, orig, _doc);
             bool ok = owner != null ? await dlg.ShowDialog<bool>(owner) : false;
             if (!ok) return;
-            if (dlg.FitMap) FitMapToImage(img.PixelSize);
+            if (dlg.FitMap) FitMapToImage(orig);
         }
 
         _view.SetBackground(path);
         SaveAll();
         Sync();
         _view.InvalidateVisual();
+    }
+
+    /// <summary>Настоящий размер картинки в пикселях (не масштабированный).</summary>
+    private static PixelSize ImageSize(string path)
+    {
+        try
+        {
+            using var probe = new Avalonia.Media.Imaging.Bitmap(path);
+            return probe.PixelSize;
+        }
+        catch { return new PixelSize(1280, 720); }
     }
 
     /// <summary>Размер карты под картинку: клетки считаются от её пикселей.</summary>
