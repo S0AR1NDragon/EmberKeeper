@@ -105,4 +105,65 @@ public static class MapVision
 
     private static double Cross(Point o, Point a, Point b) =>
         (a.X - o.X) * (b.Y - o.Y) - (a.Y - o.Y) * (b.X - o.X);
+
+    /// <summary>Обзор в подсеточном разрешении: круглые границы вместо клетчатых.</summary>
+    public static bool[,] ComputeFine(MapDoc d, int sub)
+    {
+        int subW = Math.Max(1, d.Cols) * sub;
+        int subH = Math.Max(1, d.Rows) * sub;
+        var vis = new bool[subW, subH];
+
+        if (!d.FogOn || !d.VisionMode)
+        {
+            for (int x = 0; x < subW; x++)
+                for (int y = 0; y < subH; y++) vis[x, y] = true;
+            return vis;
+        }
+
+        for (int c = 0; c < d.Cols; c++)
+            for (int r = 0; r < d.Rows; r++)
+                if (d.FogAt(c, r))
+                    for (int x = 0; x < sub; x++)
+                        for (int y = 0; y < sub; y++)
+                            vis[c * sub + x, r * sub + y] = true;
+
+        foreach (var t in d.Tokens)
+        {
+            if (t.Hidden) continue;
+            if (!(t.Type == "player" || t.LightOn)) continue;
+
+            double cx = t.X + t.Cells / 2.0;
+            double cy = t.Y + t.Cells / 2.0;
+            double lightFt = t.LightOn ? Math.Max(0, t.LightFt) : 0;
+            double darkFt = Math.Max(0, t.VisionFt);
+            double radiusFt = Math.Max(lightFt, darkFt);
+            if (radiusFt <= 0) continue;
+
+            double radiusCells = radiusFt / Math.Max(1, d.FeetPerCell);
+            if (radiusCells > 200) radiusCells = 200;
+
+            var center = new Point(cx, cy);
+            int x0 = Math.Max(0, (int)Math.Floor((cx - radiusCells) * sub));
+            int x1 = Math.Min(subW - 1, (int)Math.Ceiling((cx + radiusCells) * sub));
+            int y0 = Math.Max(0, (int)Math.Floor((cy - radiusCells) * sub));
+            int y1 = Math.Min(subH - 1, (int)Math.Ceiling((cy + radiusCells) * sub));
+
+            for (int x = x0; x <= x1; x++)
+            {
+                for (int y = y0; y <= y1; y++)
+                {
+                    if (vis[x, y]) continue;
+                    var target = new Point((x + 0.5) / sub, (y + 0.5) / sub);
+                    double distCells = Math.Sqrt((target.X - cx) * (target.X - cx) + (target.Y - cy) * (target.Y - cy));
+                    if (distCells > radiusCells) continue;
+                    double distFt = distCells * d.FeetPerCell;
+                    bool ok = (lightFt > 0 && distFt <= lightFt) || (darkFt > 0 && distFt <= darkFt);
+                    if (!ok) continue;
+                    if (Blocked(d, center, target)) continue;
+                    vis[x, y] = true;
+                }
+            }
+        }
+        return vis;
+    }
 }

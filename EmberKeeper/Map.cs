@@ -229,6 +229,8 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     private bool[,]? _vis;
     private DateTime _lastExploredSave = DateTime.MinValue;
     private DateTime _visTime = DateTime.MinValue;
+    private bool[,]? _visFine;
+    private DateTime _visFineTime = DateTime.MinValue;
     private Point _propDragStart;
     private Point _propTokenStart;
 
@@ -364,65 +366,6 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
                 ctx.DrawLine(gridPen, new Point(oxG + c * g, oyG), new Point(oxG + c * g, oyG + Doc.Rows * g));
             for (int r = 0; r <= Doc.Rows; r++)
                 ctx.DrawLine(gridPen, new Point(oxG, oyG + r * g), new Point(oxG + Doc.Cols * g, oyG + r * g));
-        }
-
-        // туман войны: темнота, освещённое/увиденное открывается
-        if (Doc.FogOn)
-        {
-            // пересчёт обзора не чаще 5 раз в секунду
-            if (_vis == null || (DateTime.UtcNow - _visTime).TotalMilliseconds > 200)
-            {
-                _vis = MapVision.Compute(Doc);
-                _visTime = DateTime.UtcNow;
-            }
-            bool[,] vis = _vis;
-            var darkBrush = new SolidColorBrush(Color.FromArgb(238, 6, 5, 4));
-            var memBrush = new SolidColorBrush(Color.FromArgb((byte)(PlayerMode ? 228 : 150), 9, 7, 6));
-            bool exploredChanged = false;
-
-            for (int r = 0; r < Doc.Rows; r++)
-            {
-                for (int c = 0; c < Doc.Cols; c++)
-                {
-                    if (vis[c, r])
-                    {
-                        if (!Doc.ExploredAt(c, r)) { Doc.SetExplored(c, r); exploredChanged = true; }
-                        continue;
-                    }
-                    // в памяти игроков клетка уже была — рисуем полумраком
-                    if (Doc.ExploredAt(c, r)) ctx.FillRectangle(memBrush, new Rect(oxG + c * g, oyG + r * g, g, g));
-                    else ctx.FillRectangle(darkBrush, new Rect(oxG + c * g, oyG + r * g, g, g));
-                }
-            }
-            // сохраняем «разведанное» не чаще раза в 2 секунды (иначе запись на каждый кадр)
-            if (exploredChanged && (DateTime.UtcNow - _lastExploredSave).TotalSeconds > 2)
-            {
-                _lastExploredSave = DateTime.UtcNow;
-                Save?.Invoke();
-            }
-
-            // мягкий край тумана: клетки на границе обзора чуть затемнены
-            var edgeBrush = new SolidColorBrush(Color.FromArgb(80, 6, 5, 4));
-            for (int r = 0; r < Doc.Rows; r++)
-            {
-                for (int c = 0; c < Doc.Cols; c++)
-                {
-                    if (!vis[c, r]) continue;
-                    bool border = (c == 0 || !vis[c - 1, r]) || (c == Doc.Cols - 1 || !vis[c + 1, r]) ||
-                                  (r == 0 || !vis[c, r - 1]) || (r == Doc.Rows - 1 || !vis[c, r + 1]);
-                    if (border) ctx.FillRectangle(edgeBrush, new Rect(oxG + c * g, oyG + r * g, g, g));
-                }
-            }
-
-            // у мастера — лёгкая подсветка зоны, которую реально видят игроки
-            if (!PlayerMode)
-            {
-                var visTint = new SolidColorBrush(Color.FromArgb(22, 240, 194, 123));
-                for (int r = 0; r < Doc.Rows; r++)
-                    for (int c = 0; c < Doc.Cols; c++)
-                        if (vis[c, r])
-                            ctx.FillRectangle(visTint, new Rect(oxG + c * g, oyG + r * g, g, g));
-            }
         }
 
         // шаблоны
@@ -597,7 +540,10 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             ctx.DrawText(pn, new Point(center.X - pn.Width / 2, center.Y + size / 2 + 2));
         }
 
-        // линейка
+                DrawFog(ctx, oxG, oyG, g);
+        if (!PlayerMode) DrawMinimap(ctx);
+
+// линейка
         if (_rulerStart is Point rs)
         {
             var a = ToScreen(rs.X, rs.Y);
@@ -730,6 +676,147 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         double t = Math.Clamp(((p.X - a.X) * dx + (p.Y - a.Y) * dy) / len2, 0, 1);
         double px = a.X + t * dx, py = a.Y + t * dy;
         return Math.Sqrt((p.X - px) * (p.X - px) + (p.Y - py) * (p.Y - py));
+    }
+
+    /// <summary>Туман поверх карты: круглые границы, токены в темноте обрезаются.</summary>
+    private void DrawFog(DrawingContext ctx, double ox, double oy, double g)
+    {
+        const int sub = 6;
+        int subW = Doc.Cols * sub, subH = Doc.Rows * sub;
+        if (subW <= 0 || subH <= 0) return;
+
+        if (_visFine == null || (DateTime.UtcNow - _visFineTime).TotalMilliseconds > 200)
+        {
+            _visFine = MapVision.ComputeFine(Doc, sub);
+            _visFineTime = DateTime.UtcNow;
+            if (_vis == null || (DateTime.UtcNow - _visTime).TotalMilliseconds > 600)
+            {
+                _vis = MapVision.Compute(Doc);
+                _visTime = DateTime.UtcNow;
+            }
+            // запоминаем разведанное
+            if (_vis != null)
+            {
+                bool changed = false;
+                for (int c = 0; c < Doc.Cols; c++)
+                    for (int r = 0; r < Doc.Rows; r++)
+                        if (_vis[c, r] && !Doc.ExploredAt(c, r)) { Doc.SetExplored(c, r); changed = true; }
+                if (changed && (DateTime.UtcNow - _lastExploredSave).TotalSeconds > 2)
+                {
+                    _lastExploredSave = DateTime.UtcNow;
+                    Save?.Invoke();
+                }
+            }
+        }
+
+        bool[,] vis = _visFine;
+        var darkBrush = new SolidColorBrush(Color.FromArgb(240, 6, 5, 4));
+        var memBrush = new SolidColorBrush(Color.FromArgb((byte)(PlayerMode ? 205 : 130), 9, 7, 6));
+        double s = g / sub;
+
+        for (int r = 0; r < subH; r++)
+        {
+            int c = 0;
+            while (c < subW)
+            {
+                int state;
+                if (vis[c, r]) state = 0;
+                else state = Doc.ExploredAt(c / sub, r / sub) ? 1 : 2;
+
+                int c2 = c + 1;
+                if (state != 0)
+                {
+                    while (c2 < subW)
+                    {
+                        int st2 = vis[c2, r] ? 0 : (Doc.ExploredAt(c2 / sub, r / sub) ? 1 : 2);
+                        if (st2 != state) break;
+                        c2++;
+                    }
+                    var brush = state == 2 ? darkBrush : memBrush;
+                    ctx.FillRectangle(brush, new Rect(ox + c * s, oy + r * s, (c2 - c) * s + 0.5, s + 0.5));
+                }
+                else
+                {
+                    while (c2 < subW && vis[c2, r]) c2++;
+                }
+                c = c2;
+            }
+        }
+
+        // у мастера: силуэты скрытых токенов, чтобы вести бой
+        if (!PlayerMode)
+        {
+            var ghost = new SolidColorBrush(Color.FromArgb(70, 239, 227, 210));
+            foreach (var t in Doc.Tokens)
+            {
+                if (t.Hidden) continue;
+                if (_vis != null && _vis[(int)Math.Clamp(t.X, 0, Doc.Cols - 1), (int)Math.Clamp(t.Y, 0, Doc.Rows - 1)]) continue;
+                var cc = CellCenter(t.X + t.Cells / 2.0, t.Y + t.Cells / 2.0);
+                ctx.DrawEllipse(ghost, null, cc, Math.Max(4, t.Cells * g * 0.35), Math.Max(4, t.Cells * g * 0.35));
+            }
+        }
+    }
+
+    /// <summary>Мини-карта «как видят игроки» (для мастера).</summary>
+    private void DrawMinimap(DrawingContext ctx)
+    {
+        if (Doc.Cols <= 0 || Doc.Rows <= 0) return;
+
+        const double maxW = 230, maxH = 160;
+        double mw = maxW, mh = mw * Doc.Rows / Doc.Cols;
+        if (mh > maxH) { mh = maxH; mw = mh * Doc.Cols / Doc.Rows; }
+        if (mw < 80) return;
+
+        var rect = new Rect(Bounds.Width - mw - 18, Bounds.Height - mh - 18, mw, mh);
+        var bg = new SolidColorBrush(Color.FromArgb(225, 14, 11, 9));
+        ctx.FillRectangle(bg, rect);
+        ctx.DrawRectangle(null, new Pen(new SolidColorBrush(Pal.C("#4a3728")), 1), rect);
+
+        double sx = mw / Doc.Cols, sy = mh / Doc.Rows;
+
+        // видимая игрокам зона
+        if (Doc.FogOn && _vis != null)
+        {
+            var visBrush = new SolidColorBrush(Color.FromArgb(90, 240, 194, 123));
+            for (int c = 0; c < Doc.Cols; c++)
+                for (int r = 0; r < Doc.Rows; r++)
+                    if (_vis[c, r])
+                        ctx.FillRectangle(visBrush, new Rect(rect.X + c * sx, rect.Y + r * sy, sx + 0.5, sy + 0.5));
+        }
+
+        // стены
+        if (Doc.ShowWalls)
+        {
+            var wpen = new Pen(new SolidColorBrush(Color.FromArgb(200, 138, 122, 94)), 1);
+            foreach (var w in Doc.Walls)
+                ctx.DrawLine(wpen,
+                    new Point(rect.X + w.X1 * sx, rect.Y + w.Y1 * sy),
+                    new Point(rect.X + w.X2 * sx, rect.Y + w.Y2 * sy));
+        }
+
+        // токены (только видимые игрокам)
+        foreach (var t in Doc.Tokens)
+        {
+            if (t.Hidden) continue;
+            bool seen = !Doc.FogOn || _vis == null || _vis[(int)Math.Clamp(t.X, 0, Doc.Cols - 1), (int)Math.Clamp(t.Y, 0, Doc.Rows - 1)];
+            if (!seen) continue;
+            var cc = new Point(rect.X + (t.X + t.Cells / 2.0) * sx, rect.Y + (t.Y + t.Cells / 2.0) * sy);
+            double rr = Math.Max(2.5, t.Cells * sx * 0.4);
+            ctx.DrawEllipse(new SolidColorBrush(Pal.C(t.Color)), null, cc, rr, rr);
+        }
+
+        // рамка видимой области экрана
+        var vx1 = rect.X + (-_off.X / (Doc.GridSize * Zoom)) * sx;
+        var vy1 = rect.Y + (-_off.Y / (Doc.GridSize * Zoom)) * sy;
+        var vx2 = rect.X + ((Bounds.Width - _off.X) / (Doc.GridSize * Zoom)) * sx;
+        var vy2 = rect.Y + ((Bounds.Height - _off.Y) / (Doc.GridSize * Zoom)) * sy;
+        var view = new Rect(vx1, vy1, Math.Max(1, vx2 - vx1), Math.Max(1, vy2 - vy1)).Intersect(rect);
+        if (view.Width > 2 && view.Height > 2)
+            ctx.DrawRectangle(null, new Pen(new SolidColorBrush(Color.FromArgb(180, 239, 227, 210)), 1), view);
+
+        var label = new FormattedText("экран игроков", CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+            new Typeface("Segoe UI"), 9.5, new SolidColorBrush(Pal.C("#9c8b78")));
+        ctx.DrawText(label, new Point(rect.X + 8, rect.Y + 4));
     }
 
     /// <summary>Размер кисти тумана в клетках (радиус).</summary>
