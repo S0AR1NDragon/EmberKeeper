@@ -248,6 +248,9 @@
                 <StackPanel Grid.Column="1">
                   <TextBlock Classes="lbl" Text="ПО Y" />
                   <NumericUpDown x:Name="EdGridOffY" Minimum="-3" Maximum="3" Increment="0.05" FormatString="0.00" HorizontalAlignment="Stretch" ValueChanged="OnGridOffY" />
+
+              <Button Classes="tool" x:Name="BtnCalib" Content="Калибровать сетку (2 клика)" Margin="0,8,0,0" HorizontalAlignment="Stretch" Click="OnCalibrate" />
+              <TextBlock x:Name="CalibHint" Foreground="{DynamicResource C_9c8b78}" FontSize="11" TextWrapping="Wrap" Text="Кликните два угла одной клетки на фоне" IsVisible="False" />
                 </StackPanel>
               </Grid>
 

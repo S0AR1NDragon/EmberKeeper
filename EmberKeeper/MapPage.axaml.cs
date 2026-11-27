@@ -69,6 +69,28 @@ public partial class MapPage : UserControl
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_CALIB") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    double z = Math.Max(0.2, _view.Zoom);
+                    var a = new Avalonia.Point(300, 300);
+                    var b = new Avalonia.Point(300 + 64 * z, 300);
+                    ApplyCalibration(a, b);
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(AppContext.BaseDirectory, "calib_test.txt"),
+                        $"cell={_doc.GridSize} cols={_doc.Cols} rows={_doc.Rows} offX={_doc.GridOffX:F2} offY={_doc.GridOffY:F2} zoom={z:F2}");
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(AppContext.BaseDirectory, "calib_test.txt"), "ошибка: " + ex.Message);
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_PROP") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -171,6 +193,7 @@ public partial class MapPage : UserControl
         _view.Undo = UndoLast;
         _view.PropPicked = SyncProp;
         _view.TemplatePicked = SyncTemplate;
+        _view.Calibrated = ApplyCalibration;
         _view.Changed += Sync;
         BattleState.Changed += OnBattleChanged;
         OnBattleChanged();
@@ -296,6 +319,7 @@ public partial class MapPage : UserControl
         view.Undo = UndoLast;
         view.PropPicked = SyncProp;
         view.TemplatePicked = SyncTemplate;
+        view.Calibrated = ApplyCalibration;
         view.FogBrush = Math.Clamp((int)(EdFogBrush?.Value ?? 1), 1, 6);
         view.Changed += Sync;
         view.Tool = tool;
@@ -578,6 +602,7 @@ public partial class MapPage : UserControl
     {
         if (_syncing) return;
         _doc.GridSize = (int)(EdGridPx.Value ?? 64);
+        FitCellsToBackground();
         SaveAll();
         _view.InvalidateVisual();
     }
@@ -1026,6 +1051,56 @@ public partial class MapPage : UserControl
         }
 
         _view.SetBackground(path);
+        SaveAll();
+        Sync();
+        _view.InvalidateVisual();
+    }
+
+    /// <summary>Пересчитать число клеток так, чтобы 1 клетка = N px картинки (без растяжения).</summary>
+    private void FitCellsToBackground()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_doc.Background) || !System.IO.File.Exists(_doc.Background)) return;
+            var sz = ImageSize(_doc.Background);
+            int cell = Math.Max(16, _doc.GridSize);
+            _doc.Cols = Math.Clamp((int)Math.Round(sz.Width / (double)cell), 5, 400);
+            _doc.Rows = Math.Clamp((int)Math.Round(sz.Height / (double)cell), 5, 400);
+            _doc.EnsureVision();
+            if (_view.Bounds.Width > 10) _view.ResetView(_view.Bounds.Width, _view.Bounds.Height);
+        }
+        catch { }
+    }
+
+    private void OnCalibrate(object? sender, RoutedEventArgs e)
+    {
+        if (BtnCalib == null) return;
+        BtnCalib.Content = "Кликните два угла клетки";
+        if (CalibHint != null) CalibHint.IsVisible = true;
+        _view.StartCalibration();
+    }
+
+    /// <summary>Применить калибровку по двум кликам: размер клетки и сдвиг сетки.</summary>
+    private void ApplyCalibration(Avalonia.Point a, Avalonia.Point b)
+    {
+        if (BtnCalib != null) BtnCalib.Content = "Калибровать сетку (2 клика)";
+        if (CalibHint != null) CalibHint.IsVisible = false;
+
+        double dx = b.X - a.X, dy = b.Y - a.Y;
+        double distPx = Math.Sqrt(dx * dx + dy * dy) / Math.Max(0.05, _view.Zoom);
+        int cell = Math.Clamp((int)Math.Round(distPx), 16, 400);
+
+        _doc.GridSize = cell;
+        FitCellsToBackground();
+
+        // сдвиг: первая точка должна стать углом клетки
+        double g = cell * _view.Zoom;
+        var off = _view.Offset;
+        double gx = (a.X - off.X) / g;
+        double gy = (a.Y - off.Y) / g;
+        _doc.GridOffX = Math.Clamp(Math.Round(gx) - gx, -1, 1);
+        _doc.GridOffY = Math.Clamp(Math.Round(gy) - gy, -1, 1);
+
         SaveAll();
         Sync();
         _view.InvalidateVisual();

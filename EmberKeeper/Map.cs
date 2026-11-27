@@ -231,6 +231,19 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     public string PropIcon { get; set; } = "box";
     /// <summary>Выбранный предмет.</summary>
     public Prop? SelectedProp { get; set; }
+    /// <summary>Калибровка сетки по двум точкам (экранные координаты).</summary>
+    public Action<Point, Point>? Calibrated;
+    private Point? _calibA;
+    /// <summary>Текущее смещение вида (для калибровки).</summary>
+    public Point Offset => _off;
+
+    public void StartCalibration()
+    {
+        _calibA = null;
+        Tool = "calib";
+        InvalidateVisual();
+    }
+
     /// <summary>Выбранный шаблон.</summary>
     public Template? SelectedTemplate { get; set; }
     /// <summary>Шаблон выбран — обновить панель.</summary>
@@ -1093,6 +1106,24 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             _panStart = p;
             _offStart = _off;
             e.Pointer.Capture(this);
+            return;
+        }
+
+        if (Tool == "calib")
+        {
+            if (_calibA == null)
+            {
+                _calibA = p;
+                InvalidateVisual();
+            }
+            else
+            {
+                var a = _calibA.Value;
+                _calibA = null;
+                Tool = "select";
+                Calibrated?.Invoke(a, p);
+                InvalidateVisual();
+            }
             return;
         }
 
