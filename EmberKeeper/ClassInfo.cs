@@ -198,9 +198,33 @@ public static class ClassInfo
     }
 
     /// <summary>Текст класса без описаний подклассов (на dnd.su они идут следом).</summary>
+    /// <summary>Строка похожа на кусок таблицы (много цифр, заголовки колонок).</summary>
+    private static bool IsTableDump(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line)) return false;
+        if (line.Contains("Бонус владения") || line.Contains("Классовые умения") ||
+            line.Contains("Ячейки заклинаний на") || line.Contains("Очки чародейства") ||
+            line.Contains("Известные заговоры") || line.Contains("Подготовленные заклинания"))
+            return true;
+        int digits = line.Count(char.IsDigit);
+        int letters = line.Count(char.IsLetter);
+        if (letters == 0 && digits > 0) return true;
+        if (digits > 0 && digits * 3 > letters) return true;
+        return false;
+    }
+
     public static string ClassText(LibEntry x)
     {
         var h = x.H ?? "";
+        // убираем вставки таблиц прогрессии из текста
+        var lines = h.Replace("\r\n", "\n").Split('\n');
+        var kept = new System.Collections.Generic.List<string>();
+        foreach (var line in lines)
+        {
+            if (IsTableDump(line.Trim())) continue;
+            kept.Add(line);
+        }
+        h = string.Join("\n", kept);
         int cut = -1;
 
         // первое умение по уровням
