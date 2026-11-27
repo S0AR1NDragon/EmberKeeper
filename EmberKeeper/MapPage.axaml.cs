@@ -71,6 +71,62 @@ public partial class MapPage : UserControl
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_MOVE") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    void Snap(string name)
+                    {
+                        var v = _view;
+                        int w = Math.Max(50, (int)v.Bounds.Width);
+                        int h = Math.Max(50, (int)v.Bounds.Height);
+                        var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(new Avalonia.PixelSize(w, h));
+                        rtb.Render(v);
+                        rtb.Save(System.IO.Path.Combine(AppContext.BaseDirectory, name));
+                    }
+                    // ждём, пока закончится автоподгонка вида
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        try
+                        {
+                            Snap("move_before.png");
+                            int oldCell = _doc.GridSize;
+                            _doc.GridSize = 100;
+                            _view.ResetVisionCache();
+                            _view.InvalidateVisual();
+                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                            {
+                                try
+                                {
+                                    Snap("move_after_grid100.png");
+                                    _doc.GridSize = oldCell;
+                                    _view.InvalidateVisual();
+                                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                                    {
+                                        try
+                                        {
+                                            Snap("move_after_restore.png");
+                                            System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "move_test.txt"),
+                                                $"cell {oldCell}->100->{_doc.GridSize}; bgScale={_doc.BgScale:F4}; cols={_doc.Cols}; zoom={_view.Zoom:F3}");
+                                        }
+                                        catch (Exception e3) { System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "move_test.txt"), "e3 " + e3.Message); }
+                                    }, Avalonia.Threading.DispatcherPriority.Background);
+                                }
+                                catch (Exception e2) { System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "move_test.txt"), "e2 " + e2.Message); }
+                            }, Avalonia.Threading.DispatcherPriority.Background);
+                        }
+                        catch (Exception e1) { System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "move_test.txt"), "e1 " + e1.Message); }
+                    }, Avalonia.Threading.DispatcherPriority.Background);
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "move_test.txt"), "ошибка: " + ex.Message);
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_GA") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -535,6 +591,7 @@ public partial class MapPage : UserControl
 
     private void Sync()
     {
+        EnsureBgScale();
         _syncing = true;
         var sel = _view.Selected;
 

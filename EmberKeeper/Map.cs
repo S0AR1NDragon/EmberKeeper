@@ -283,6 +283,8 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     private int _gaOrigCols, _gaOrigRows;
     private Rect _gaDoneRect, _gaCancelRect;
     private bool _gaDragging;
+    private Point _gaViewOff;
+    private double _gaViewZoom;
 
     public void StartGridAdjust()
     {
@@ -308,6 +310,8 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         _gaY = (rc + Doc.GridOffY) * cell;
         _gaW = cell;
         _gaH = cell;
+        _gaViewOff = _off;
+        _gaViewZoom = Zoom;
         Focus();
         InvalidateVisual();
     }
@@ -463,6 +467,8 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         double qy = _gaY / cell;
         Doc.GridOffY = qy - Math.Floor(qy);
 
+        _off = _gaViewOff;
+        Zoom = _gaViewZoom;
         ResetVisionCache();
         Changed?.Invoke();
         InvalidateVisual();
