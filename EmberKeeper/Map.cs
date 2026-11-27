@@ -279,6 +279,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     private int _gaOrigCell;
     private double _gaOrigOffX, _gaOrigOffY;
     private int _gaOrigCols, _gaOrigRows;
+    private Rect _gaDoneRect, _gaCancelRect;
 
     public void StartGridAdjust()
     {
@@ -291,9 +292,13 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         _gaOrigRows = Doc.Rows;
 
         double cell = Math.Max(16, Doc.GridSize);
-        double cx = (Bounds.Width / 2 - _off.X) / Zoom;
-        double cy = (Bounds.Height / 2 - _off.Y) / Zoom;
-        // выравниваем по линиям текущей сетки: линии в (c+off)*cell
+        bool onMap = _lastPointer.X > 0 && _lastPointer.Y > 0 &&
+                     _lastPointer.X < Bounds.Width && _lastPointer.Y < Bounds.Height;
+        double sx = onMap ? _lastPointer.X : Bounds.Width / 2;
+        double sy = onMap ? _lastPointer.Y : Bounds.Height / 2;
+        double cx = (sx - _off.X) / Zoom;
+        double cy = (sy - _off.Y) / Zoom;
+
         int cc = (int)Math.Floor(cx / cell - Doc.GridOffX);
         int rc = (int)Math.Floor(cy / cell - Doc.GridOffY);
         _gaX = (cc + Doc.GridOffX) * cell;
@@ -385,10 +390,11 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         {
             double cx = (p.X - _off.X) / Zoom;
             double cy = (p.Y - _off.Y) / Zoom;
-            _gaX = Math.Min(_gaAnchorX, cx);
-            _gaY = Math.Min(_gaAnchorY, cy);
-            _gaW = Math.Max(6, Math.Abs(cx - _gaAnchorX));
-            _gaH = Math.Max(6, Math.Abs(cy - _gaAnchorY));
+            double side = Math.Max(6, Math.Max(Math.Abs(cx - _gaAnchorX), Math.Abs(cy - _gaAnchorY)));
+            _gaX = cx < _gaAnchorX ? _gaAnchorX - side : _gaAnchorX;
+            _gaY = cy < _gaAnchorY ? _gaAnchorY - side : _gaAnchorY;
+            _gaW = side;
+            _gaH = side;
         }
         ApplyGridRect();
     }
@@ -806,17 +812,32 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             var ga = new Point(_off.X + _gaX * Zoom, _off.Y + _gaY * Zoom);
             var gb = new Point(ga.X + _gaW * Zoom, ga.Y + _gaH * Zoom);
             var garect = new Rect(ga, gb);
-            ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(55, 240, 194, 123)), garect);
+            ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(95, 240, 194, 123)), garect);
             ctx.DrawRectangle(null, new Pen(new SolidColorBrush(Color.FromArgb(235, 240, 194, 123)), 2), garect);
             foreach (var hpt in new[] { ga, new Point(gb.X, ga.Y), gb, new Point(ga.X, gb.Y) })
                 ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(240, 240, 194, 123)),
-                    new Rect(hpt.X - 4, hpt.Y - 4, 8, 8));
-            var hint = new FormattedText("подгоните клетку мышью · Enter — готово · Esc — отмена",
+                    new Rect(hpt.X - 5, hpt.Y - 5, 10, 10));
+            var hint = new FormattedText("перетащите угол клетки под размер сетки на фоне",
                 CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-                new Typeface("Segoe UI"), 12, new SolidColorBrush(Pal.C("#f6e7cf")));
-            var hbg = new Rect(Bounds.Width / 2 - hint.Width / 2 - 10, 12, hint.Width + 20, hint.Height + 10);
-            ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(210, 20, 16, 12)), hbg);
-            ctx.DrawText(hint, new Point(hbg.X + 10, hbg.Y + 5));
+                new Typeface("Segoe UI"), 12.5, new SolidColorBrush(Pal.C("#f6e7cf")));
+            var hbg = new Rect(Bounds.Width / 2 - hint.Width / 2 - 12, 12, hint.Width + 24, hint.Height + 12);
+            ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(220, 20, 16, 12)), hbg);
+            ctx.DrawText(hint, new Point(hbg.X + 12, hbg.Y + 6));
+
+            // экранные кнопки
+            double bw = 96, bh = 30;
+            _gaDoneRect = new Rect(Bounds.Width / 2 - bw - 6, Bounds.Height - bh - 14, bw, bh);
+            _gaCancelRect = new Rect(Bounds.Width / 2 + 6, Bounds.Height - bh - 14, bw, bh);
+            var gold = new SolidColorBrush(Pal.C("#cf9245"));
+            var dark = new SolidColorBrush(Color.FromArgb(235, 34, 27, 22));
+            ctx.DrawRectangle(gold, null, _gaDoneRect);
+            ctx.DrawRectangle(dark, null, _gaCancelRect);
+            var okT = new FormattedText("Готово", CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+                new Typeface("Segoe UI", FontStyle.Normal, FontWeight.Bold), 13, new SolidColorBrush(Pal.C("#241505")));
+            ctx.DrawText(okT, new Point(_gaDoneRect.Center.X - okT.Width / 2, _gaDoneRect.Center.Y - okT.Height / 2));
+            var noT = new FormattedText("Отмена", CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+                new Typeface("Segoe UI"), 13, new SolidColorBrush(Pal.C("#efe3d2")));
+            ctx.DrawText(noT, new Point(_gaCancelRect.Center.X - noT.Width / 2, _gaCancelRect.Center.Y - noT.Height / 2));
         }
 
         if (_rulerStart is Point rs)
@@ -1341,6 +1362,20 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
         if (GridAdjusting)
         {
+            if (_gaDoneRect.Contains(p))
+            {
+                GridAdjustRelease();
+                StopGridAdjust(false);
+                Save?.Invoke();
+                e.Handled = true;
+                return;
+            }
+            if (_gaCancelRect.Contains(p))
+            {
+                StopGridAdjust(true);
+                e.Handled = true;
+                return;
+            }
             GridAdjustPress(p);
             e.Pointer.Capture(this);
             return;
