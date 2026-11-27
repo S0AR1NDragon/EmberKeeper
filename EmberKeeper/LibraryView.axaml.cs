@@ -66,6 +66,12 @@ public partial class LibraryView : UserControl
                 if (ci >= 0) LibList.SelectedIndex = ci;
                 _tab = parts.Length > 3 ? string.Join(":", parts.Skip(3)) : "features";
                 RenderDetail();
+                if (_tab.EndsWith(":end", StringComparison.Ordinal) || parts.Length > 4 && parts[^1] == "end")
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                        DetailScroll.Offset = new Avalonia.Vector(0, DetailScroll.Extent.Height),
+                        Avalonia.Threading.DispatcherPriority.Background);
+                }
             }
         }
         else if (libTest == "druid2024")
@@ -383,7 +389,7 @@ public partial class LibraryView : UserControl
 
         if (_cat == 6)
         {
-            DetailHost.Children.Add(new Border { Height = 40 });
+            DetailHost.Children.Add(new Border { Height = 120 });
 
             var btn = new Button
             {
@@ -554,6 +560,7 @@ public partial class LibraryView : UserControl
             else
                 DetailHost.Children.Add(FeatureRow(level, title, body, isSub));
         }
+        DetailHost.Children.Add(new Border { Height = 160 });
     }
 
     /// <summary>Заглушка на месте умения подкласса, пока подкласс не выбран.</summary>
