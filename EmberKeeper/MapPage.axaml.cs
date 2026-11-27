@@ -29,7 +29,7 @@ public partial class MapPage : UserControl
     {
         _book = MapStore.Load();
         _doc = _book.Maps[_book.Active];
-        _view = new MapView(_doc) { DoubleClick = () => OpenCurrent() };
+        _view = new MapView(_doc) { DoubleClick = () => OpenQuickForSelected() };
         InitializeComponent();
 
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_PREVIEW") == "1")
@@ -67,6 +67,30 @@ public partial class MapPage : UserControl
                 {
                     System.IO.File.WriteAllText(
                         System.IO.Path.Combine(AppContext.BaseDirectory, "undo_test.txt"), "ошибка: " + ex.Message);
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_QUICK") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    var heroes = HeroStore.Load();
+                    var h = heroes.FirstOrDefault();
+                    if (h == null)
+                    {
+                        h = new Hero { Id = "quick-hero", Name = "Тобиас Фибс", Race = "Полурослик", Class = "Плут", Level = "3", Hp = 21, MaxHp = 21, Ac = 15, Dex = 16 };
+                        heroes.Add(h);
+                        HeroStore.Save(heroes);
+                    }
+                    AddHero(h);
+                    OpenQuickForSelected();
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "quick_test.txt"), "ошибка: " + ex.Message);
                 }
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
@@ -528,7 +552,7 @@ public partial class MapPage : UserControl
         var tpl = _view?.TplKind ?? "circle";
         var prop = _view?.PropIcon ?? "box";
 
-        var view = new MapView(doc) { DoubleClick = () => OpenCurrent() };
+        var view = new MapView(doc) { DoubleClick = () => OpenQuickForSelected() };
         view.Save = SaveAll;
         view.BeforeChange = Snapshot;
         view.Undo = UndoLast;
@@ -1226,6 +1250,38 @@ public partial class MapPage : UserControl
     /* ---------------- открытие листов ---------------- */
 
     private void OnOpenSheet(object? sender, RoutedEventArgs e) => OpenCurrent();
+
+    /// <summary>Быстрый лист поверх карты (двойной клик по токену).</summary>
+    private void OpenQuickForSelected()
+    {
+        var t = _view?.Selected;
+        if (t == null) return;
+
+        if (t.Type == "mob")
+        {
+            OpenCurrent();
+            return;
+        }
+
+        Hero? hero = null;
+        try
+        {
+            var heroes = HeroStore.Load();
+            hero = heroes.FirstOrDefault(h => h.Id == t.Ref)
+                   ?? heroes.FirstOrDefault(h => string.Equals(h.Name, t.Name, StringComparison.CurrentCultureIgnoreCase));
+        }
+        catch { }
+
+        var win = new QuickTokenSheet(t, hero, () =>
+        {
+            SaveAll();
+            Live.RaiseMapChanged();
+            _view.InvalidateVisual();
+            Sync();
+        });
+        var owner = TopLevel.GetTopLevel(this) as Window;
+        if (owner != null) win.ShowDialog(owner); else win.Show();
+    }
 
     private void OpenCurrent()
     {
