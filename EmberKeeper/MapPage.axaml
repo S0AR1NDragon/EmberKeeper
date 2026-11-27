@@ -178,6 +178,14 @@
                 <Button Classes="tool" Content="Удалить" Click="OnDeleteToken" />
               </WrapPanel>
               <Button x:Name="OpenBtn" Classes="goldbtn" Content="Открыть лист" Click="OnOpenSheet" Margin="0,8,0,0" HorizontalAlignment="Stretch" />
+
+              <StackPanel x:Name="PropPanel" Spacing="6" Margin="0,16,0,0">
+                <TextBlock Classes="sec" Text="Предмет" />
+                <TextBlock x:Name="PropName" Foreground="{DynamicResource C_f6e7cf}" FontSize="13" FontWeight="SemiBold" Text="Выберите предмет на карте" TextWrapping="Wrap" />
+                <CheckBox x:Name="CbPropAlways" Content="Виден всегда (даже вне зрения)" Foreground="{DynamicResource C_efe3d2}" IsEnabled="False" IsCheckedChanged="OnPropFlagsToggled" />
+                <CheckBox x:Name="CbPropHidden" Content="Скрыт от игроков" Foreground="{DynamicResource C_efe3d2}" IsEnabled="False" IsCheckedChanged="OnPropFlagsToggled" />
+                <Button Classes="tool" x:Name="BtnDeleteProp" Content="Удалить предмет" IsEnabled="False" Click="OnDeleteProp" />
+              </StackPanel>
             </StackPanel>
 
             <!-- КАРТА -->

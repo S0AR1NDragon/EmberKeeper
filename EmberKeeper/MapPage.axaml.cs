@@ -151,6 +151,7 @@ public partial class MapPage : UserControl
         _view.Save = SaveAll;
         _view.BeforeChange = Snapshot;
         _view.Undo = UndoLast;
+        _view.PropPicked = SyncProp;
         _view.Changed += Sync;
         BattleState.Changed += OnBattleChanged;
         OnBattleChanged();
@@ -274,6 +275,7 @@ public partial class MapPage : UserControl
         view.Save = SaveAll;
         view.BeforeChange = Snapshot;
         view.Undo = UndoLast;
+        view.PropPicked = SyncProp;
         view.FogBrush = Math.Clamp((int)(EdFogBrush?.Value ?? 1), 1, 6);
         view.Changed += Sync;
         view.Tool = tool;
@@ -600,6 +602,46 @@ public partial class MapPage : UserControl
     }
 
     /* ---------------- инструменты ---------------- */
+
+    /// <summary>Обновить панель предмета.</summary>
+    private void SyncProp()
+    {
+        var pr = _view?.SelectedProp;
+        bool has = pr != null;
+        if (PropName != null) PropName.Text = has ? pr!.Name : "Выберите предмет на карте";
+        if (CbPropAlways != null)
+        {
+            _syncing = true;
+            CbPropAlways.IsChecked = has && pr!.AlwaysVisible;
+            CbPropHidden.IsChecked = has && pr!.Hidden;
+            _syncing = false;
+            CbPropAlways.IsEnabled = has;
+            CbPropHidden.IsEnabled = has;
+        }
+        if (BtnDeleteProp != null) BtnDeleteProp.IsEnabled = has;
+    }
+
+    private void OnPropFlagsToggled(object? sender, RoutedEventArgs e)
+    {
+        if (_syncing) return;
+        var pr = _view?.SelectedProp;
+        if (pr == null) return;
+        pr.AlwaysVisible = CbPropAlways.IsChecked == true;
+        pr.Hidden = CbPropHidden.IsChecked == true;
+        SaveAll();
+        _view!.InvalidateVisual();
+    }
+
+    private void OnDeleteProp(object? sender, RoutedEventArgs e)
+    {
+        var pr = _view?.SelectedProp;
+        if (pr == null) return;
+        _doc.Props.Remove(pr);
+        _view!.SelectedProp = null;
+        SyncProp();
+        SaveAll();
+        _view!.InvalidateVisual();
+    }
 
     private void OnPropPick(object? sender, SelectionChangedEventArgs e)
     {
