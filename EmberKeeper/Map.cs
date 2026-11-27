@@ -417,7 +417,6 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
     public void GridAdjustRelease()
     {
-        ApplyGridRect();
         InvalidateVisual();
     }
 
@@ -426,8 +425,15 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     {
         if (!_gaDragging) return;
         _gaDragging = false;
-        ApplyGridRect();
         InvalidateVisual();
+    }
+
+    /// <summary>Применить подобранную клетку и выйти из режима.</summary>
+    public void CommitGridAdjust()
+    {
+        ApplyGridRect();
+        StopGridAdjust(false);
+        Save?.Invoke();
     }
 
     public bool IsGridDragging => _gaDragging;
@@ -467,8 +473,6 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         double qy = _gaY / cell;
         Doc.GridOffY = qy - Math.Floor(qy);
 
-        _off = _gaViewOff;
-        Zoom = _gaViewZoom;
         ResetVisionCache();
         Changed?.Invoke();
         InvalidateVisual();
@@ -854,6 +858,22 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         if (!PlayerMode) DrawMinimap(ctx);
 
 // линейка
+        // предпросмотр новой сетки (документ не меняется до «Готово»)
+        if (GridAdjusting && _gaW > 4)
+        {
+            var prevPen = new Pen(new SolidColorBrush(Color.FromArgb(90, 126, 170, 210)), 1);
+            double gx0 = _off.X + _gaX * Zoom;
+            double gy0 = _off.Y + _gaY * Zoom;
+            double step = _gaW * Zoom;
+            if (step > 3)
+            {
+                for (double x = gx0 % step; x < Bounds.Width; x += step)
+                    ctx.DrawLine(prevPen, new Point(x, 0), new Point(x, Bounds.Height));
+                for (double y = gy0 % step; y < Bounds.Height; y += step)
+                    ctx.DrawLine(prevPen, new Point(0, y), new Point(Bounds.Width, y));
+            }
+        }
+
         // прямоугольник подгонки клетки
         if (GridAdjusting)
         {
@@ -1341,9 +1361,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         {
             if (e.Key == Key.Enter)
             {
-                ApplyGridRect();
-                StopGridAdjust(false);
-                Save?.Invoke();
+                CommitGridAdjust();
                 e.Handled = true;
                 return;
             }
@@ -1417,7 +1435,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
         if (GridAdjusting)
         {
-            if (_gaDoneRect.Contains(p)) { GridAdjustRelease(); StopGridAdjust(false); Save?.Invoke(); e.Handled = true; return; }
+            if (_gaDoneRect.Contains(p)) { CommitGridAdjust(); e.Handled = true; return; }
             if (_gaCancelRect.Contains(p)) { StopGridAdjust(true); e.Handled = true; return; }
             if (BeginGridDrag(p))
                 e.Pointer.Capture(this);

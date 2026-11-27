@@ -134,19 +134,19 @@ public partial class MapPage : UserControl
                 try
                 {
                     _view.StartGridAdjust();
-                    double bgBefore = _doc.BgScale;
-                    int colsBefore = _doc.Cols;
+                    int before = _doc.GridSize;
+                    double bg0 = _doc.BgScale;
                     var r = _view.GetAdjustRectScreen();
-                    bool started = _view.BeginGridDrag(new Avalonia.Point(r.Right - 2, r.Bottom - 2));
+                    _view.BeginGridDrag(new Avalonia.Point(r.Right - 2, r.Bottom - 2));
                     _view.GridAdjustMove(new Avalonia.Point(r.Right + 58, r.Bottom + 58));
+                    int during = _doc.GridSize;
                     _view.EndGridDrag();
-                    double bgAfter = _doc.BgScale;
-                    int colsAfter = _doc.Cols;
-                    int cellAfter = _doc.GridSize;
-                    _view.StopGridAdjust(true);
-                    _view.StartGridAdjust();
+                    int afterRelease = _doc.GridSize;
+                    _view.CommitGridAdjust();
+                    int afterCommit = _doc.GridSize;
+                    double bg1 = _doc.BgScale;
                     System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "ga_test.txt"),
-                        $"bgBefore={bgBefore:F4} bgAfter={bgAfter:F4} colsBefore={colsBefore} colsAfter={colsAfter} cellAfter={cellAfter} started={started}");
+                        $"before={before} during={during} afterRelease={afterRelease} afterCommit={afterCommit} bg={bg0:F4}->{bg1:F4} adjusting={_view.GridAdjusting}");
                 }
                 catch (Exception ex)
                 {
@@ -842,7 +842,7 @@ public partial class MapPage : UserControl
 
     private void OnGridAdjustDone(object? sender, RoutedEventArgs e)
     {
-        _view.StopGridAdjust(false);
+        _view.CommitGridAdjust();
         if (GridAdjustActions != null) GridAdjustActions.IsVisible = false;
         if (BtnManualGrid != null) BtnManualGrid.Content = "Настроить вручную (мышью)";
         SaveAll();
