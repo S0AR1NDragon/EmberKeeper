@@ -26,6 +26,8 @@ public sealed class Token
     public string AuraColor { get; set; } = "#70a3a2";
     public bool LightOn { get; set; }
     public double LightFt { get; set; } = 30;
+    /// <summary>Ночное зрение/чувства, футов (0 — нет).</summary>
+    public double VisionFt { get; set; }
     public int Hp { get; set; } = 10;
     public int MaxHp { get; set; } = 10;
     public int Init { get; set; }
@@ -76,7 +78,11 @@ public sealed class MapDoc
     public List<Template> Templates { get; set; } = new();
     public List<Prop> Props { get; set; } = new();
     public bool FogOn { get; set; } = true;
+    /// <summary>Считать обзор по свету и ночному зрению (иначе туман только вручную).</summary>
+    public bool VisionMode { get; set; } = true;
     public List<bool> Fog { get; set; } = new();
+    /// <summary>Игроки уже видели эту клетку.</summary>
+    public List<bool> Explored { get; set; } = new();
     public string Background { get; set; } = "";
     public string GridShape { get; set; } = "square";
     public bool GridVisible { get; set; } = true;
@@ -98,18 +104,35 @@ public sealed class MapDoc
 
         if (d.Tokens.Count == 0)
         {
-            d.Tokens.Add(new Token { Name = "Герой", X = 4, Y = 4, Color = "#d99b4a", Type = "player", Ref = "hero" });
+            d.Tokens.Add(new Token { Name = "Герой", X = 4, Y = 4, Color = "#d99b4a", Type = "player", Ref = "hero", LightOn = true, LightFt = 30 });
             d.Tokens.Add(new Token { Name = "Гоблин", X = 9, Y = 5, Color = "#7c2a2c", Hp = 7, MaxHp = 7, Init = 12, Type = "mob", Ref = "goblin" });
             d.Tokens.Add(new Token { Name = "Гоблин", X = 9, Y = 7, Color = "#7c2a2c", Hp = 7, MaxHp = 7, Init = 9, Type = "mob", Ref = "goblin" });
         }
 
-        int n = d.Cols * d.Rows;
-        if (d.Fog == null || d.Fog.Count != n)
-        {
-            d.Fog = new List<bool>(new bool[n]);
-            for (int i = 0; i < n; i++) d.Fog[i] = true;
-        }
+        d.EnsureVision();
         return d;
+    }
+
+    /// <summary>Выровнять массивы тумана и памяти под размер карты.</summary>
+    public void EnsureVision()
+    {
+        int n = Math.Max(1, Cols) * Math.Max(1, Rows);
+        if (Fog == null || Fog.Count != n) Fog = new List<bool>(new bool[n]);
+        if (Explored == null || Explored.Count != n) Explored = new List<bool>(new bool[n]);
+    }
+
+    public bool ExploredAt(int col, int row)
+    {
+        int idx = row * Cols + col;
+        if (Explored == null || idx < 0 || idx >= Explored.Count) return false;
+        return Explored[idx];
+    }
+
+    public void SetExplored(int col, int row)
+    {
+        int idx = row * Cols + col;
+        if (Explored == null || idx < 0 || idx >= Explored.Count) return;
+        Explored[idx] = true;
     }
 
     public bool FogAt(int col, int row)
@@ -312,14 +335,29 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
                 ctx.DrawLine(gridPen, new Point(ox, oy + r * g), new Point(ox + Doc.Cols * g, oy + r * g));
         }
 
-        // туман войны
+        // туман войны: темнота, освещённое/увиденное открывается
         if (Doc.FogOn)
         {
-            var fogBrush = new SolidColorBrush(Color.FromArgb(220, 8, 6, 5));
+            bool[,] vis = MapVision.Compute(Doc);
+            var darkBrush = new SolidColorBrush(Color.FromArgb(238, 6, 5, 4));
+            var memBrush = new SolidColorBrush(Color.FromArgb(150, 9, 7, 6));
+            bool exploredChanged = false;
+
             for (int r = 0; r < Doc.Rows; r++)
+            {
                 for (int c = 0; c < Doc.Cols; c++)
-                    if (!Doc.FogAt(c, r))
-                        ctx.FillRectangle(fogBrush, new Rect(ox + c * g, oy + r * g, g, g));
+                {
+                    if (vis[c, r])
+                    {
+                        if (!Doc.ExploredAt(c, r)) { Doc.SetExplored(c, r); exploredChanged = true; }
+                        continue;
+                    }
+                    // в памяти игроков клетка уже была — рисуем полумраком
+                    if (Doc.ExploredAt(c, r)) ctx.FillRectangle(memBrush, new Rect(ox + c * g, oy + r * g, g, g));
+                    else ctx.FillRectangle(darkBrush, new Rect(ox + c * g, oy + r * g, g, g));
+                }
+            }
+            if (exploredChanged) Save?.Invoke();
         }
 
         // шаблоны

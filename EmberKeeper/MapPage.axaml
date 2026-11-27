@@ -155,6 +155,11 @@
                 <NumericUpDown x:Name="EdLightFt" Grid.Column="1" Minimum="5" Maximum="200" Width="110" ValueChanged="OnLightFtChanged" />
               </Grid>
 
+              <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,6">
+                <TextBlock Classes="lbl" Text="НОЧНОЕ ЗРЕНИЕ, ФТ" VerticalAlignment="Center" />
+                <NumericUpDown x:Name="EdVisionFt" Grid.Column="1" Minimum="0" Maximum="300" Width="110" ValueChanged="OnVisionFtChanged" />
+              </Grid>
+
               <CheckBox x:Name="CbHidden" Content="Скрыт от игроков" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnHiddenChanged" Margin="0,0,0,6" />
 
               <ComboBox x:Name="EdType" Margin="0,4,0,8" SelectedIndex="2" SelectionChanged="OnTypeChanged">
@@ -193,6 +198,11 @@
               <CheckBox x:Name="CbGridVisible" Content="Показывать сетку" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnGridVisibleChanged" />
               <CheckBox x:Name="CbSnap" Content="Привязка к клеткам" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnSnapChanged" />
               <CheckBox x:Name="CbFog" Content="Туман войны" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnFogChanged" />
+
+              <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
+                <Button Classes="tool" Content="Открыть всё" Click="OnRevealAll" Margin="0,0,6,0" />
+                <Button Classes="tool" Content="Скрыть всё" Click="OnHideAll" />
+              </WrapPanel>
 
               <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
                 <Button Classes="tool" Content="Очистить стены" Click="OnClearWalls" />

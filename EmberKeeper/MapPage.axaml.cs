@@ -213,6 +213,7 @@ public partial class MapPage : UserControl
             EdAuraFt.Value = Math.Clamp((int)Math.Round(sel.AuraFt), 5, 200);
             CbLight.IsChecked = sel.LightOn;
             EdLightFt.Value = Math.Clamp((int)Math.Round(sel.LightFt), 5, 200);
+            EdVisionFt.Value = (decimal)Math.Clamp(sel.VisionFt, 0, 300);
             CbHidden.IsChecked = sel.Hidden;
             EdType.SelectedIndex = sel.Type switch { "player" => 0, "npc" => 1, _ => 2 };
             EdName.IsEnabled = true;
@@ -223,6 +224,7 @@ public partial class MapPage : UserControl
             EdAuraFt.IsEnabled = true;
             CbLight.IsEnabled = true;
             EdLightFt.IsEnabled = true;
+            EdVisionFt.IsEnabled = true;
             CbHidden.IsEnabled = true;
             EdType.IsEnabled = true;
             UpdateOpenButton();
@@ -237,6 +239,7 @@ public partial class MapPage : UserControl
             EdAuraFt.IsEnabled = false;
             CbLight.IsEnabled = false;
             EdLightFt.IsEnabled = false;
+            EdVisionFt.IsEnabled = false;
             CbHidden.IsEnabled = false;
             EdType.IsEnabled = false;
             OpenBtn.Content = "Выберите токен";
@@ -314,6 +317,29 @@ public partial class MapPage : UserControl
     {
         if (_syncing || _view.Selected == null) return;
         _view.Selected.LightOn = CbLight.IsChecked == true;
+        SaveAll();
+        _view.InvalidateVisual();
+    }
+
+    private void OnVisionFtChanged(object? sender, NumericUpDownValueChangedEventArgs e)
+    {
+        if (_syncing || _view.Selected == null) return;
+        _view.Selected.VisionFt = Math.Max(0, (double)(EdVisionFt.Value ?? 0));
+        SaveAll();
+    }
+
+    private void OnRevealAll(object? sender, RoutedEventArgs e)
+    {
+        for (int c = 0; c < _doc.Cols; c++)
+            for (int r = 0; r < _doc.Rows; r++) _doc.SetFog(c, r, true);
+        SaveAll();
+        _view.InvalidateVisual();
+    }
+
+    private void OnHideAll(object? sender, RoutedEventArgs e)
+    {
+        for (int c = 0; c < _doc.Cols; c++)
+            for (int r = 0; r < _doc.Rows; r++) _doc.SetFog(c, r, false);
         SaveAll();
         _view.InvalidateVisual();
     }
@@ -523,6 +549,7 @@ public partial class MapPage : UserControl
             MaxHp = h.MaxHp,
             Ac = h.Ac,
             Init = h.Init,
+            VisionFt = h.Darkvision,
             Notes = string.Join(" · ", new[] { h.Class, h.Race }.Where(x => !string.IsNullOrWhiteSpace(x))),
         };
         _doc.Tokens.Add(token);
@@ -598,8 +625,35 @@ public partial class MapPage : UserControl
         var owner = TopLevel.GetTopLevel(this) as Window;
         var path = await FilePickerDialog.Pick(owner, "Выбрать фон карты", "*.png;*.jpg;*.jpeg;*.bmp;*.webp;*.gif");
         if (string.IsNullOrEmpty(path)) return;
+
+        var img = ImageCache.Get(path, 4000);
+        if (img != null)
+        {
+            var dlg = new BackgroundPreviewDialog(path, img.PixelSize, _doc);
+            bool ok = owner != null ? await dlg.ShowDialog<bool>(owner) : false;
+            if (!ok) return;
+            if (dlg.FitMap) FitMapToImage(img.PixelSize);
+        }
+
         _view.SetBackground(path);
         SaveAll();
+        Sync();
+        _view.InvalidateVisual();
+    }
+
+    /// <summary>Размер карты под картинку: клетки считаются от её пикселей.</summary>
+    private void FitMapToImage(PixelSize size)
+    {
+        int cell = Math.Max(32, _doc.GridSize);
+        int cols = Math.Clamp((int)Math.Round(size.Width / (double)cell), 5, 300);
+        int rows = Math.Clamp((int)Math.Round(size.Height / (double)cell), 5, 300);
+        _doc.Cols = cols;
+        _doc.Rows = rows;
+        _doc.EnsureVision();
+
+        double w = _view.Bounds.Width > 10 ? _view.Bounds.Width : 900;
+        double h = _view.Bounds.Height > 10 ? _view.Bounds.Height : 600;
+        _view.ResetView(w, h);
     }
 
     private void OnClearBackground(object? sender, RoutedEventArgs e)
