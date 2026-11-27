@@ -105,9 +105,21 @@ public sealed class GlossaryPage : UserControl
         string q = _search.Text?.Trim().ToLowerInvariant() ?? "";
         var found = Entries.Where(e => e.Term.ToLowerInvariant().Contains(q) || e.Desc.ToLowerInvariant().Contains(q)).ToList();
 
+        if (found.Count == 0)
+        {
+            _desc.Text = "Ничего не найдено. Попробуйте другой запрос.";
+            return;
+        }
+
+        // по умолчанию показываем первое состояние, чтобы правая часть не была пустой
+        _desc.Text = found[0].Desc;
+
+        bool first = true;
         foreach (var (term, desc) in found)
         {
             var d = desc;
+            bool isFirst = first;
+            first = false;
             var btn = new Button
             {
                 Content = term,
@@ -119,6 +131,11 @@ public sealed class GlossaryPage : UserControl
                 Padding = new Thickness(12, 9),
                 HorizontalContentAlignment = HorizontalAlignment.Left,
             };
+            if (isFirst)
+            {
+                btn.Background = Pal.B("#2a211a");
+                btn.BorderBrush = Pal.B("#d99b4a");
+            }
             btn.Click += (_, _) => _desc.Text = d;
             _list.Children.Add(btn);
         }
