@@ -302,12 +302,40 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     {
         var a = new Point(_off.X + _gaX * Zoom, _off.Y + _gaY * Zoom);
         var b = new Point(a.X + _gaW * Zoom, a.Y + _gaH * Zoom);
-        bool inside = p.X >= a.X - 8 && p.X <= b.X + 8 && p.Y >= a.Y - 8 && p.Y <= b.Y + 8;
+        bool inside = p.X >= a.X && p.X <= b.X && p.Y >= a.Y && p.Y <= b.Y;
+
+        // попали в угол — растягиваем от противоположного угла
+        var corners = new[] { a, new Point(b.X, a.Y), b, new Point(a.X, b.Y) };
+        int hit = -1;
+        double best = 14;
+        for (int i = 0; i < 4; i++)
+        {
+            double d = Math.Sqrt((p.X - corners[i].X) * (p.X - corners[i].X) + (p.Y - corners[i].Y) * (p.Y - corners[i].Y));
+            if (d < best) { best = d; hit = i; }
+        }
+
         _gaStartMouse = p;
         _gaStartX = _gaX; _gaStartY = _gaY; _gaStartW = _gaW; _gaStartH = _gaH;
-        _gaMoving = inside;
-        if (!inside)
+        _gaMoving = hit < 0 && inside;
+
+        if (hit >= 0)
         {
+            // противоположный угол становится неподвижным
+            var opp = hit switch
+            {
+                0 => b,
+                1 => new Point(a.X, b.Y),
+                2 => a,
+                _ => new Point(b.X, a.Y),
+            };
+            _gaAnchorX = (opp.X - _off.X) / Zoom;
+            _gaAnchorY = (opp.Y - _off.Y) / Zoom;
+            _gaX = Math.Min(_gaAnchorX, (p.X - _off.X) / Zoom);
+            _gaY = Math.Min(_gaAnchorY, (p.Y - _off.Y) / Zoom);
+        }
+        else if (!inside)
+        {
+            // клик вне клетки — начинаем новую
             _gaAnchorX = (p.X - _off.X) / Zoom;
             _gaAnchorY = (p.Y - _off.Y) / Zoom;
             _gaX = _gaAnchorX; _gaY = _gaAnchorY;
