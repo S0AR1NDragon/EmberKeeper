@@ -71,6 +71,25 @@ public partial class MapPage : UserControl
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_GA") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    _view.StartGridAdjust();
+                    _view.SetGridRect(120, 90, 70, 70);
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(AppContext.BaseDirectory, "ga_test.txt"),
+                        $"cell={_doc.GridSize} offX={_doc.GridOffX:F2} offY={_doc.GridOffY:F2} cols={_doc.Cols} rows={_doc.Rows}");
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "ga_test.txt"), "ошибка: " + ex.Message);
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_BIG") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -728,7 +747,12 @@ public partial class MapPage : UserControl
         SaveAll();
     }
 
-    private async void OnManualGrid(object? sender, RoutedEventArgs e)
+    private void OnManualGrid(object? sender, RoutedEventArgs e)
+    {
+        _view.StartGridAdjust();
+    }
+
+    private async void OnManualGridDialog(object? sender, RoutedEventArgs e)
     {
         var owner = TopLevel.GetTopLevel(this) as Window;
         var dlg = new GridSetupDialog(_doc);

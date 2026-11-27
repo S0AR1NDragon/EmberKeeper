@@ -269,6 +269,67 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         Cursor = new Cursor(StandardCursorType.Hand);
     }
 
+    /// <summary>Режим подгонки клетки мышью.</summary>
+    public bool GridAdjusting { get; private set; }
+    private double _gaX, _gaY, _gaW, _gaH;      // прямоугольник в пикселях карты
+    private double _gaAnchorX, _gaAnchorY;      // неподвижный угол при растягивании
+    private Point _gaStartMouse;
+    private double _gaStartX, _gaStartY, _gaStartW, _gaStartH;
+    private bool _gaMoving, _gaDragCornerX, _gaDragCornerY;
+
+    public void StartGridAdjust()
+    {
+        GridAdjusting = true;
+        Tool = "select";
+        double cell = Math.Max(16, Doc.GridSize);
+        // прямоугольник в центре вида
+        double cx = (Bounds.Width / 2 - _off.X) / Zoom;
+        double cy = (Bounds.Height / 2 - _off.Y) / Zoom;
+        _gaX = Math.Floor(cx / cell) * cell;
+        _gaY = Math.Floor(cy / cell) * cell;
+        _gaW = cell;
+        _gaH = cell;
+        InvalidateVisual();
+    }
+
+    public void StopGridAdjust()
+    {
+        GridAdjusting = false;
+        InvalidateVisual();
+    }
+
+    /// <summary>Задать прямоугольник подгонки (в пикселях карты) и применить.</summary>
+    public void SetGridRect(double x, double y, double w, double h)
+    {
+        _gaX = x; _gaY = y;
+        _gaW = Math.Max(6, w);
+        _gaH = Math.Max(6, h);
+        ApplyGridRect();
+    }
+
+    private void ApplyGridRect()
+    {
+        double cell = Math.Clamp(Math.Round((_gaW + _gaH) / 2.0), 16, 300);
+        if (cell < 1) return;
+        int oldCell = Math.Max(1, Doc.GridSize);
+        double mapW = Math.Max(1, Doc.Cols) * oldCell;
+        double mapH = Math.Max(1, Doc.Rows) * oldCell;
+
+        Doc.GridSize = (int)cell;
+        double qx = _gaX / cell;
+        Doc.GridOffX = qx - Math.Floor(qx);
+        double qy = _gaY / cell;
+        Doc.GridOffY = qy - Math.Floor(qy);
+
+        // сохраняем прежний размер карты в пикселях
+        Doc.Cols = Math.Clamp((int)Math.Ceiling(mapW / cell), 3, 200);
+        Doc.Rows = Math.Clamp((int)Math.Ceiling(mapH / cell), 3, 200);
+        Doc.EnsureVision();
+        ResetVisionCache();
+        Changed?.Invoke();
+        InvalidateVisual();
+    }
+
     /// <summary>Сбросить кэш обзора (после смены размеров карты или клетки).</summary>
     public void ResetVisionCache()
     {
@@ -1086,6 +1147,27 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+
+        if (GridAdjusting)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ApplyGridRect();
+                GridAdjusting = false;
+                Save?.Invoke();
+                InvalidateVisual();
+                e.Handled = true;
+                return;
+            }
+            if (e.Key == Key.Escape)
+            {
+                GridAdjusting = false;
+                InvalidateVisual();
+                e.Handled = true;
+                return;
+            }
+        }
+
         if (PlayerMode) return;
 
         if (e.Key == Key.Z && e.KeyModifiers.HasFlag(KeyModifiers.Control))
@@ -1145,6 +1227,38 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             _panStart = p;
             _offStart = _off;
             e.Pointer.Capture(this);
+            return;
+        }
+
+        if (GridAdjusting)
+        {
+            // экранный прямоугольник подгонки
+            var a = new Point(_off.X + _gaX * Zoom, _off.Y + _gaY * Zoom);
+            var b = new Point(a.X + _gaW * Zoom, a.Y + _gaH * Zoom);
+            double tol = 10;
+            bool nearL = Math.Abs(p.X - a.X) < tol, nearR = Math.Abs(p.X - b.X) < tol;
+            bool nearT = Math.Abs(p.Y - a.Y) < tol, nearB = Math.Abs(p.Y - b.Y) < tol;
+            bool inside = p.X >= a.X - tol && p.X <= b.X + tol && p.Y >= a.Y - tol && p.Y <= b.Y + tol;
+
+            _gaAnchorX = nearL ? b.X : a.X;
+            _gaAnchorY = nearT ? b.Y : a.Y;
+            _gaDragCornerX = nearL || nearR;
+            _gaDragCornerY = nearT || nearB;
+            _gaMoving = !(_gaDragCornerX || _gaDragCornerY) && inside;
+            if (!_gaMoving && !(_gaDragCornerX || _gaDragCornerY))
+            {
+                // клик вне — начинаем новый прямоугольник с этой точки
+                _gaAnchorX = p.X;
+                _gaAnchorY = p.Y;
+                _gaX = (p.X - _off.X) / Zoom;
+                _gaY = (p.Y - _off.Y) / Zoom;
+                _gaW = 6; _gaH = 6;
+                _gaDragCornerX = _gaDragCornerY = true;
+            }
+            _gaStartMouse = p;
+            _gaStartX = _gaX; _gaStartY = _gaY; _gaStartW = _gaW; _gaStartH = _gaH;
+            e.Pointer.Capture(this);
+            InvalidateVisual();
             return;
         }
 
