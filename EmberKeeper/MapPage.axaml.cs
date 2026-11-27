@@ -81,7 +81,11 @@ public partial class MapPage : UserControl
                     int cellBefore = _doc.GridSize;
                     _view.GridAdjustPress(new Avalonia.Point(300, 300));
                     _view.GridAdjustMove(new Avalonia.Point(420, 380));
-                    _view.GridAdjustRelease();
+                    bool draggingBefore = _view.IsGridDragging;
+                    _view.EndGridDrag();
+                    bool draggingAfter = _view.IsGridDragging;
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "ga_drag.txt"),
+                        $"draggingBefore={draggingBefore} draggingAfter={draggingAfter}");
                     int cellAfter = _doc.GridSize;
                     _view.StopGridAdjust(true);
                     int cellRevert = _doc.GridSize;

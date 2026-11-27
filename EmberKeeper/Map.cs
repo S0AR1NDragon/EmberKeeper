@@ -315,6 +315,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     {
         if (!GridAdjusting) return;
         GridAdjusting = false;
+        _gaDragging = false;
         if (revert)
         {
             Doc.GridSize = _gaOrigCell;
@@ -405,6 +406,17 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         ApplyGridRect();
         InvalidateVisual();
     }
+
+    /// <summary>Завершить перетаскивание (отпускание мыши).</summary>
+    public void EndGridDrag()
+    {
+        if (!_gaDragging) return;
+        _gaDragging = false;
+        ApplyGridRect();
+        InvalidateVisual();
+    }
+
+    public bool IsGridDragging => _gaDragging;
 
     /// <summary>Задать прямоугольник подгонки (в пикселях карты) и применить.</summary>
     public void SetGridRect(double x, double y, double w, double h)
@@ -818,7 +830,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             foreach (var hpt in new[] { ga, new Point(gb.X, ga.Y), gb, new Point(ga.X, gb.Y) })
                 ctx.FillRectangle(new SolidColorBrush(Color.FromArgb(240, 240, 194, 123)),
                     new Rect(hpt.X - 5, hpt.Y - 5, 10, 10));
-            var hint = new FormattedText("перетащите угол клетки под размер сетки на фоне",
+            var hint = new FormattedText("тяните угол клетки · Alt+ЛКМ/СКМ — камера · Готово/Отмена — внизу",
                 CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                 new Typeface("Segoe UI"), 12.5, new SolidColorBrush(Pal.C("#f6e7cf")));
             var hbg = new Rect(Bounds.Width / 2 - hint.Width / 2 - 12, 12, hint.Width + 24, hint.Height + 12);
@@ -1617,6 +1629,12 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
+        if (GridAdjusting && _gaDragging)
+        {
+            EndGridDrag();
+            return;
+        }
+
         if (_panning) { _panning = false; return; }
 
         if (_wallStart is Point ws && Tool == "wall")
