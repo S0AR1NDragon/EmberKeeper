@@ -714,30 +714,50 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         var memBrush = new SolidColorBrush(Color.FromArgb((byte)(PlayerMode ? 205 : 130), 9, 7, 6));
         double s = g / sub;
 
+        // дистанция до ближайшей видимой подсетки — для плавного края
+        var dist = new int[subW, subH];
+        for (int x = 0; x < subW; x++)
+            for (int y = 0; y < subH; y++)
+                dist[x, y] = vis[x, y] ? 0 : 99;
+        for (int pass = 0; pass < 2; pass++)
+        {
+            for (int x = 0; x < subW; x++)
+            {
+                for (int y = 0; y < subH; y++)
+                {
+                    if (dist[x, y] == 0) continue;
+                    int best = dist[x, y];
+                    for (int dx = -1; dx <= 1; dx++)
+                        for (int dy = -1; dy <= 1; dy++)
+                        {
+                            int nx = x + dx, ny = y + dy;
+                            if (nx < 0 || ny < 0 || nx >= subW || ny >= subH) continue;
+                            best = Math.Min(best, dist[nx, ny] + 1);
+                        }
+                    dist[x, y] = Math.Min(best, 3);
+                }
+            }
+        }
+
         for (int r = 0; r < subH; r++)
         {
             int c = 0;
             while (c < subW)
             {
-                int state;
-                if (vis[c, r]) state = 0;
-                else state = Doc.ExploredAt(c / sub, r / sub) ? 1 : 2;
-
+                int d = dist[c, r];
                 int c2 = c + 1;
-                if (state != 0)
+                while (c2 < subW && dist[c2, r] == d) c2++;
+                if (d > 0)
                 {
-                    while (c2 < subW)
+                    bool mem = Doc.ExploredAt(Math.Min(c / sub, Doc.Cols - 1), Math.Min(r / sub, Doc.Rows - 1));
+                    SolidColorBrush brush;
+                    if (mem) brush = memBrush;
+                    else
                     {
-                        int st2 = vis[c2, r] ? 0 : (Doc.ExploredAt(c2 / sub, r / sub) ? 1 : 2);
-                        if (st2 != state) break;
-                        c2++;
+                        byte a = (byte)(d == 1 ? 110 : d == 2 ? 195 : 240);
+                        brush = new SolidColorBrush(Color.FromArgb(a, 6, 5, 4));
                     }
-                    var brush = state == 2 ? darkBrush : memBrush;
                     ctx.FillRectangle(brush, new Rect(ox + c * s, oy + r * s, (c2 - c) * s + 0.5, s + 0.5));
-                }
-                else
-                {
-                    while (c2 < subW && vis[c2, r]) c2++;
                 }
                 c = c2;
             }
@@ -774,14 +794,20 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
         double sx = mw / Doc.Cols, sy = mh / Doc.Rows;
 
-        // видимая игрокам зона
-        if (Doc.FogOn && _vis != null)
+        // видимая игрокам зона (по подсетке — форма как в основном виде)
+        if (Doc.FogOn && _visFine != null)
         {
-            var visBrush = new SolidColorBrush(Color.FromArgb(90, 240, 194, 123));
-            for (int c = 0; c < Doc.Cols; c++)
-                for (int r = 0; r < Doc.Rows; r++)
-                    if (_vis[c, r])
-                        ctx.FillRectangle(visBrush, new Rect(rect.X + c * sx, rect.Y + r * sy, sx + 0.5, sy + 0.5));
+            const int msub = 6;
+            int mw2 = Doc.Cols * msub, mh2 = Doc.Rows * msub;
+            if (mw2 == _visFine.GetLength(0) && mh2 == _visFine.GetLength(1))
+            {
+                var visBrush = new SolidColorBrush(Color.FromArgb(95, 240, 194, 123));
+                double mx = mw / (double)mw2, my = mh / (double)mh2;
+                for (int c = 0; c < mw2; c += 2)
+                    for (int r = 0; r < mh2; r += 2)
+                        if (_visFine[c, r])
+                            ctx.FillRectangle(visBrush, new Rect(rect.X + c * mx, rect.Y + r * my, mx * 2 + 0.4, my * 2 + 0.4));
+            }
         }
 
         // стены
