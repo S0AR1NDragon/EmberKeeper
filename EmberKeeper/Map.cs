@@ -396,12 +396,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
         var mapRect = new Rect(ox, oy, Doc.Cols * g, Doc.Rows * g);
         if (_bg != null)
-        {
-            // фон в натуральном масштабе: 1 px картинки = 1 px карты (зум применяется отдельно)
-            ctx.FillRectangle(new SolidColorBrush(Pal.C("#1c1714")), mapRect);
-            var bgRect = new Rect(ox, oy, _bg.PixelSize.Width * Zoom, _bg.PixelSize.Height * Zoom);
-            ctx.DrawImage(_bg, bgRect);
-        }
+            ctx.DrawImage(_bg, mapRect);
         else
             ctx.FillRectangle(new SolidColorBrush(Pal.C("#1c1714")), mapRect);
 
