@@ -133,7 +133,7 @@
     <Border Grid.Row="3" Background="{DynamicResource C_0b0908}" BorderBrush="{DynamicResource C_2a211a}" BorderThickness="0,1,0,0" Padding="22,7">
       <Grid ColumnDefinitions="*,Auto">
         <TextBlock x:Name="StatusText" Text="" Foreground="{DynamicResource C_8d7a66}" FontSize="11.5" />
-        <TextBlock Grid.Column="1" Text="колесо — прокрутка · вкладки — разделы статьи" Foreground="{DynamicResource C_83725f}" FontSize="11.5" />
+        <TextBlock Grid.Column="1" MaxWidth="760" TextTrimming="CharacterEllipsis" Text="Материалы представлены для ознакомления. Права на материалы Wizards of the Coast принадлежат Wizards of the Coast." Foreground="{DynamicResource C_83725f}" FontSize="10.5" />
       </Grid>
     </Border>
   </Grid>

@@ -99,6 +99,19 @@ public static class ClassInfo
         return null;
     }
 
+    private static bool IsKnownLabel(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line) || line.Length > 60) return false;
+        return line.StartsWith("Кость хитов", StringComparison.OrdinalIgnoreCase) ||
+               line.StartsWith("Владение", StringComparison.OrdinalIgnoreCase) ||
+               line.StartsWith("Основная характеристика", StringComparison.OrdinalIgnoreCase) ||
+               line.StartsWith("Хиты за уровень", StringComparison.OrdinalIgnoreCase) ||
+               line.StartsWith("Снаряжение", StringComparison.OrdinalIgnoreCase) ||
+               line.StartsWith("Начальное снаряжение", StringComparison.OrdinalIgnoreCase) ||
+               line.Equals("Умения", StringComparison.OrdinalIgnoreCase) ||
+               line.StartsWith("Ключевые атрибуты", StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <summary>Разбор «Ключевые атрибуты» из текста 2024.</summary>
     private static List<(string, string)> ParseKeyAttributes(string text)
     {
@@ -109,27 +122,38 @@ public static class ClassInfo
         if (at < 0) return res;
         var tail = text.Substring(at);
         var lines = tail.Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).ToList();
-        if (lines.Count > 40) lines = lines.Take(40).ToList();
+        if (lines.Count > 60) lines = lines.Take(60).ToList();
 
         for (int i = 0; i + 1 < lines.Count; i++)
         {
+            if (!IsKnownLabel(lines[i])) continue;
             var label = lines[i];
-            if (label.Length > 60) continue;
-            bool known = label.StartsWith("Кость хитов", StringComparison.OrdinalIgnoreCase) ||
-                         label.StartsWith("Владение спасбросками", StringComparison.OrdinalIgnoreCase) ||
-                         label.StartsWith("Владение навыками", StringComparison.OrdinalIgnoreCase) ||
-                         label.StartsWith("Владение оружием", StringComparison.OrdinalIgnoreCase) ||
-                         label.StartsWith("Владение доспехами", StringComparison.OrdinalIgnoreCase) ||
-                         label.StartsWith("Основная характеристика", StringComparison.OrdinalIgnoreCase) ||
-                         label.StartsWith("Хиты за уровень", StringComparison.OrdinalIgnoreCase) ||
-                         label.StartsWith("Снаряжение", StringComparison.OrdinalIgnoreCase) ||
-                         label.StartsWith("Начальное снаряжение", StringComparison.OrdinalIgnoreCase);
-            if (!known) continue;
-
             var value = lines[i + 1];
+            int j = i + 2;
+
+            // многострочные значения: снаряжение, навыки, владения
+            bool multi = label.Contains("снаряжение", StringComparison.OrdinalIgnoreCase) ||
+                         label.Contains("навык", StringComparison.OrdinalIgnoreCase) ||
+                         label.Contains("оруж", StringComparison.OrdinalIgnoreCase) ||
+                         label.Contains("доспех", StringComparison.OrdinalIgnoreCase);
+            if (multi)
+            {
+                var sb = new System.Text.StringBuilder(value);
+                int added = 0;
+                while (j < lines.Count && added < 6 && !IsKnownLabel(lines[j]))
+                {
+                    var nxt = lines[j];
+                    if (sb.Length + nxt.Length > 420) break;
+                    sb.Append(" ").Append(nxt);
+                    j++;
+                    added++;
+                }
+                value = sb.ToString();
+            }
+
             if (value.Length > 500) value = value[..500];
             res.Add((label.Replace("Владение ", ""), value));
-            i++;
+            i = j - 1;
         }
         return res;
     }
@@ -150,7 +174,7 @@ public static class ClassInfo
         for (int c = 0; c < header.Count; c++)
         {
             var v = header[c] ?? "";
-            if (featureCol < 0 && v.Contains("Умения", StringComparison.OrdinalIgnoreCase)) featureCol = c - offset;
+            if (featureCol < 0 && (v.Contains("Умения", StringComparison.OrdinalIgnoreCase) || v.Contains("Классовые умения", StringComparison.OrdinalIgnoreCase))) featureCol = c - offset;
             if (levelCol < 0 && v.Trim().Equals("Уровень", StringComparison.OrdinalIgnoreCase)) levelCol = c - offset;
         }
         if (featureCol < 0) return res;
@@ -167,6 +191,62 @@ public static class ClassInfo
             res.Add((lv, feat));
         }
         return res;
+    }
+
+    /// <summary>Умения класса из текста: «Уровень 3: Название» (стиль 2024).</summary>
+    public static List<(int Level, string Title, string Body)> FeaturesFromText(string text)
+    {
+        var res = new List<(int, string, string)>();
+        if (string.IsNullOrWhiteSpace(text)) return res;
+        var lines = text.Replace("\r\n", "\n").Split('\n').Select(l => l.Trim()).ToList();
+
+        for (int i = 0; i < lines.Count; i++)
+        {
+            var m = Regex.Match(lines[i], @"^Уровень\s*(\d{1,2})\s*[:\-–]\s*(.+)$", RegexOptions.IgnoreCase);
+            if (!m.Success) continue;
+            int level = int.Parse(m.Groups[1].Value);
+            var title = m.Groups[2].Value.Trim();
+            var body = new System.Text.StringBuilder();
+            int j = i + 1;
+            while (j < lines.Count && lines[j].Length > 0 && !Regex.IsMatch(lines[j], @"^Уровень\s*\d", RegexOptions.IgnoreCase))
+            {
+                body.AppendLine(lines[j]);
+                j++;
+            }
+            res.Add((level, title, body.ToString().Trim()));
+        }
+        return res;
+    }
+
+    /// <summary>Все умения: класса по уровням, плюс подкласса (или заглушки «Умение подкласса»).</summary>
+    public static List<(int Level, string Title, string Body, bool IsSub)> AllFeatures(LibEntry x, LibSub? sub)
+    {
+        var list = new List<(int, string, string, bool)>();
+
+        var fromTable = ClassFeatures(x);
+        if (fromTable.Count > 0)
+        {
+            foreach (var (level, title) in fromTable) list.Add((level, title, "", false));
+        }
+        else
+        {
+            foreach (var (level, title, body) in FeaturesFromText(x.H)) list.Add((level, title, body, false));
+        }
+
+        if (sub != null)
+        {
+            foreach (var (level, title, body) in SubclassFeatures(sub.H)) list.Add((level, title, body, true));
+        }
+        else if (x.Subs is { Count: > 0 })
+        {
+            var levels = new SortedSet<int>();
+            foreach (var s in x.Subs)
+                foreach (var f in SubclassFeatures(s.H)) levels.Add(f.Level);
+            if (levels.Count == 0) { levels.Add(3); levels.Add(6); levels.Add(10); levels.Add(14); }
+            foreach (var lv in levels) list.Add((lv, "", "", true));
+        }
+
+        return list.OrderBy(f => f.Item1).ThenBy(f => f.Item4 ? 1 : 0).ToList();
     }
 
     /// <summary>Умения подкласса, разобранные из текста (заголовки + уровни).</summary>

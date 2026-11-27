@@ -53,6 +53,18 @@ public partial class LibraryView : UserControl
         Reload();
         if (libTest == "subs") { _tab = "subs"; RenderDetail(); }
         else if (libTest == "sub") { _sub = 0; _tab = "features"; RenderDetail(); }
+        else if (libTest == "druid2024")
+        {
+            _edition = "2024";
+            Ed2014.Classes.Set("on", false);
+            Ed2024.Classes.Set("on", true);
+            Reload();
+            int di = _view.FindIndex(e => e.N == "Друид");
+            if (di >= 0) LibList.SelectedIndex = di;
+            _sub = 0;
+            _tab = "features";
+            RenderDetail();
+        }
         else if (libTest == "table") { _tab = "table"; RenderDetail(); }
     }
 
@@ -492,48 +504,62 @@ public partial class LibraryView : UserControl
             return;
         }
 
-        // УМЕНИЯ: общие из таблицы прогрессии
-        var classFeats = ClassInfo.ClassFeatures(x);
-        if (classFeats.Count > 0)
-        {
-            DetailHost.Children.Add(SectionTitle("Умения класса"));
-            foreach (var (level, title) in classFeats)
-                DetailHost.Children.Add(FeatureRow(level, title, ""));
-        }
+        // УМЕНИЯ: класс + подкласс, по уровням
+        LibSub? subSel = null;
+        if (_sub != null && _sub < subs.Count) subSel = subs[_sub.Value];
 
-        // умения подкласса
-        DetailHost.Children.Add(SectionTitle("Умения подкласса"));
-        if (_sub == null)
+        var all = ClassInfo.AllFeatures(x, subSel);
+        DetailHost.Children.Add(SectionTitle("Умения"));
+        if (all.Count == 0)
         {
-            DetailHost.Children.Add(new Border
+            DetailHost.Children.Add(new TextBlock
             {
-                Background = Pal.B("#15110e"),
-                BorderBrush = Pal.B("#352a21"),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(10),
-                Padding = new Thickness(14, 12),
-                Child = new TextBlock
-                {
-                    Text = "Выберите подкласс выше — здесь появятся его умения по уровням. Без подкласса персонаж играется только с базовыми умениями класса.",
-                    FontSize = 13,
-                    Foreground = Pal.B("#9c8b78"),
-                    TextWrapping = TextWrapping.Wrap,
-                },
+                Text = "В данных об этом классе нет разобранных умений.",
+                FontSize = 13,
+                Foreground = Pal.B("#8d7a66"),
+                Margin = new Thickness(0, 4, 0, 0),
             });
             return;
         }
 
-        var sub = subs[_sub.Value];
-        var feats = ClassInfo.SubclassFeatures(sub.H);
-        if (feats.Count == 0)
+        foreach (var (level, title, body, isSub) in all)
         {
-            foreach (var paragraph in SplitParagraphs(sub.H))
-                DetailHost.Children.Add(ParagraphBlock(paragraph));
-            return;
+            if (isSub && string.IsNullOrEmpty(title))
+                DetailHost.Children.Add(SubPlaceholder(level));
+            else
+                DetailHost.Children.Add(FeatureRow(level, title, body, isSub));
         }
+    }
 
-        foreach (var (level, title, body) in feats)
-            DetailHost.Children.Add(FeatureRow(level, title, body));
+    /// <summary>Заглушка на месте умения подкласса, пока подкласс не выбран.</summary>
+    private static Control SubPlaceholder(int level)
+    {
+        var sp = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+        sp.Children.Add(new Border
+        {
+            Background = Pal.B("#2a211a"),
+            BorderBrush = Pal.B("#4a3728"),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(7, 2),
+            VerticalAlignment = VerticalAlignment.Center,
+            Child = new TextBlock { Text = level + " ур.", FontSize = 10.5, Foreground = Pal.B("#d99b4a") },
+        });
+        sp.Children.Add(new TextBlock
+        {
+            Text = "Умение подкласса",
+            FontSize = 13,
+            FontStyle = FontStyle.Italic,
+            Foreground = Pal.B("#8d7a66"),
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        return new Border
+        {
+            BorderBrush = Pal.B("#241d18"),
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Padding = new Thickness(0, 8),
+            Child = sp,
+        };
     }
 
     private static Control SectionTitle(string text) => new TextBlock
@@ -546,7 +572,7 @@ public partial class LibraryView : UserControl
         Margin = new Thickness(0, 14, 0, 2),
     };
 
-    private static Control FeatureRow(int level, string title, string body)
+    private static Control FeatureRow(int level, string title, string body, bool isSub = false)
     {
         var sp = new StackPanel { Spacing = 3 };
         var head = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
@@ -565,7 +591,7 @@ public partial class LibraryView : UserControl
             Text = title,
             FontSize = 13.5,
             FontWeight = FontWeight.SemiBold,
-            Foreground = Pal.B("#f6e7cf"),
+            Foreground = Pal.B(isSub ? "#e3b98a" : "#f6e7cf"),
             TextWrapping = TextWrapping.Wrap,
             VerticalAlignment = VerticalAlignment.Center,
         });
