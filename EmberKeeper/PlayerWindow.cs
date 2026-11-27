@@ -57,7 +57,7 @@ public sealed class PlayerWindow : Window
             if (ReferenceEquals(Live.Window, this)) Live.Window = null;
         };
 
-        _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+        _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _timer.Tick += (_, _) => RefreshMap();
         _timer.Start();
 

@@ -385,6 +385,19 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
                 Save?.Invoke();
             }
 
+            // мягкий край тумана: клетки на границе обзора чуть затемнены
+            var edgeBrush = new SolidColorBrush(Color.FromArgb(80, 6, 5, 4));
+            for (int r = 0; r < Doc.Rows; r++)
+            {
+                for (int c = 0; c < Doc.Cols; c++)
+                {
+                    if (!vis[c, r]) continue;
+                    bool border = (c == 0 || !vis[c - 1, r]) || (c == Doc.Cols - 1 || !vis[c + 1, r]) ||
+                                  (r == 0 || !vis[c, r - 1]) || (r == Doc.Rows - 1 || !vis[c, r + 1]);
+                    if (border) ctx.FillRectangle(edgeBrush, new Rect(oxG + c * g, oyG + r * g, g, g));
+                }
+            }
+
             // у мастера — лёгкая подсветка зоны, которую реально видят игроки
             if (!PlayerMode)
             {
@@ -687,6 +700,19 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             PaintFog(m);
             e.Pointer.Capture(this);
             return;
+        }
+
+        if (Tool == "select" && e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+        {
+            var victim = Doc.Props.FirstOrDefault(pr =>
+                m.X >= pr.X && m.X <= pr.X + pr.Cells && m.Y >= pr.Y && m.Y <= pr.Y + pr.Cells);
+            if (victim != null)
+            {
+                Doc.Props.Remove(victim);
+                Save?.Invoke();
+                InvalidateVisual();
+                return;
+            }
         }
 
         if (Tool == "select" && WallNear(m, 0.35) is { Kind: "door" } doorHit)
