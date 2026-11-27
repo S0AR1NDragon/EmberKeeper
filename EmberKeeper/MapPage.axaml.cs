@@ -18,6 +18,7 @@ public partial class MapPage : UserControl
     private MapDoc _doc;
     private MapView _view;
     private readonly List<string> _undo = new();
+    private Avalonia.Threading.DispatcherTimer? _gridSaveTimer;
     public Action<string, string>? OpenSheet;
 
     private bool _syncing;
@@ -66,6 +67,41 @@ public partial class MapPage : UserControl
                 {
                     System.IO.File.WriteAllText(
                         System.IO.Path.Combine(AppContext.BaseDirectory, "undo_test.txt"), "ошибка: " + ex.Message);
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_BIG") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    _doc.Cols = 200;
+                    _doc.Rows = 200;
+                    _doc.GridSize = 16;
+                    _doc.EnsureVision();
+                    _view.InvalidateVisual();
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        sw.Stop();
+                        try
+                        {
+                            var (gc, gr) = _view.GridBounds();
+                            System.IO.File.WriteAllText(
+                                System.IO.Path.Combine(AppContext.BaseDirectory, "big_test.txt"),
+                                $"frame={sw.ElapsedMilliseconds}ms; cells={_doc.Cols}x{_doc.Rows}; gridBounds={gc}x{gr}; zoom={_view.Zoom:F2}");
+                        }
+                        catch (Exception ex2)
+                        {
+                            System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "big_test.txt"), "ошибка2: " + ex2.Message);
+                        }
+                    }, Avalonia.Threading.DispatcherPriority.Background);
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "big_test.txt"), "ошибка: " + ex.Message);
                 }
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
@@ -676,8 +712,20 @@ public partial class MapPage : UserControl
         _doc.GridSize = (int)Math.Round(SldGridPx.Value);
         if (GridPxText != null) GridPxText.Text = _doc.GridSize.ToString();
         FitCellsToBackground();
-        SaveAll();
+        _view?.ResetVisionCache();
+        // сохраняем не на каждый тик, а через 350 мс после остановки ползунка
+        _gridSaveTimer ??= new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(350) };
+        _gridSaveTimer.Stop();
+        _gridSaveTimer.Tick -= GridSaveTick;
+        _gridSaveTimer.Tick += GridSaveTick;
+        _gridSaveTimer.Start();
         _view?.InvalidateVisual();
+    }
+
+    private void GridSaveTick(object? sender, EventArgs e)
+    {
+        _gridSaveTimer?.Stop();
+        SaveAll();
     }
 
     private async void OnManualGrid(object? sender, RoutedEventArgs e)
@@ -687,16 +735,20 @@ public partial class MapPage : UserControl
         bool ok = owner != null ? await dlg.ShowDialog<bool>(owner) : false;
         if (!ok) return;
 
-        _doc.GridSize = dlg.CellPx;
+        _doc.GridSize = Math.Clamp(dlg.CellPx, 16, 300);
         _doc.GridOffX = dlg.OffX;
         _doc.GridOffY = dlg.OffY;
         if (dlg.FitToImage) FitCellsToBackground();
         else
         {
-            _doc.Cols = dlg.Cols;
-            _doc.Rows = dlg.Rows;
+            int cols = Math.Clamp(dlg.Cols, 3, 200);
+            int rows = Math.Clamp(dlg.Rows, 3, 200);
+            if (cols * rows > 40000) rows = Math.Max(3, 40000 / cols);
+            _doc.Cols = cols;
+            _doc.Rows = rows;
             _doc.EnsureVision();
         }
+        _view?.ResetVisionCache();
         SaveAll();
         Sync();
         _view?.InvalidateVisual();
@@ -1174,9 +1226,13 @@ public partial class MapPage : UserControl
             if (string.IsNullOrEmpty(_doc.Background) || !System.IO.File.Exists(_doc.Background)) return;
             var sz = ImageSize(_doc.Background);
             int cell = Math.Max(16, _doc.GridSize);
-            _doc.Cols = Math.Clamp((int)Math.Round(sz.Width / (double)cell), 5, 400);
-            _doc.Rows = Math.Clamp((int)Math.Round(sz.Height / (double)cell), 5, 400);
+            int cols = Math.Clamp((int)Math.Ceiling(sz.Width / (double)cell), 5, 200);
+            int rows = Math.Clamp((int)Math.Ceiling(sz.Height / (double)cell), 5, 200);
+            if (cols * rows > 40000) rows = Math.Max(5, 40000 / cols);
+            _doc.Cols = cols;
+            _doc.Rows = rows;
             _doc.EnsureVision();
+            _view?.ResetVisionCache();
         }
         catch { }
     }

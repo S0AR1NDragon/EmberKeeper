@@ -271,6 +271,28 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         Cursor = new Cursor(StandardCursorType.Hand);
     }
 
+    /// <summary>Сбросить кэш обзора (после смены размеров карты или клетки).</summary>
+    public void ResetVisionCache()
+    {
+        _vis = null;
+        _visFine = null;
+        _visTime = DateTime.MinValue;
+        _visFineTime = DateTime.MinValue;
+    }
+
+    /// <summary>Границы, на которые натянута сетка (учитывая фон).</summary>
+    public (int Cols, int Rows) GridBounds()
+    {
+        int cols = Math.Max(1, Doc.Cols), rows = Math.Max(1, Doc.Rows);
+        if (_bg != null)
+        {
+            int cell = Math.Max(8, Doc.GridSize);
+            cols = Math.Max(cols, (int)Math.Ceiling(_bg.PixelSize.Width / (double)cell));
+            rows = Math.Max(rows, (int)Math.Ceiling(_bg.PixelSize.Height / (double)cell));
+        }
+        return (cols, rows);
+    }
+
     public void SetSelected(Token? t)
     {
         Selected = t;
@@ -367,7 +389,8 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         // фон карты
         if (_bg == null && !string.IsNullOrEmpty(Doc.Background) && File.Exists(Doc.Background))
         {
-            _bg = ImageCache.Get(Doc.Background, 8000);
+            try { _bg = new Avalonia.Media.Imaging.Bitmap(Doc.Background); }
+            catch { _bg = ImageCache.Get(Doc.Background, 4000); }
         }
 
         double oxG = ox + Doc.GridOffX * g;
@@ -396,10 +419,11 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         else
         {
             var gridPen = new Pen(new SolidColorBrush(Pal.C("#2a211a")), 1);
-            for (int c = 0; c <= Doc.Cols; c++)
-                ctx.DrawLine(gridPen, new Point(oxG + c * g, oyG), new Point(oxG + c * g, oyG + Doc.Rows * g));
-            for (int r = 0; r <= Doc.Rows; r++)
-                ctx.DrawLine(gridPen, new Point(oxG, oyG + r * g), new Point(oxG + Doc.Cols * g, oyG + r * g));
+            var (gbCols, gbRows) = GridBounds();
+            for (int c = 0; c <= gbCols; c++)
+                ctx.DrawLine(gridPen, new Point(oxG + c * g, oyG), new Point(oxG + c * g, oyG + gbRows * g));
+            for (int r = 0; r <= gbRows; r++)
+                ctx.DrawLine(gridPen, new Point(oxG, oyG + r * g), new Point(oxG + gbCols * g, oyG + r * g));
         }
 
         // шаблоны (обычные — скрываются туманом)
@@ -567,6 +591,20 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         }
 
         DrawFog(ctx, oxG, oyG, g);
+
+        // если фон больше области клеток — закрываем его края полумраком
+        if (Doc.FogOn && _bg != null)
+        {
+            var (gbC, gbR) = GridBounds();
+            if (gbC > Doc.Cols || gbR > Doc.Rows)
+            {
+                var extra = new SolidColorBrush(Color.FromArgb(210, 6, 5, 4));
+                if (gbC > Doc.Cols)
+                    ctx.FillRectangle(extra, new Rect(oxG + Doc.Cols * g, oyG, (gbC - Doc.Cols) * g, gbR * g));
+                if (gbR > Doc.Rows)
+                    ctx.FillRectangle(extra, new Rect(oxG, oyG + Doc.Rows * g, Doc.Cols * g, (gbR - Doc.Rows) * g));
+            }
+        }
 
         // предметы, видимые всегда (поверх тумана)
         if (Doc.ShowProps)
@@ -854,15 +892,18 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     /// <summary>Туман поверх карты: круглые границы, токены в темноте обрезаются.</summary>
     private void DrawFog(DrawingContext ctx, double ox, double oy, double g)
     {
-        const int sub = 6;
+        int cells = Math.Max(1, Doc.Cols) * Math.Max(1, Doc.Rows);
+        int sub = cells > 120000 ? 1 : cells > 60000 ? 2 : cells > 30000 ? 3 : 6;
         int subW = Doc.Cols * sub, subH = Doc.Rows * sub;
         if (subW <= 0 || subH <= 0) return;
 
-        if (_visFine == null || (DateTime.UtcNow - _visFineTime).TotalMilliseconds > 200)
+        if (_visFine == null || _visFine.GetLength(0) != subW || _visFine.GetLength(1) != subH ||
+            (DateTime.UtcNow - _visFineTime).TotalMilliseconds > 200)
         {
             _visFine = MapVision.ComputeFine(Doc, sub);
             _visFineTime = DateTime.UtcNow;
-            if (_vis == null || (DateTime.UtcNow - _visTime).TotalMilliseconds > 600)
+            if (_vis == null || _vis.GetLength(0) != Doc.Cols || _vis.GetLength(1) != Doc.Rows ||
+                (DateTime.UtcNow - _visTime).TotalMilliseconds > 600)
             {
                 _vis = MapVision.Compute(Doc);
                 _visTime = DateTime.UtcNow;

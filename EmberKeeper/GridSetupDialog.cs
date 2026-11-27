@@ -59,8 +59,8 @@ public sealed class GridSetupDialog : Window
         var cell = Num("РАЗМЕР КЛЕТКИ, PX", doc.GridSize, 16, 300, 1);
         var offX = Num("СДВИГ ПО X, КЛЕТОК", doc.GridOffX, -2, 2, 0.05);
         var offY = Num("СДВИГ ПО Y, КЛЕТОК", doc.GridOffY, -2, 2, 0.05);
-        var cols = Num("КЛЕТОК ПО ШИРИНЕ", doc.Cols, 3, 400, 1);
-        var rows = Num("КЛЕТОК ПО ВЫСОТЕ", doc.Rows, 3, 400, 1);
+        var cols = Num("КЛЕТОК ПО ШИРИНЕ", doc.Cols, 3, 200, 1);
+        var rows = Num("КЛЕТОК ПО ВЫСОТЕ", doc.Rows, 3, 200, 1);
 
         var fit = new CheckBox
         {
@@ -93,8 +93,8 @@ public sealed class GridSetupDialog : Window
             CellPx = (int)Math.Clamp((double)(cell.Value ?? 64), 16, 300);
             OffX = Math.Clamp((double)(offX.Value ?? 0), -2, 2);
             OffY = Math.Clamp((double)(offY.Value ?? 0), -2, 2);
-            Cols = (int)Math.Clamp((double)(cols.Value ?? 20), 3, 400);
-            Rows = (int)Math.Clamp((double)(rows.Value ?? 14), 3, 400);
+            Cols = (int)Math.Clamp((double)(cols.Value ?? 20), 3, 200);
+            Rows = (int)Math.Clamp((double)(rows.Value ?? 14), 3, 200);
             FitToImage = fit.IsChecked == true;
             Close(true);
         };
