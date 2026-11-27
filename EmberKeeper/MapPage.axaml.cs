@@ -69,6 +69,34 @@ public partial class MapPage : UserControl
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_CELL") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                    double z1 = _view.Zoom;
+                    int c1 = _doc.Cols;
+                    EdGridPx.Value = 80;
+                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        double z2 = _view.Zoom;
+                        System.IO.File.WriteAllText(
+                            System.IO.Path.Combine(AppContext.BaseDirectory, "cell_test.txt"),
+                            $"zoom: {z1:F3} -> {z2:F3}; cols: {c1} -> {_doc.Cols}; cell={_doc.GridSize}");
+                    }, Avalonia.Threading.DispatcherPriority.Background);
+                    }, Avalonia.Threading.DispatcherPriority.Background);
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(AppContext.BaseDirectory, "cell_test.txt"), "ошибка: " + ex.Message);
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_SYNC") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -636,6 +664,7 @@ public partial class MapPage : UserControl
     private void OnGridPxChanged(object? sender, NumericUpDownValueChangedEventArgs e)
     {
         if (_syncing) return;
+        if (_syncing) return;
         _doc.GridSize = (int)(EdGridPx.Value ?? 64);
         FitCellsToBackground();
         SaveAll();
@@ -1107,7 +1136,6 @@ public partial class MapPage : UserControl
             _doc.Cols = Math.Clamp((int)Math.Round(sz.Width / (double)cell), 5, 400);
             _doc.Rows = Math.Clamp((int)Math.Round(sz.Height / (double)cell), 5, 400);
             _doc.EnsureVision();
-            if (_view.Bounds.Width > 10) _view.ResetView(_view.Bounds.Width, _view.Bounds.Height);
         }
         catch { }
     }
