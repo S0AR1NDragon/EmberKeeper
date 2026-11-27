@@ -453,6 +453,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         }
 
         // СЃС‚РµРЅС‹
+        if (!PlayerMode && Doc.ShowWalls)
         foreach (var w in Doc.Walls)
         {
             var a = ToScreen(w.X1, w.Y1);
