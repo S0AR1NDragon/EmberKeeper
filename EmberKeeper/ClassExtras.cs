@@ -12,8 +12,8 @@ public static class ClassExtras
 {
     public sealed class Option
     {
-        public string Name { get; set; } = "";
-        public string Text { get; set; } = "";
+        [System.Text.Json.Serialization.JsonPropertyName("n")] public string Name { get; set; } = "";
+        [System.Text.Json.Serialization.JsonPropertyName("h")] public string Text { get; set; } = "";
     }
 
     public sealed class Section
