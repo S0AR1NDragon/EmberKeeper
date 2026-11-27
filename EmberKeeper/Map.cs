@@ -280,6 +280,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     private double _gaOrigOffX, _gaOrigOffY;
     private int _gaOrigCols, _gaOrigRows;
     private Rect _gaDoneRect, _gaCancelRect;
+    private bool _gaDragging;
 
     public void StartGridAdjust()
     {
@@ -1360,87 +1361,22 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         var m = ToMap(p);
         var props = e.GetCurrentPoint(this).Properties;
 
-        if (GridAdjusting)
-        {
-            if (_gaDoneRect.Contains(p))
-            {
-                GridAdjustRelease();
-                StopGridAdjust(false);
-                Save?.Invoke();
-                e.Handled = true;
-                return;
-            }
-            if (_gaCancelRect.Contains(p))
-            {
-                StopGridAdjust(true);
-                e.Handled = true;
-                return;
-            }
-            GridAdjustPress(p);
-            e.Pointer.Capture(this);
-            return;
-        }
-
         if (props.IsMiddleButtonPressed || e.KeyModifiers.HasFlag(KeyModifiers.Alt))
         {
-            _panning = true;
-            _panStart = p;
-            _offStart = _off;
+            _panning = true; _panStart = p; _offStart = _off;
             e.Pointer.Capture(this);
             return;
         }
 
         if (GridAdjusting)
         {
-            // экранный прямоугольник подгонки
-            var a = new Point(_off.X + _gaX * Zoom, _off.Y + _gaY * Zoom);
-            var b = new Point(a.X + _gaW * Zoom, a.Y + _gaH * Zoom);
-            double tol = 10;
-            bool nearL = Math.Abs(p.X - a.X) < tol, nearR = Math.Abs(p.X - b.X) < tol;
-            bool nearT = Math.Abs(p.Y - a.Y) < tol, nearB = Math.Abs(p.Y - b.Y) < tol;
-            bool inside = p.X >= a.X - tol && p.X <= b.X + tol && p.Y >= a.Y - tol && p.Y <= b.Y + tol;
-
-            _gaAnchorX = nearL ? b.X : a.X;
-            _gaAnchorY = nearT ? b.Y : a.Y;
-            _gaDragCornerX = nearL || nearR;
-            _gaDragCornerY = nearT || nearB;
-            _gaMoving = !(_gaDragCornerX || _gaDragCornerY) && inside;
-            if (!_gaMoving && !(_gaDragCornerX || _gaDragCornerY))
-            {
-                // клик вне — начинаем новый прямоугольник с этой точки
-                _gaAnchorX = p.X;
-                _gaAnchorY = p.Y;
-                _gaX = (p.X - _off.X) / Zoom;
-                _gaY = (p.Y - _off.Y) / Zoom;
-                _gaW = 6; _gaH = 6;
-                _gaDragCornerX = _gaDragCornerY = true;
-            }
-            _gaStartMouse = p;
-            _gaStartX = _gaX; _gaStartY = _gaY; _gaStartW = _gaW; _gaStartH = _gaH;
+            if (_gaDoneRect.Contains(p)) { GridAdjustRelease(); StopGridAdjust(false); Save?.Invoke(); e.Handled = true; return; }
+            if (_gaCancelRect.Contains(p)) { StopGridAdjust(true); e.Handled = true; return; }
+            GridAdjustPress(p);
+            _gaDragging = true;
             e.Pointer.Capture(this);
-            InvalidateVisual();
             return;
         }
-
-        if (Tool == "calib")
-        {
-            if (_calibA == null)
-            {
-                _calibA = p;
-                InvalidateVisual();
-            }
-            else
-            {
-                var a = _calibA.Value;
-                _calibA = null;
-                Tool = "select";
-                Calibrated?.Invoke(a, p);
-                InvalidateVisual();
-            }
-            return;
-        }
-
-        BeforeChange?.Invoke();
 
         if (Tool == "wall")
         {
@@ -1615,7 +1551,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         _lastPointer = p;
         _shiftHeld = (e.KeyModifiers & KeyModifiers.Shift) != 0;
 
-        if (GridAdjusting)
+        if (GridAdjusting && _gaDragging)
         {
             GridAdjustMove(p);
             return;
