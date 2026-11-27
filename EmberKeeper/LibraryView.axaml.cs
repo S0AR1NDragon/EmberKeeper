@@ -499,7 +499,7 @@ public partial class LibraryView : UserControl
         if (_tab == "table" && x.Tb is { Count: > 0 }) { DetailHost.Children.Add(DataTable(x.Tb)); return; }
         if (_tab == "desc")
         {
-            foreach (var paragraph in SplitParagraphs(x.H))
+            foreach (var paragraph in SplitParagraphs(ClassInfo.ClassText(x)))
                 DetailHost.Children.Add(ParagraphBlock(paragraph));
             return;
         }

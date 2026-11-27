@@ -193,6 +193,24 @@ public static class ClassInfo
         return res;
     }
 
+    /// <summary>Текст класса без описаний подклассов (на dnd.su они идут следом).</summary>
+    public static string ClassText(LibEntry x)
+    {
+        var h = x.H ?? "";
+        // описание заканчивается там, где начинаются умения по уровням
+        var m = Regex.Match(h, @"^\s*Уровень\s*1\s*:", RegexOptions.Multiline);
+        if (m.Success && m.Index > 200) return h[..m.Index].TrimEnd();
+
+        int cut = -1;
+        foreach (var sub in x.Subs ?? new List<LibSub>())
+        {
+            if (string.IsNullOrWhiteSpace(sub.N) || sub.N.Length < 4) continue;
+            int idx = h.IndexOf(sub.N, StringComparison.OrdinalIgnoreCase);
+            if (idx > 200 && (cut < 0 || idx < cut)) cut = idx;
+        }
+        return cut > 0 ? h[..cut].TrimEnd() : h;
+    }
+
     /// <summary>Умения класса из текста: «Уровень 3: Название» (стиль 2024).</summary>
     public static List<(int Level, string Title, string Body)> FeaturesFromText(string text)
     {
@@ -215,7 +233,17 @@ public static class ClassInfo
             }
             res.Add((level, title, body.ToString().Trim()));
         }
-        return res;
+
+        // умения класса идут по возрастанию уровней; подклассы начинаются заново с 3-го
+        var ordered = new List<(int, string, string)>();
+        int prev = 0;
+        foreach (var item in res)
+        {
+            if (item.Item1 < prev) break;
+            ordered.Add(item);
+            prev = item.Item1;
+        }
+        return ordered;
     }
 
     /// <summary>Все умения: класса по уровням, плюс подкласса (или заглушки «Умение подкласса»).</summary>
@@ -230,7 +258,7 @@ public static class ClassInfo
         }
         else
         {
-            foreach (var (level, title, body) in FeaturesFromText(x.H)) list.Add((level, title, body, false));
+            foreach (var (level, title, body) in FeaturesFromText(ClassText(x))) list.Add((level, title, body, false));
         }
 
         if (sub != null)
