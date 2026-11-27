@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -175,16 +175,33 @@ public sealed class UpdateWindow : Window
             return;
         }
 
-        _status.Text = "Устанавливаю — программа закроется и запустится снова…";
         var installDir = AppContext.BaseDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar);
-        if (!Updater.RunInstaller(path, installDir, out var runError))
+        string runError;
+
+        if (_update.AssetName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            _status.Text = "Распаковываю обновление…";
+            if (!await Updater.ApplyZipAsync(path, installDir, "EmberKeeper.exe", m => _status.Text = m))
+            {
+                _status.Text = "Не удалось подготовить обновление. Скачайте установщик с GitHub вручную.";
+                _installBtn.IsVisible = true;
+                _progress.IsVisible = false;
+                return;
+            }
+            _status.Text = "Программа закроется и запустится снова с новой версией…";
+            await Task.Delay(1200);
+        }
+        else if (!Updater.RunInstaller(path, installDir, out runError))
         {
             _status.Text = "Не удалось запустить установщик: " + runError;
             _installBtn.IsVisible = true;
             return;
         }
-
-        await Task.Delay(1500);
+        else
+        {
+            _status.Text = "Устанавливаю — программа закроется и запустится снова…";
+            await Task.Delay(1500);
+        }
         if (Application.Current?.ApplicationLifetime is
             Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime life)
             life.Shutdown();

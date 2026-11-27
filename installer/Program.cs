@@ -44,7 +44,7 @@ internal static class Program
                 return 0;
             }
 
-            Install(silent, dirArg, noShortcuts, noRegistry, Value(args, "/key="));
+            Install(silent, dirArg, noShortcuts, noRegistry, Value(args, "/key="), Has(args, "/relaunch") || !Has(args, "/norelaunch"));
             return 0;
         }
         catch (Exception ex)
@@ -82,7 +82,7 @@ internal static class Program
         catch { }
     }
 
-    private static void Install(bool silent, string? customDir, bool noShortcuts, bool noRegistry, string? licenseKey)
+    private static void Install(bool silent, string? customDir, bool noShortcuts, bool noRegistry, string? licenseKey, bool relaunch)
     {
         var dir = string.IsNullOrWhiteSpace(customDir)
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", AppName)
@@ -143,7 +143,7 @@ internal static class Program
 
         if (silent)
         {
-            if (Has(args, "/relaunch"))
+            if (relaunch)
             {
                 try
                 {

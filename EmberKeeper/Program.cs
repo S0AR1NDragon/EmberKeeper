@@ -21,6 +21,23 @@ class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        if (args.Length >= 4 && args[0] == "--apply-zip")
+        {
+            // служебный режим проверки обновления: zip, папка назначения, имя exe
+            try
+            {
+                var ok = Updater.ApplyZipAsync(args[1], args[2], args[3],
+                    m => File.AppendAllText(Path.Combine(AppContext.BaseDirectory, "apply.log"),
+                        DateTime.Now.ToString("HH:mm:ss") + " " + m + "\n")).GetAwaiter().GetResult();
+                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "apply-result.txt"), ok ? "OK" : "FAIL");
+            }
+            catch (Exception ex)
+            {
+                File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "apply-result.txt"), "FAIL: " + ex.Message);
+            }
+            return;
+        }
+
         if (args.Length > 0 && args[0] == "--selftest")
         {
             SelfTest();

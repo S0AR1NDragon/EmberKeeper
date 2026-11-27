@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
@@ -105,13 +105,15 @@ public static class Updater
                     var name = a.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
                     var dl = a.TryGetProperty("browser_download_url", out var u) ? u.GetString() ?? "" : "";
                     if (string.IsNullOrEmpty(dl)) continue;
-                    if (!name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) continue;
+                    bool isZip = name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase);
+                    bool isExe = name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
+                    if (!isZip && !isExe) continue;
 
                     bool matches = string.IsNullOrWhiteSpace(assetFilter) ||
                                    name.Contains(assetFilter, StringComparison.OrdinalIgnoreCase);
                     if (!matches) continue;
 
-                    best = new UpdateInfo
+                    var cand = new UpdateInfo
                     {
                         Version = latest,
                         Notes = notes,
@@ -119,7 +121,8 @@ public static class Updater
                         Url = dl,
                         Size = a.TryGetProperty("size", out var s) && s.TryGetInt64(out var sz) ? sz : 0,
                     };
-                    break;
+                    if (isZip) { best = cand; break; }
+                    best ??= cand;
                 }
             }
 
@@ -160,8 +163,9 @@ public static class Updater
 
             var fi = new FileInfo(target);
             if (fi.Length < 1024) return (null, "Скачанный файл слишком мал — вероятно, ошибка GitHub.");
-            using (var chk = File.OpenRead(target))
+            if (info.AssetName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
             {
+                using var chk = File.OpenRead(target);
                 if (chk.ReadByte() != 0x4D || chk.ReadByte() != 0x5A)
                     return (null, "Скачанный файл не является исполняемым (.exe повреждён).");
             }
@@ -197,6 +201,53 @@ public static class Updater
             return true;
         }
         catch (Exception ex) { error = ex.Message; return false; }
+    }
+
+    /// <summary>Распаковывает zip-обновление и запускает скрипт замены после закрытия программы.</summary>
+    public static async Task<bool> ApplyZipAsync(string zipPath, string targetDir, string exeName, Action<string> log)
+    {
+        try
+        {
+            var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            var work = Path.Combine(DownloadDir, "apply-" + stamp);
+            var files = Path.Combine(work, "files");
+            if (Directory.Exists(work)) Directory.Delete(work, true);
+            Directory.CreateDirectory(files);
+            log("распаковка архива…");
+            await Task.Run(() => System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, files, true));
+
+            var script = Path.Combine(work, "apply.cmd");
+            var exe = Path.Combine(targetDir, exeName);
+            string q(string x) => "\"" + x.TrimEnd('\\') + "\"";
+            var content = string.Join("\r\n", new[]
+            {
+                "@echo off",
+                "setlocal",
+                ":wait",
+                "tasklist /FI \"IMAGENAME eq " + exeName + "\" 2>nul | find /I \"" + exeName + "\" >nul",
+                "if not errorlevel 1 (",
+                "  timeout /t 1 /nobreak >nul",
+                "  goto wait",
+                ")",
+                "robocopy " + q(files) + " " + q(targetDir) + " /E /NFL /NDL /NJH /NJS /NP /XF license.key update.json setup-error.log error.log /XD campaign >nul",
+                "start \"\" " + q(exe),
+                "timeout /t 2 /nobreak >nul",
+                "rd /s /q " + q(work) + " >nul 2>nul",
+                "del /q \"%~f0\" >nul 2>nul",
+            }) + "\r\n";
+            File.WriteAllText(script, content, System.Text.Encoding.Default);
+
+            var info = new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c \"" + script + "\"")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WorkingDirectory = work,
+            };
+            var proc = System.Diagnostics.Process.Start(info);
+            if (proc == null) { log("не удалось запустить скрипт обновления"); return false; }
+            return true;
+        }
+        catch (Exception ex) { log("ошибка обновления: " + ex.Message); return false; }
     }
 
     private static bool IsNewer(string latest, string current)
