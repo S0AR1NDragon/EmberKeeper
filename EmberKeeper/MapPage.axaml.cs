@@ -28,6 +28,14 @@ public partial class MapPage : UserControl
         _doc = _book.Maps[_book.Active];
         _view = new MapView(_doc) { DoubleClick = () => OpenCurrent() };
         InitializeComponent();
+
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_MAP_PLAYER") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try { OpenPlayerWindow(); } catch { }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
         Live.AttachDoc(_doc);
         _view.Save = SaveAll;
         _view.Changed += Sync;

@@ -212,6 +212,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     private Prop? _propHit;
     private bool[,]? _vis;
     private DateTime _lastExploredSave = DateTime.MinValue;
+    private DateTime _visTime = DateTime.MinValue;
     private Point _propDragStart;
     private Point _propTokenStart;
 
@@ -352,8 +353,13 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         // туман войны: темнота, освещённое/увиденное открывается
         if (Doc.FogOn)
         {
-            bool[,] vis = MapVision.Compute(Doc);
-            _vis = vis;
+            // пересчёт обзора не чаще 5 раз в секунду
+            if (_vis == null || (DateTime.UtcNow - _visTime).TotalMilliseconds > 200)
+            {
+                _vis = MapVision.Compute(Doc);
+                _visTime = DateTime.UtcNow;
+            }
+            bool[,] vis = _vis;
             var darkBrush = new SolidColorBrush(Color.FromArgb(238, 6, 5, 4));
             var memBrush = new SolidColorBrush(Color.FromArgb(150, 9, 7, 6));
             bool exploredChanged = false;
