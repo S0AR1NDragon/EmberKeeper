@@ -99,6 +99,8 @@ public sealed class MapDoc
     /// <summary>Игроки уже видели эту клетку.</summary>
     public List<bool> Explored { get; set; } = new();
     public string Background { get; set; } = "";
+    /// <summary>Масштаб фона: пикселей карты на пиксель изображения. 0 — подобрать автоматически.</summary>
+    public double BgScale { get; set; }
     public string GridShape { get; set; } = "square";
     /// <summary>Сдвиг сетки относительно фона, в клетках (калибровка).</summary>
     public double GridOffX { get; set; }
@@ -393,12 +395,8 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         double dy = (p.Y - _gaStartMouse.Y) / Zoom;
         if (_gaMoving)
         {
-            double cell = Math.Max(16, _gaOrigCell);
-            double nx = _gaStartX + dx;
-            double ny = _gaStartY + dy;
-            // двигаем целыми клетками текущей сетки
-            _gaX = (Math.Round(nx / cell - _gaOrigOffX) + _gaOrigOffX) * cell;
-            _gaY = (Math.Round(ny / cell - _gaOrigOffY) + _gaOrigOffY) * cell;
+            _gaX = _gaStartX + dx;
+            _gaY = _gaStartY + dy;
         }
         else
         {
@@ -465,10 +463,6 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         double qy = _gaY / cell;
         Doc.GridOffY = qy - Math.Floor(qy);
 
-        // сохраняем прежний размер карты в пикселях
-        Doc.Cols = Math.Clamp((int)Math.Ceiling(mapW / cell), 3, 200);
-        Doc.Rows = Math.Clamp((int)Math.Ceiling(mapH / cell), 3, 200);
-        Doc.EnsureVision();
         ResetVisionCache();
         Changed?.Invoke();
         InvalidateVisual();
@@ -490,8 +484,11 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         if (_bg != null)
         {
             int cell = Math.Max(8, Doc.GridSize);
-            cols = Math.Max(cols, (int)Math.Ceiling(_bg.PixelSize.Width / (double)cell));
-            rows = Math.Max(rows, (int)Math.Ceiling(_bg.PixelSize.Height / (double)cell));
+            double bgScale = Doc.BgScale;
+            if (bgScale <= 0.0001)
+                bgScale = Math.Max(0.01, Doc.Cols * (double)Doc.GridSize / Math.Max(1, _bg.PixelSize.Width));
+            cols = Math.Max(cols, (int)Math.Ceiling(_bg.PixelSize.Width * bgScale / cell));
+            rows = Math.Max(rows, (int)Math.Ceiling(_bg.PixelSize.Height * bgScale / cell));
         }
         return (cols, rows);
     }
@@ -601,7 +598,15 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
         var mapRect = new Rect(ox, oy, Doc.Cols * g, Doc.Rows * g);
         if (_bg != null)
-            ctx.DrawImage(_bg, mapRect);
+        {
+            ctx.FillRectangle(new SolidColorBrush(Pal.C("#1c1714")), mapRect);
+            double bgScale = Doc.BgScale;
+            if (bgScale <= 0.0001)
+                bgScale = Math.Max(0.01, Doc.Cols * (double)Doc.GridSize / Math.Max(1, _bg.PixelSize.Width));
+            ctx.DrawImage(_bg, new Rect(ox, oy,
+                _bg.PixelSize.Width * bgScale * Zoom,
+                _bg.PixelSize.Height * bgScale * Zoom));
+        }
         else
             ctx.FillRectangle(new SolidColorBrush(Pal.C("#1c1714")), mapRect);
 

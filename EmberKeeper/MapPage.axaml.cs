@@ -78,18 +78,19 @@ public partial class MapPage : UserControl
                 try
                 {
                     _view.StartGridAdjust();
-                    int before = _doc.GridSize;
+                    double bgBefore = _doc.BgScale;
+                    int colsBefore = _doc.Cols;
                     var r = _view.GetAdjustRectScreen();
-                    bool dragStarted = _view.BeginGridDrag(new Avalonia.Point(r.Right - 2, r.Bottom - 2));
+                    bool started = _view.BeginGridDrag(new Avalonia.Point(r.Right - 2, r.Bottom - 2));
                     _view.GridAdjustMove(new Avalonia.Point(r.Right + 58, r.Bottom + 58));
-                    int during = _doc.GridSize;
                     _view.EndGridDrag();
-                    int after = _doc.GridSize;
+                    double bgAfter = _doc.BgScale;
+                    int colsAfter = _doc.Cols;
+                    int cellAfter = _doc.GridSize;
                     _view.StopGridAdjust(true);
-                    int revert = _doc.GridSize;
                     _view.StartGridAdjust();
                     System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "ga_test.txt"),
-                        $"before={before} during={during} after={after} revert={revert} dragStarted={dragStarted} adjusting={_view.GridAdjusting}");
+                        $"bgBefore={bgBefore:F4} bgAfter={bgAfter:F4} colsBefore={colsBefore} colsAfter={colsAfter} cellAfter={cellAfter} started={started}");
                 }
                 catch (Exception ex)
                 {
@@ -334,6 +335,7 @@ public partial class MapPage : UserControl
         OnBattleChanged();
 
         BuildColorPalette();
+        EnsureBgScale();
         RefreshLocations();
         Host.Content = _view;
         Loaded += (_, _) => _view.ResetView(_view.Bounds.Width, _view.Bounds.Height);
@@ -515,6 +517,21 @@ public partial class MapPage : UserControl
     }
 
     /* ---------------- синхронизация панели ---------------- */
+
+    /// <summary>Зафиксировать масштаб фона для старых карт.</summary>
+    private void EnsureBgScale()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_doc.Background) || _doc.BgScale > 0.0001) return;
+            if (!System.IO.File.Exists(_doc.Background)) return;
+            var sz = ImageSize(_doc.Background);
+            if (sz.Width <= 0) return;
+            _doc.BgScale = Math.Max(0.01, _doc.Cols * (double)_doc.GridSize / sz.Width);
+            SaveAll();
+        }
+        catch { }
+    }
 
     private void Sync()
     {
@@ -738,7 +755,6 @@ public partial class MapPage : UserControl
         if (_syncing) return;
         _doc.GridSize = (int)Math.Round(SldGridPx.Value);
         if (GridPxText != null) GridPxText.Text = _doc.GridSize.ToString();
-        FitCellsToBackground();
         _view?.ResetVisionCache();
         // сохраняем не на каждый тик, а через 350 мс после остановки ползунка
         _gridSaveTimer ??= new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(350) };
@@ -1357,6 +1373,7 @@ public partial class MapPage : UserControl
 
     private void OnClearBackground(object? sender, RoutedEventArgs e)
     {
+        _doc.BgScale = 0;
         _view.SetBackground("");
         SaveAll();
     }
