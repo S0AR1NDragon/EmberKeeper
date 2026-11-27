@@ -29,6 +29,30 @@ public partial class MapPage : UserControl
         _view = new MapView(_doc) { DoubleClick = () => OpenCurrent() };
         InitializeComponent();
 
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_BATTLE") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    var order = _doc.Tokens.Select(t => new Combatant
+                    {
+                        Name = t.Name,
+                        Init = t.Init,
+                        Hp = t.Hp,
+                        MaxHp = t.MaxHp,
+                        Ac = t.Ac,
+                        IsPc = t.Type == "player",
+                    }).OrderByDescending(c => c.Init).ToList();
+                    BattleState.Set(order, 1, 3);
+                    _view.ActiveName = BattleState.CurrentName;
+                    _view.InvalidateVisual();
+                    OpenPlayerWindow();
+                }
+                catch { }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_MAP_PLAYER") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
