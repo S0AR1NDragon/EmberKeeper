@@ -62,7 +62,6 @@ public static class MapStore
     public static MapDoc NewMap(string name)
     {
         var d = new MapDoc { Name = name };
-        d.Tokens.Add(new Token { Name = "Герой", X = 4, Y = 4, Color = "#d99b4a", Type = "player", Ref = "hero", LightOn = true, LightFt = 30 });
         Normalize(d);
         return d;
     }

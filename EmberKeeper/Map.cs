@@ -125,13 +125,6 @@ public sealed class MapDoc
         }
         catch { d = new MapDoc(); }
 
-        if (d.Tokens.Count == 0)
-        {
-            d.Tokens.Add(new Token { Name = "Герой", X = 4, Y = 4, Color = "#d99b4a", Type = "player", Ref = "hero", LightOn = true, LightFt = 30 });
-            d.Tokens.Add(new Token { Name = "Гоблин", X = 9, Y = 5, Color = "#7c2a2c", Hp = 7, MaxHp = 7, Init = 12, Type = "mob", Ref = "goblin" });
-            d.Tokens.Add(new Token { Name = "Гоблин", X = 9, Y = 7, Color = "#7c2a2c", Hp = 7, MaxHp = 7, Init = 9, Type = "mob", Ref = "goblin" });
-        }
-
         d.EnsureVision();
         return d;
     }
@@ -312,7 +305,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     public void ZoomBy(double factor, Point? center = null)
     {
         double old = Zoom;
-        Zoom = Math.Clamp(Zoom * factor, 0.25, 3.0);
+        Zoom = Math.Clamp(Zoom * factor, 0.05, 3.0);
         if (center is Point c)
         {
             _off = new Point(c.X - (c.X - _off.X) * (Zoom / old), c.Y - (c.Y - _off.Y) * (Zoom / old));
@@ -324,7 +317,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     {
         double grid = Doc.GridSize;
         double fit = Math.Min(w / (Doc.Cols * grid + 80), h / (Doc.Rows * grid + 80));
-        Zoom = Math.Clamp(fit, 0.25, 3.0);
+        Zoom = Math.Clamp(fit, 0.05, 3.0);
         _off = new Point((w - Doc.Cols * grid * Zoom) / 2, (h - Doc.Rows * grid * Zoom) / 2);
         InvalidateVisual();
     }
