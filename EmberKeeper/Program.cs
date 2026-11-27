@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Threading;
 using System;
@@ -151,6 +151,18 @@ class Program
                 }
             }
             sb.AppendLine("генераторы с ошибками: " + bad);
+
+            // проверка умений классов: у каждого должно быть до 20 уровня
+            foreach (var ed in new[] { "2014", "2024" })
+            {
+                foreach (var cls in DataStore.Load(ed, "classes"))
+                {
+                    var feats = ClassInfo.AllFeatures(cls, null).Where(f => !f.IsSub).ToList();
+                    var levels = feats.Select(f => f.Level).ToList();
+                    int maxLv = levels.Count > 0 ? levels.Max() : 0;
+                    sb.AppendLine($"CLASS {ed} {cls.N}: n={feats.Count} max={maxLv} lv=[{string.Join(",", levels)}]");
+                }
+            }
 
             sb.AppendLine("SELFTEST OK");
         }

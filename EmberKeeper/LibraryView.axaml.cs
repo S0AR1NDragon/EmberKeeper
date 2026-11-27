@@ -53,6 +53,21 @@ public partial class LibraryView : UserControl
         Reload();
         if (libTest == "subs") { _tab = "subs"; RenderDetail(); }
         else if (libTest == "sub") { _sub = 0; _tab = "features"; RenderDetail(); }
+        else if (libTest.StartsWith("class:"))
+        {
+            var parts = libTest.Split(':');
+            if (parts.Length >= 3)
+            {
+                _edition = parts[1];
+                Ed2014.Classes.Set("on", _edition == "2014");
+                Ed2024.Classes.Set("on", _edition == "2024");
+                Reload();
+                int ci = _view.FindIndex(e => e.N == parts[2]);
+                if (ci >= 0) LibList.SelectedIndex = ci;
+                _tab = "features";
+                RenderDetail();
+            }
+        }
         else if (libTest == "druid2024")
         {
             _edition = "2024";

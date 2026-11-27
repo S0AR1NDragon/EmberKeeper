@@ -108,8 +108,7 @@ public static class ClassInfo
                line.StartsWith("Хиты за уровень", StringComparison.OrdinalIgnoreCase) ||
                line.StartsWith("Снаряжение", StringComparison.OrdinalIgnoreCase) ||
                line.StartsWith("Начальное снаряжение", StringComparison.OrdinalIgnoreCase) ||
-               line.Equals("Умения", StringComparison.OrdinalIgnoreCase) ||
-               line.StartsWith("Ключевые атрибуты", StringComparison.OrdinalIgnoreCase);
+               line.Equals("Умения", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Разбор «Ключевые атрибуты» из текста 2024.</summary>
@@ -122,6 +121,8 @@ public static class ClassInfo
         if (at < 0) return res;
         var tail = text.Substring(at);
         var lines = tail.Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).ToList();
+        int start = lines.FindIndex(l => l.StartsWith("Ключевые атрибуты", StringComparison.OrdinalIgnoreCase));
+        if (start >= 0) lines = lines.Skip(start + 1).ToList();
         if (lines.Count > 60) lines = lines.Take(60).ToList();
 
         for (int i = 0; i + 1 < lines.Count; i++)
@@ -258,7 +259,7 @@ public static class ClassInfo
         }
         else
         {
-            foreach (var (level, title, body) in FeaturesFromText(ClassText(x))) list.Add((level, title, body, false));
+            foreach (var (level, title, body) in FeaturesFromText(x.H ?? "")) list.Add((level, title, body, false));
         }
 
         if (sub != null)
