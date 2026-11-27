@@ -60,7 +60,7 @@ public sealed class Prop
     public double X { get; set; }
     public double Y { get; set; }
     public double Cells { get; set; } = 1;
-    public string Icon { get; set; } = "📦";
+    public string Icon { get; set; } = "box";
     public string Name { get; set; } = "Сундук";
 }
 
@@ -172,7 +172,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
     /// <summary>Экран игроков: скрытые токены не рисуются.</summary>
     public bool PlayerMode { get; set; }
     public double TplAngle { get; set; }
-    public string PropIcon { get; set; } = "📦";
+    public string PropIcon { get; set; } = "box";
     private Point? _tplStart;
     private Point? _rulerStart;
     private Point _rulerEnd;
@@ -403,9 +403,14 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         {
             double size = pr.Cells * g;
             var center = new Point(ox + (pr.X + pr.Cells / 2.0) * g, oy + (pr.Y + pr.Cells / 2.0) * g);
-            var ft = new FormattedText(pr.Icon, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-                new Typeface("Segoe UI Emoji"), Math.Max(12, size * 0.9), Brushes.White);
-            ctx.DrawText(ft, new Point(center.X - ft.Width / 2, center.Y - ft.Height / 2));
+            double r = Math.Max(6, size * 0.34);
+            ctx.DrawEllipse(new SolidColorBrush(Color.FromArgb(215, 44, 34, 26)),
+                new Pen(new SolidColorBrush(Pal.C("#8c7030")), 1.4), center, r, r);
+            var letter = new FormattedText(
+                (pr.Name.Length > 0 ? pr.Name.Substring(0, 1) : "?").ToUpperInvariant(),
+                CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+                new Typeface("Georgia"), Math.Max(10, r * 1.1), new SolidColorBrush(Pal.C("#f0c27b")));
+            ctx.DrawText(letter, new Point(center.X - letter.Width / 2, center.Y - letter.Height / 2));
             var pn = new FormattedText(pr.Name, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                 new Typeface("Segoe UI"), 10, new SolidColorBrush(Pal.C("#b7a794")));
             ctx.DrawText(pn, new Point(center.X - pn.Width / 2, center.Y + size / 2 + 2));
@@ -493,14 +498,14 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
     private static string PropName(string icon) => icon switch
     {
-        "📦" => "Сундук",
-        "🚪" => "Дверь",
-        "⛵" => "Лодка",
-        "🔥" => "Костёр",
-        "🗿" => "Статуя",
-        "🌳" => "Дерево",
-        "🛏" => "Кровать",
-        "⚰" => "Гроб",
+        "box" => "Сундук",
+        "door" => "Дверь",
+        "boat" => "Лодка",
+        "fire" => "Костёр",
+        "statue" => "Статуя",
+        "tree" => "Дерево",
+        "bed" => "Кровать",
+        "coffin" => "Гроб",
         _ => "Объект",
     };
 

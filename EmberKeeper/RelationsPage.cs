@@ -62,7 +62,7 @@ public sealed class RelationsPage : UserControl
 
         toolbar.Children.Add(Btn("＋ Добавить", AddFromList, true));
         toolbar.Children.Add(Btn("＋ Свой узел", AddCustom));
-        toolbar.Children.Add(Btn("✕ Удалить", DeleteSelected));
+        toolbar.Children.Add(Btn("Удалить", DeleteSelected));
 
         _linkKind = new ComboBox
         {
@@ -81,7 +81,7 @@ public sealed class RelationsPage : UserControl
 
         _linkMode = new ToggleButton
         {
-            Content = "⇢ Связать",
+            Content = "Связать",
             Padding = new Thickness(12, 7),
             CornerRadius = new CornerRadius(9),
             Margin = new Thickness(0, 0, 8, 6),
@@ -102,7 +102,7 @@ public sealed class RelationsPage : UserControl
 
         _status = new TextBlock
         {
-            Text = "Перетаскивайте узлы мышью. Для связи включите «⇢ Связать» и кликните два узла.",
+            Text = "Перетаскивайте узлы мышью. Для связи нажмите «Связать» и кликните два узла.",
             Foreground = Pal.B("#9c8b78"),
             FontSize = 11.5,
             VerticalAlignment = VerticalAlignment.Center,
@@ -164,8 +164,8 @@ public sealed class RelationsPage : UserControl
     private void ReloadCharacters()
     {
         var names = new List<string>();
-        names.AddRange(HeroStore.Load().Select(h => "🛡 " + h.Name));
-        names.AddRange(NpcStore.Load().Select(n => "☗ " + n.Name));
+        names.AddRange(HeroStore.Load().Select(h => "Герой: " + h.Name));
+        names.AddRange(NpcStore.Load().Select(n => "НПС: " + n.Name));
         if (names.Count == 0) names.Add("(нет героев и НПС)");
         _charBox.ItemsSource = names;
         _charBox.SelectedIndex = 0;
@@ -215,13 +215,17 @@ public sealed class RelationsPage : UserControl
     {
         var raw = _charBox.SelectedItem as string;
         if (string.IsNullOrWhiteSpace(raw) || raw.StartsWith("(")) return;
-        var name = raw.Substring(2).Trim();
+
+        bool isHero = raw.StartsWith("Герой: ", StringComparison.Ordinal);
+        bool isNpc = raw.StartsWith("НПС: ", StringComparison.Ordinal);
+        var name = isHero ? raw.Substring(7).Trim() : isNpc ? raw.Substring(5).Trim() : raw.Trim();
+        if (string.IsNullOrWhiteSpace(name)) return;
         if (_map.Nodes.Any(n => string.Equals(n.Name, name, StringComparison.OrdinalIgnoreCase))) return;
 
         var node = new RelNode
         {
             Name = name,
-            Kind = raw.StartsWith("🛡") ? "hero" : "npc",
+            Kind = isHero ? "hero" : "npc",
             X = 60 + (_map.Nodes.Count % 5) * 180,
             Y = 60 + (_map.Nodes.Count / 5) * 110,
         };

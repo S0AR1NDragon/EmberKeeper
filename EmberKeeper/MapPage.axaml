@@ -82,23 +82,23 @@
       <WrapPanel Orientation="Horizontal">
         <TextBlock Text="Локация:" VerticalAlignment="Center" Foreground="{DynamicResource C_9c8b78}" FontSize="12" Margin="0,0,8,0" />
         <ComboBox x:Name="LocCombo" Width="200" Margin="0,0,6,6" SelectionChanged="OnLocationChanged" />
-        <Button Classes="tool" Content="＋ Локация" Click="OnAddLocation" />
-        <Button Classes="tool" Content="✕" Click="OnDeleteLocation" />
-        <Button Classes="tool" Content="✎ Имя" Click="OnRenameLocation" />
+        <Button Classes="tool" Content="Добавить" Click="OnAddLocation" />
+        <Button Classes="tool" Content="Удалить" Click="OnDeleteLocation" />
+        <Button Classes="tool" Content="Имя" Click="OnRenameLocation" />
         <Border Width="1" Background="{DynamicResource C_2a211a}" Margin="6,2,12,8" />
-        <Button x:Name="ToolSelect" Classes="tool on" Content="✥  Выбор" Click="OnTool" Tag="select" />
-        <Button x:Name="ToolWall" Classes="tool" Content="▭  Стена" Click="OnTool" Tag="wall" />
-        <Button x:Name="ToolFog" Classes="tool" Content="🌫 Туман" Click="OnTool" Tag="fog" />
-        <Button x:Name="ToolTemplate" Classes="tool" Content="◯ Шаблон" Click="OnTool" Tag="template" />
-        <Button x:Name="ToolProp" Classes="tool" Content="📦 Проп" Click="OnTool" Tag="prop" />
-        <Button x:Name="ToolRuler" Classes="tool" Content="📏 Линейка" Click="OnTool" Tag="ruler" />
+        <Button x:Name="ToolSelect" Classes="tool on" Content="Выбор" Click="OnTool" Tag="select" />
+        <Button x:Name="ToolWall" Classes="tool" Content="Стена" Click="OnTool" Tag="wall" />
+        <Button x:Name="ToolFog" Classes="tool" Content="Туман" Click="OnTool" Tag="fog" />
+        <Button x:Name="ToolTemplate" Classes="tool" Content="Шаблон" Click="OnTool" Tag="template" />
+        <Button x:Name="ToolProp" Classes="tool" Content="Проп" Click="OnTool" Tag="prop" />
+        <Button x:Name="ToolRuler" Classes="tool" Content="Линейка" Click="OnTool" Tag="ruler" />
         <Border Width="1" Background="{DynamicResource C_2a211a}" Margin="6,2,12,8" />
-        <Button Classes="tool" Content="－" Click="OnZoomOut" />
-        <Button Classes="tool" Content="＋" Click="OnZoomIn" />
-        <Button Classes="tool" Content="⤢ По размеру" Click="OnFit" />
-        <Button Classes="tool" Content="🖼 Фон…" Click="OnBackground" />
-        <Button Classes="tool" Content="🧹 Убрать фон" Click="OnClearBackground" />
-        <Button Classes="tool" Content="👁 Игрокам" Click="OnPlayerView" />
+        <Button Classes="tool" Content="−" Click="OnZoomOut" />
+        <Button Classes="tool" Content="+" Click="OnZoomIn" />
+        <Button Classes="tool" Content="По размеру" Click="OnFit" />
+        <Button Classes="tool" Content="Фон…" Click="OnBackground" />
+        <Button Classes="tool" Content="Убрать фон" Click="OnClearBackground" />
+        <Button Classes="tool" Content="Игрокам" Click="OnPlayerView" />
       </WrapPanel>
     </Border>
 
@@ -124,20 +124,21 @@
               <TextBlock Classes="sec" Text="Токен" />
               <TextBox x:Name="EdName" Classes="field" Watermark="Имя токена" TextChanged="OnNameChanged" Margin="0,0,0,8" />
 
-              <Grid ColumnDefinitions="*,*,*" Margin="0,0,0,8">
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,0,0,8">
                 <StackPanel>
-                  <TextBlock Classes="lbl" Text="РАЗМЕР, КЛЕТОК" />
-                  <NumericUpDown x:Name="EdSize" Minimum="1" Maximum="8" Width="86" ValueChanged="OnSizeChanged" />
+                  <TextBlock Classes="lbl" Text="ХИТЫ" />
+                  <NumericUpDown x:Name="EdHp" Minimum="-999" Maximum="9999" HorizontalAlignment="Stretch" ValueChanged="OnHpChanged" />
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                  <TextBlock Classes="lbl" Text="ХИТЫ" />
-                  <NumericUpDown x:Name="EdHp" Minimum="-999" Maximum="9999" Width="86" ValueChanged="OnHpChanged" />
-                </StackPanel>
-                <StackPanel Grid.Column="2">
-                  <TextBlock Classes="lbl" Text="МАКС." />
-                  <NumericUpDown x:Name="EdMaxHp" Minimum="1" Maximum="9999" Width="86" ValueChanged="OnMaxHpChanged" />
+                  <TextBlock Classes="lbl" Text="МАКС. ХИТЫ" />
+                  <NumericUpDown x:Name="EdMaxHp" Minimum="1" Maximum="9999" HorizontalAlignment="Stretch" ValueChanged="OnMaxHpChanged" />
                 </StackPanel>
               </Grid>
+
+              <StackPanel Margin="0,0,0,8">
+                <TextBlock Classes="lbl" Text="РАЗМЕР, КЛЕТОК" />
+                <NumericUpDown x:Name="EdSize" Minimum="1" Maximum="8" HorizontalAlignment="Stretch" ValueChanged="OnSizeChanged" />
+              </StackPanel>
 
               <TextBlock Classes="lbl" Text="ЦВЕТ" />
               <WrapPanel x:Name="ColorHost" Orientation="Horizontal" Margin="0,0,0,8" />
@@ -145,13 +146,13 @@
               <CheckBox x:Name="CbAura" Content="Аура" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnAuraChanged" />
               <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,6">
                 <TextBlock Classes="lbl" Text="РАДИУС АУРЫ, ФТ" VerticalAlignment="Center" />
-                <NumericUpDown x:Name="EdAuraFt" Grid.Column="1" Minimum="5" Maximum="200" Width="86" ValueChanged="OnAuraFtChanged" />
+                <NumericUpDown x:Name="EdAuraFt" Grid.Column="1" Minimum="5" Maximum="200" Width="110" ValueChanged="OnAuraFtChanged" />
               </Grid>
 
               <CheckBox x:Name="CbLight" Content="Свет" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnLightChanged" />
               <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,6">
                 <TextBlock Classes="lbl" Text="РАДИУС СВЕТА, ФТ" VerticalAlignment="Center" />
-                <NumericUpDown x:Name="EdLightFt" Grid.Column="1" Minimum="5" Maximum="200" Width="86" ValueChanged="OnLightFtChanged" />
+                <NumericUpDown x:Name="EdLightFt" Grid.Column="1" Minimum="5" Maximum="200" Width="110" ValueChanged="OnLightFtChanged" />
               </Grid>
 
               <CheckBox x:Name="CbHidden" Content="Скрыт от игроков" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnHiddenChanged" Margin="0,0,0,6" />
@@ -163,8 +164,8 @@
               </ComboBox>
 
               <StackPanel Orientation="Horizontal" Spacing="6">
-                <Button Classes="tool" Content="＋ Токен" Click="OnAddToken" />
-                <Button Classes="tool" Content="✕ Удалить" Click="OnDeleteToken" />
+                <Button Classes="tool" Content="+ Токен" Click="OnAddToken" />
+                <Button Classes="tool" Content="Удалить" Click="OnDeleteToken" />
               </StackPanel>
               <Button x:Name="OpenBtn" Classes="goldbtn" Content="Открыть лист" Click="OnOpenSheet" Margin="0,8,0,0" HorizontalAlignment="Stretch" />
             </StackPanel>
@@ -194,8 +195,8 @@
               <CheckBox x:Name="CbFog" Content="Туман войны" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnFogChanged" />
 
               <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
-                <Button Classes="tool" Content="🗑 Стены" Click="OnClearWalls" />
-                <Button Classes="tool" Content="🗑 Шаблоны" Click="OnClearTemplates" />
+                <Button Classes="tool" Content="Очистить стены" Click="OnClearWalls" />
+                <Button Classes="tool" Content="Очистить шаблоны" Click="OnClearTemplates" />
               </StackPanel>
             </StackPanel>
 

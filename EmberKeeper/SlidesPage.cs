@@ -86,8 +86,8 @@ public sealed class SlidesPage : UserControl
         var head = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(14, 12, 14, 8) };
         head.Children.Add(new Border { Width = 4, Height = 22, CornerRadius = new CornerRadius(2), Background = Pal.B("#d99b4a") });
         head.Children.Add(new TextBlock { Text = "Сцены", FontFamily = new FontFamily("Georgia"), FontSize = 20, FontWeight = FontWeight.Bold, Foreground = Pal.B("#f6e7cf") });
-        head.Children.Add(Btn("＋", AddScene));
-        head.Children.Add(Btn("✕", DeleteScene));
+        head.Children.Add(Btn("+", AddScene));
+        head.Children.Add(Btn("Удалить", DeleteScene));
 
         _list.Background = Brushes.Transparent;
         _list.BorderThickness = new Thickness(0);
@@ -162,11 +162,11 @@ public sealed class SlidesPage : UserControl
         root.Children.Add(stageBorder);
 
         var bar = new WrapPanel();
-        bar.Children.Add(Btn("🖼 Фон…", PickBackground));
-        bar.Children.Add(Btn("🧹 Убрать фон", ClearBackground));
-        bar.Children.Add(Btn("＋ Элемент…", AddElement));
-        bar.Children.Add(Btn("🖼 Превью эл.", SetElementImage));
-        bar.Children.Add(Btn("▶ Показать", Present, true));
+        bar.Children.Add(Btn("Фон…", PickBackground));
+        bar.Children.Add(Btn("Убрать фон", ClearBackground));
+        bar.Children.Add(Btn("+ Элемент…", AddElement));
+        bar.Children.Add(Btn("Картинка", SetElementImage));
+        bar.Children.Add(Btn("Показать", Present, true));
         bar.Children.Add(_status);
         root.Children.Add(bar);
 
@@ -203,7 +203,7 @@ public sealed class SlidesPage : UserControl
         head.Children.Add(_elementTitle);
         head.Children.Add(Btn("Дублировать", DuplicateElement));
         head.Children.Add(Btn("Наверх", () => { if (_selected != null) Render(); }));
-        head.Children.Add(Btn("✕ Удалить", DeleteElement));
+        head.Children.Add(Btn("Удалить", DeleteElement));
         _elementBar.Children.Add(head);
 
         var row = new WrapPanel();

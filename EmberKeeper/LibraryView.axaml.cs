@@ -15,13 +15,13 @@ public partial class LibraryView : UserControl
 {
     private static readonly (string Key, string Title, string Icon)[] Cats =
     {
-        ("classes", "Классы", "⚔"),
-        ("races", "Виды", "✦"),
-        ("backgrounds", "Предыстории", "❖"),
-        ("feats", "Черты", "✧"),
-        ("spells", "Заклинания", "✴"),
-        ("items", "Предметы", "◈"),
-        ("bestiary", "Бестиарий", "☠"),
+        ("classes", "Классы", ""),
+        ("races", "Виды", ""),
+        ("backgrounds", "Предыстории", ""),
+        ("feats", "Черты", ""),
+        ("spells", "Заклинания", ""),
+        ("items", "Предметы", ""),
+        ("bestiary", "Бестиарий", ""),
     };
 
     private string _edition = "2014";
@@ -91,7 +91,7 @@ public partial class LibraryView : UserControl
         {
             var (key, title, icon) = Cats[i];
             _counts.TryGetValue($"{_edition}-{key}", out int cnt);
-            _chips[i].Content = cnt > 0 ? $"{icon}  {title}  {cnt}" : $"{icon}  {title}";
+            _chips[i].Content = cnt > 0 ? $"{title}  {cnt}" : title;
             _chips[i].Classes.Set("on", i == _cat);
         }
     }

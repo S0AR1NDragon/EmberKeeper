@@ -238,7 +238,7 @@ public partial class NpcPage : UserControl
     private void OnPlayMusic(object? sender, RoutedEventArgs e)
     {
         if (Cur is not Npc n || string.IsNullOrEmpty(n.Music) || !File.Exists(n.Music)) return;
-        if (Audio.Play(n.Music)) MusicLabel.Text = "▶ " + Path.GetFileName(n.Music);
+        if (Audio.Play(n.Music)) MusicLabel.Text = "Играет: " + Path.GetFileName(n.Music);
         else MusicLabel.Text = "не удалось воспроизвести";
     }
 

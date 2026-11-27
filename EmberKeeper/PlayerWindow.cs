@@ -212,7 +212,7 @@ public sealed class PlayerWindow : Window
                 });
                 info.Children.Add(new TextBlock
                 {
-                    Text = (c.IsPc ? "🛡 Герой" : "⚔ Враг") + $" · {c.Hp}/{c.MaxHp} ХП",
+                    Text = (c.IsPc ? "Герой" : "Враг") + $" · {c.Hp}/{c.MaxHp} ХП",
                     FontSize = 10.5,
                     Foreground = Pal.B("#8d7a66"),
                 });

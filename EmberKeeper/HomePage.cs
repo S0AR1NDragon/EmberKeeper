@@ -38,14 +38,17 @@ public sealed class HomePage : UserControl
 
         // шапка
         var head = new StackPanel { Spacing = 4 };
-        head.Children.Add(new TextBlock
+        var brand = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+        brand.Children.Add(Icons.Make("sparkle", 30, "#d99b4a"));
+        brand.Children.Add(new TextBlock
         {
-            Text = "✦ EMBERKEEPER",
+            Text = "EMBERKEEPER",
             FontFamily = new FontFamily("Georgia"),
             FontSize = 34,
             FontWeight = FontWeight.Bold,
             Foreground = new SolidColorBrush(Gold),
         });
+        head.Children.Add(brand);
         head.Children.Add(new TextBlock
         {
             Text = "Рабочий стол мастера: карта, инициатива, слайды, листы и библиотека — в одном окне.",
@@ -73,12 +76,12 @@ public sealed class HomePage : UserControl
                 Hint("Карта — тащите токены мышью, Alt+ЛКМ панорама, колесо масштаб, двойной клик открывает лист."),
                 Hint("Несколько локаций — переключатель «Локация» сверху карты, у каждой свой фон и свой набор токенов."),
                 Hint("Кости — кнопка «d20 +» справа сверху: любые кубики, количество и преимущество/помеха."),
-                Hint("Экран игроков: «▣ Экран игроков» или Ctrl+P. Двойной клик по токену открывает лист."),
+                Hint("Экран игроков: кнопка «Экран» сверху или Ctrl+P. Двойной клик по токену открывает лист."),
                 Hint("Скрытые токены: флажок «Скрыт от игроков» — на втором экране их не видно."),
                 Hint("Горячие клавиши: Ctrl+D — кости, Ctrl+P — экран игроков, Ctrl+F — поиск, Ctrl+M — меню."),
                 Hint("Сцены: «＋ Элемент…» добавляет картинку на сцену, её можно перетаскивать мышью."),
-                Hint("Связи: раздел «⛓ Связи» — граф персонажей, включая режим «⇢ Связать»."),
-                Hint("Генераторы (✧ сверху): связи, характер НПС, стычки, добыча, таверны, тайны, погода — 15 наборов."),
+                Hint("Связи: раздел «Связи» — граф персонажей, включая режим «Связать»."),
+                Hint("Генераторы (кнопка сверху): связи, характер НПС, стычки, добыча, таверны, тайны, погода — 15 наборов."),
                 Hint("Случайная стычка: «→ На карту» сразу расставит противников токенами на текущей локации."),
             },
         }));
@@ -131,18 +134,18 @@ public sealed class HomePage : UserControl
         stack.Children.Add(line);
 
         var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 4, 0, 4) };
-        var exportBtn = new Button { Content = "⤓ Экспорт кампании" };
+        var exportBtn = new Button { Content = Icons.Row("download", "Экспорт кампании", 15, "#efe3d2", "#efe3d2") };
         exportBtn.Click += (_, _) => OnExport?.Invoke();
-        var importBtn = new Button { Content = "⤒ Импорт кампании" };
+        var importBtn = new Button { Content = Icons.Row("upload", "Импорт кампании", 15, "#efe3d2", "#efe3d2") };
         importBtn.Click += (_, _) => OnImport?.Invoke();
         actions.Children.Add(exportBtn);
         actions.Children.Add(importBtn);
 
-        var pauseBtn = new Button { Content = "⏸ Пауза" };
+        var pauseBtn = new Button { Content = Icons.Row("pause", "Пауза", 15, "#efe3d2", "#efe3d2") };
         pauseBtn.Click += (_, _) => OnPause?.Invoke();
-        var finishBtn = new Button { Content = "🏁 Завершить сессию" };
+        var finishBtn = new Button { Content = Icons.Row("flag", "Завершить сессию", 15, "#efe3d2", "#efe3d2") };
         finishBtn.Click += (_, _) => OnFinish?.Invoke();
-        var updateBtn = new Button { Content = "⟳ Обновления" };
+        var updateBtn = new Button { Content = Icons.Row("refresh", "Обновления", 15, "#efe3d2", "#efe3d2") };
         updateBtn.Click += (_, _) => OnUpdates?.Invoke();
         actions.Children.Add(updateBtn);
         actions.Children.Add(pauseBtn);
@@ -213,14 +216,14 @@ public sealed class HomePage : UserControl
 
         var items = new (int idx, string icon, string title, string desc)[]
         {
-            (1, "♜", "Карта", "Локации, токены, туман, стены, шаблоны"),
-            (2, "⚔", "Инициатива", "Бойцы, броски, ходы и раунды"),
-            (3, "◈", "Слайды", "Сцены и показ на втором экране"),
-            (4, "✧", "Герои", "Листы: характеристики, спасброски, навыки"),
-            (5, "⌕", "Библиотека", "Заклинания, предметы, бестиарий 2014/2024"),
-            (6, "☗", "НПС", "Карточки, теги, музыка"),
-            (7, "⛓", "Связи", "Отношения, фракции, города"),
-            (8, "✦", "Справочник", "Состояния и правила"),
+            (1, "map", "Карта", "Локации, токены, туман, стены, шаблоны"),
+            (2, "bolt", "Инициатива", "Бойцы, броски, ходы и раунды"),
+            (3, "slides", "Слайды", "Сцены и показ на втором экране"),
+            (4, "person", "Герои", "Листы: характеристики, спасброски, навыки"),
+            (5, "book", "Библиотека", "Заклинания, предметы, бестиарий 2014/2024"),
+            (6, "users", "НПС", "Карточки, теги, музыка"),
+            (7, "link", "Связи", "Отношения, фракции, города"),
+            (8, "sparkle", "Справочник", "Состояния и правила"),
         };
 
         foreach (var (idx, icon, title, desc) in items)
@@ -239,7 +242,7 @@ public sealed class HomePage : UserControl
             };
             var sp = new StackPanel { Spacing = 6 };
             var top = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
-            top.Children.Add(new TextBlock { Text = icon, FontSize = 18, Foreground = new SolidColorBrush(Gold), VerticalAlignment = VerticalAlignment.Center });
+            top.Children.Add(Icons.Make(icon, 20, "#d99b4a"));
             top.Children.Add(new TextBlock { Text = title, FontFamily = new FontFamily("Georgia"), FontSize = 16, FontWeight = FontWeight.Bold, Foreground = new SolidColorBrush(Ink), VerticalAlignment = VerticalAlignment.Center });
             sp.Children.Add(top);
             sp.Children.Add(new TextBlock { Text = desc, FontSize = 11.5, Foreground = new SolidColorBrush(Muted), TextWrapping = TextWrapping.Wrap });

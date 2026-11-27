@@ -65,7 +65,7 @@ public partial class InitPage : UserControl
 
             var name = new TextBlock
             {
-                Text = (c.IsPc ? "◆ " : "") + c.Name,
+                Text = c.Name,
                 FontSize = 14,
                 FontWeight = current ? FontWeight.Bold : FontWeight.Normal,
                 Foreground = Pal.B(current ? "#f6e7cf" : "#efe3d2"),
@@ -88,12 +88,12 @@ public partial class InitPage : UserControl
             grid.Children.Add(ac);
             Grid.SetColumn(ac, 4);
 
-            var up = new Button { Content = "▲", Classes = { "tool" }, Width = 40, Padding = new Thickness(6, 4), Margin = new Thickness(10, 0, 0, 0) };
+            var up = new Button { Content = Icons.Make("chevron-up", 14, "#efe3d2"), Classes = { "tool" }, Width = 40, Padding = new Thickness(6, 4), Margin = new Thickness(10, 0, 0, 0) };
             up.Click += (_, _) => { if (idx > 0) { (_list[idx], _list[idx - 1]) = (_list[idx - 1], _list[idx]); InitStore.Save(_list); Render(); } };
             grid.Children.Add(up);
             Grid.SetColumn(up, 5);
 
-            var del = new Button { Content = "✕", Classes = { "tool" }, Width = 40, Padding = new Thickness(6, 4) };
+            var del = new Button { Content = Icons.Make("close", 13, "#efe3d2"), Classes = { "tool" }, Width = 40, Padding = new Thickness(6, 4) };
             del.Click += (_, _) => { _list.RemoveAt(idx); _turn = Math.Min(_turn, Math.Max(0, _list.Count - 1)); InitStore.Save(_list); Render(); };
             grid.Children.Add(del);
             Grid.SetColumn(del, 6);

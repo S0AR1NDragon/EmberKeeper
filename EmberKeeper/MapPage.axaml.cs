@@ -100,7 +100,7 @@ public partial class MapPage : UserControl
         _doc = doc;
         var tool = _view?.Tool ?? "select";
         var tpl = _view?.TplKind ?? "circle";
-        var prop = _view?.PropIcon ?? "📦";
+        var prop = _view?.PropIcon ?? "box";
 
         var view = new MapView(doc) { DoubleClick = () => OpenCurrent() };
         view.Save = SaveAll;

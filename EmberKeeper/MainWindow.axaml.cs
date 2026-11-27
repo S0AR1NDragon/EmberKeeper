@@ -16,15 +16,15 @@ public partial class MainWindow : Window
 
     private static readonly (string Icon, string Label, string Hint)[] Nav =
     {
-        ("⌂", "Главная", "Обзор и последняя сессия"),
-        ("♜", "Карта", "Локации и туман"),
-        ("⚔", "Инициатива", "Ход боя"),
-        ("◈", "Слайды", "Презентация"),
-        ("✧", "Герои", "Листы персонажей"),
-        ("⌕", "Библиотека", "Знания мастера"),
-        ("☗", "НПС", "Персонажи мастера"),
-        ("⛓", "Связи", "Отношения и фракции"),
-        ("✦", "Справочник", "Состояния"),
+        ("home", "Главная", "Обзор и последняя сессия"),
+        ("map", "Карта", "Локации и туман"),
+        ("bolt", "Инициатива", "Ход боя"),
+        ("slides", "Слайды", "Презентация"),
+        ("person", "Герои", "Листы персонажей"),
+        ("book", "Библиотека", "Знания мастера"),
+        ("users", "НПС", "Персонажи мастера"),
+        ("link", "Связи", "Отношения и фракции"),
+        ("sparkle", "Справочник", "Состояния"),
     };
 
     private readonly HomePage _home;
@@ -40,7 +40,7 @@ public partial class MainWindow : Window
     private readonly List<Border> _navItems = new();
     private readonly List<TextBlock> _navLabels = new();
     private readonly List<TextBlock> _navHints = new();
-    private readonly List<TextBlock> _navIcons = new();
+    private readonly List<Avalonia.Controls.Shapes.Path> _navIcons = new();
 
     private int _current = -1;
     private bool _sidebarVisible = true;
@@ -71,7 +71,7 @@ public partial class MainWindow : Window
         _npcs.ToHero = n => { _heroes.AddFromNpc(n); ShowTab(IxHeroes); };
         _lib.AddToMap = (name, cr, mt) => { _map.AddFromBestiary(name, cr, mt); ShowTab(IxMap); };
 
-        ThemeBtn.Content = Pal.Dark ? "☀" : "🌙";
+        SetupTopbar();
         Background = Pal.B(Pal.Dark ? "#100d0b" : "#f7f1e6");
 
         KeyDown += OnHotkey;
@@ -108,6 +108,16 @@ public partial class MainWindow : Window
         catch { }
     }
 
+    private void SetupTopbar()
+    {
+        BrandIcon.Content = Icons.Make("sparkle", 26, "#d99b4a");
+        MenuBtn.Content = Icons.Make(_sidebarVisible ? "close" : "menu", 16, "#efe3d2");
+        ThemeBtn.Content = Icons.Make(Pal.Dark ? "sun" : "moon", 16, "#efe3d2");
+        SearchBtn.Content = Icons.Row("search", "Поиск", 15, "#efe3d2", "#efe3d2");
+        ScreenBtn.Content = Icons.Row("screen", "Экран", 15, "#efe3d2", "#efe3d2");
+        GenBtn.Content = Icons.Row("sparkles", "Генераторы", 15, "#efe3d2", "#efe3d2");
+    }
+
     private void BuildNav()
     {
         NavHost.Children.Clear();
@@ -121,23 +131,15 @@ public partial class MainWindow : Window
             int idx = i;
             var (icon, label, hint) = Nav[i];
 
-            var iconTb = new TextBlock
-            {
-                Text = icon,
-                FontSize = 15,
-                Foreground = Pal.B("#d99b4a"),
-                Width = 24,
-                TextAlignment = TextAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
-            var labelTb = new TextBlock { Text = label, FontSize = 13.5, FontWeight = FontWeight.Bold, Foreground = Pal.B("#b7a794") };
+            var iconTb = Icons.Make(icon, 20, "#b98f52");
+            var labelTb = new TextBlock { Text = label, FontSize = 13.5, FontWeight = FontWeight.Bold, Foreground = Pal.B("#b7a794"), Margin = new Thickness(2, 0, 0, 0) };
             var hintTb = new TextBlock { Text = hint, FontSize = 10.5, Foreground = Pal.B("#83725f") };
 
             var copy = new StackPanel { Spacing = 0 };
             copy.Children.Add(labelTb);
             copy.Children.Add(hintTb);
 
-            var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("24,*") };
+            var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("32,*") };
             grid.Children.Add(iconTb);
             Grid.SetColumn(copy, 1);
             grid.Children.Add(copy);
@@ -206,7 +208,7 @@ public partial class MainWindow : Window
             _navItems[i].BorderBrush = on ? Pal.B("#4a3728") : Brushes.Transparent;
             _navLabels[i].Foreground = Pal.B(on ? "#f3e6d4" : "#b7a794");
             _navHints[i].Foreground = Pal.B("#83725f");
-            _navIcons[i].Foreground = Pal.B("#d99b4a");
+            Icons.Recolor(_navIcons[i], on ? "#f0c27b" : "#b98f52");
         }
 
         _sidebarVisible = idx == IxHome;
@@ -232,7 +234,7 @@ public partial class MainWindow : Window
     private void ApplySidebar()
     {
         Sidebar.IsVisible = _sidebarVisible;
-        MenuBtn.Content = _sidebarVisible ? "✕" : "☰";
+        MenuBtn.Content = Icons.Make(_sidebarVisible ? "close" : "menu", 16, "#efe3d2");
     }
 
     private void OnToggleSidebar(object? sender, RoutedEventArgs e)

@@ -73,11 +73,11 @@ public sealed class FilePickerDialog : Window
 
         // быстрые кнопки
         var quick = new WrapPanel { Margin = new Thickness(0, 10, 0, 10) };
-        quick.Children.Add(Button("🏠 Домашняя", () => Navigate(Safe(Environment.SpecialFolder.UserProfile))));
-        quick.Children.Add(Button("🖥 Рабочий стол", () => Navigate(Safe(Environment.SpecialFolder.Desktop))));
-        quick.Children.Add(Button("⬇ Загрузки", () => Navigate(Path.Combine(Safe(Environment.SpecialFolder.UserProfile), "Downloads"))));
-        quick.Children.Add(Button("🖼 Изображения", () => Navigate(Safe(Environment.SpecialFolder.MyPictures))));
-        quick.Children.Add(Button("🎵 Музыка", () => Navigate(Safe(Environment.SpecialFolder.MyMusic))));
+        quick.Children.Add(Button("Домашняя", () => Navigate(Safe(Environment.SpecialFolder.UserProfile))));
+        quick.Children.Add(Button("Рабочий стол", () => Navigate(Safe(Environment.SpecialFolder.Desktop))));
+        quick.Children.Add(Button("Загрузки", () => Navigate(Path.Combine(Safe(Environment.SpecialFolder.UserProfile), "Downloads"))));
+        quick.Children.Add(Button("Изображения", () => Navigate(Safe(Environment.SpecialFolder.MyPictures))));
+        quick.Children.Add(Button("Музыка", () => Navigate(Safe(Environment.SpecialFolder.MyMusic))));
 
         var driveCombo = new ComboBox { Width = 90, Margin = new Thickness(0, 0, 6, 6), Background = new SolidColorBrush(Panel2), Foreground = new SolidColorBrush(Ink), BorderBrush = new SolidColorBrush(Line) };
         foreach (var d in DriveInfo.GetDrives())
@@ -217,7 +217,7 @@ public sealed class FilePickerDialog : Window
             _folders.ItemTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<FolderItem>((fi, _) =>
                 new TextBlock
                 {
-                    Text = "📁  " + Path.GetFileName(fi.FullPath),
+                    Text = Path.GetFileName(fi.FullPath),
                     FontSize = 13,
                     Foreground = new SolidColorBrush(Ink),
                     Margin = new Thickness(8, 6),
@@ -227,7 +227,7 @@ public sealed class FilePickerDialog : Window
             _files.ItemTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<FileItem>((fi, _) =>
             {
                 var sp = new StackPanel { Margin = new Thickness(8, 6), Spacing = 1 };
-                sp.Children.Add(new TextBlock { Text = "🖼  " + Path.GetFileName(fi.FullPath), FontSize = 13, Foreground = new SolidColorBrush(Ink) });
+                sp.Children.Add(new TextBlock { Text = Path.GetFileName(fi.FullPath), FontSize = 13, Foreground = new SolidColorBrush(Ink) });
                 sp.Children.Add(new TextBlock { Text = SizeLabel(fi.FullPath), FontSize = 10.5, Foreground = new SolidColorBrush(Muted) });
                 return sp;
             }, true);

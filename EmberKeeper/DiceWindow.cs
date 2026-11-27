@@ -323,7 +323,7 @@ public sealed class DiceWindow : Window
                 Margin = new Thickness(0, 0, 6, 6),
                 Child = new TextBlock
                 {
-                    Text = (b != 0 && _mode == 1 ? $"{value}▲" : (b != 0 && _mode == 2 ? $"{value}▼" : value.ToString())),
+                    Text = (b != 0 && _mode == 1 ? $"{value}↑" : (b != 0 && _mode == 2 ? $"{value}↓" : value.ToString())),
                     FontSize = 14,
                     FontWeight = FontWeight.Bold,
                     Foreground = new SolidColorBrush(crit ? Gold : Ink),

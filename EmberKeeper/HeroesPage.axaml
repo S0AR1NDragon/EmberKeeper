@@ -65,12 +65,12 @@
       </WrapPanel>
 
       <WrapPanel Orientation="Horizontal">
-        <Button Classes="goldbtn" Content="＋ Герой" Click="OnAdd" />
-        <Button Classes="tool" Content="⤒ Импорт JSON…" Click="OnImport" />
+        <Button Classes="goldbtn" Content="+ Герой" Click="OnAdd" />
+        <Button Classes="tool" Content="Импорт JSON…" Click="OnImport" />
         <Button Classes="tool" Content="Открыть лист" Click="OnOpen" />
-        <Button Classes="tool" Content="⇢ На карту" Click="OnToMap" />
+        <Button Classes="tool" Content="На карту" Click="OnToMap" />
         <Button Classes="tool" Content="→ в НПС" Click="OnToNpc" />
-        <Button Classes="tool" Content="✕ Удалить" Click="OnDelete" />
+        <Button Classes="tool" Content="Удалить" Click="OnDelete" />
         <Button Classes="tool" Content="Сброс фильтров" Click="OnResetFilters" />
       </WrapPanel>
     </StackPanel>

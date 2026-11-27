@@ -58,8 +58,8 @@
           <Border Width="4" Height="24" CornerRadius="2" Background="{DynamicResource C_d99b4a}" />
           <TextBlock Text="НПС" FontFamily="Georgia" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource C_f6e7cf}" />
           <TextBlock x:Name="CountText" Foreground="{DynamicResource C_9c8b78}" FontSize="11.5" VerticalAlignment="Center" />
-          <Button Classes="goldbtn" Content="＋" Click="OnAdd" />
-          <Button Classes="tool" Content="✕" Click="OnDelete" />
+          <Button Classes="goldbtn" Content="+" Click="OnAdd" />
+          <Button Classes="tool" Content="Удалить" Click="OnDelete" />
         </StackPanel>
 
         <StackPanel Grid.Row="1" Margin="14,0,14,8" Spacing="6">
@@ -94,9 +94,9 @@
           </StackPanel>
 
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <Button Classes="tool" Content="🎵 Музыка…" Click="OnPickMusic" />
-            <Button Classes="tool" Content="▶" Click="OnPlayMusic" />
-            <Button Classes="tool" Content="■" Click="OnStopMusic" />
+            <Button Classes="tool" Content="Музыка…" Click="OnPickMusic" />
+            <Button Classes="tool" Content="Играть" Click="OnPlayMusic" />
+            <Button Classes="tool" Content="Стоп" Click="OnStopMusic" />
             <TextBlock x:Name="MusicLabel" VerticalAlignment="Center" Foreground="{DynamicResource C_8d7a66}" FontSize="12" />
           </StackPanel>
 

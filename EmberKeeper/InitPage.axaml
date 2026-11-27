@@ -54,13 +54,13 @@
       </StackPanel>
 
       <StackPanel Orientation="Horizontal" Spacing="6">
-        <Button Classes="goldbtn" Content="▶ Следующий" Click="OnNext" />
+        <Button Classes="goldbtn" Content="Следующий" Click="OnNext" />
         <Button Classes="tool" Content="Бросить всем" Click="OnRollAll" />
         <Button Classes="tool" Content="Сортировать" Click="OnSort" />
         <Button Classes="tool" Content="Сброс" Click="OnReset" />
         <Border Width="1" Background="{DynamicResource C_2a211a}" Margin="6,2" />
-        <Button Classes="tool" Content="⤓ С карты" Click="OnFromMap" />
-        <Button Classes="tool" Content="⤒ На карту" Click="OnToMap" />
+        <Button Classes="tool" Content="С карты" Click="OnFromMap" />
+        <Button Classes="tool" Content="На карту" Click="OnToMap" />
         <TextBlock x:Name="SyncText" VerticalAlignment="Center" Foreground="{DynamicResource C_8d7a66}" FontSize="11.5" Margin="10,0,0,0" />
       </StackPanel>
 

@@ -73,7 +73,10 @@ public sealed class SearchWindow : Window
         _results.ItemTemplate = new FuncDataTemplate<SearchHit>((h, _) =>
         {
             var sp = new StackPanel { Margin = new Thickness(10, 7), Spacing = 1 };
-            sp.Children.Add(new TextBlock { Text = Icon(h.Kind) + "  " + h.Title, FontSize = 13, FontWeight = FontWeight.SemiBold, Foreground = Pal.B("#f6e7cf") });
+            var titleRow = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 7 };
+            titleRow.Children.Add(Icons.Make(IconName(h.Kind), 14, "#d99b4a"));
+            titleRow.Children.Add(new TextBlock { Text = h.Title, FontSize = 13, FontWeight = FontWeight.SemiBold, Foreground = Pal.B("#f6e7cf"), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center });
+            sp.Children.Add(titleRow);
             if (!string.IsNullOrWhiteSpace(h.Sub))
                 sp.Children.Add(new TextBlock { Text = h.Sub, FontSize = 10.5, Foreground = Pal.B("#9c8b78") });
             return sp;
@@ -106,18 +109,18 @@ public sealed class SearchWindow : Window
         Run();
     }
 
-    private static string Icon(string kind) => kind switch
+    private static string IconName(string kind) => kind switch
     {
-        "hero" => "🛡",
-        "npc" => "☗",
-        "token" => "♜",
-        "scene" => "◈",
-        "spell" => "✴",
-        "item" => "◈",
-        "feat" => "✧",
-        "class" => "⚔",
-        "race" => "✦",
-        _ => "⌕",
+        "hero" => "person",
+        "npc" => "users",
+        "token" => "token",
+        "scene" => "slides",
+        "spell" => "sparkle",
+        "item" => "diamond",
+        "feat" => "star",
+        "class" => "shield",
+        "race" => "leaf",
+        _ => "search",
     };
 
     private void Run()

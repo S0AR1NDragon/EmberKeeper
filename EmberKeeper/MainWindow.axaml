@@ -40,7 +40,7 @@
             BorderBrush="{DynamicResource AppLine}" BorderThickness="0,0,1,0">
       <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="14,18">
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="2,2,2,14">
-          <TextBlock Text="✦" FontSize="24" Foreground="{DynamicResource AppGold}" VerticalAlignment="Center" />
+          <ContentControl x:Name="BrandIcon" VerticalAlignment="Center" Margin="0,0,4,0" />
           <StackPanel Spacing="0">
             <TextBlock Text="EMBERKEEPER" FontFamily="Georgia" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AppGold}" LetterSpacing="0.16" />
             <TextBlock Text="рабочий стол мастера" FontSize="10" Foreground="{DynamicResource AppMuted}" />
@@ -62,17 +62,17 @@
               BorderBrush="{DynamicResource AppLine}" BorderThickness="0,0,0,1" Padding="16,10">
         <Grid ColumnDefinitions="Auto,*,Auto">
           <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-            <Button x:Name="MenuBtn" Classes="topbtn" Content="☰" Click="OnToggleSidebar" ToolTip.Tip="Меню разделов" />
+            <Button x:Name="MenuBtn" Classes="topbtn" Click="OnToggleSidebar" ToolTip.Tip="Меню разделов" />
             <TextBlock Text="EMBERKEEPER" FontSize="10.5" Foreground="{DynamicResource AppMuted}" LetterSpacing="0.12" VerticalAlignment="Center" Margin="6,0,0,0" />
             <TextBlock Text="/" Foreground="{DynamicResource AppMuted}" VerticalAlignment="Center" />
             <TextBlock x:Name="Crumbs" Text="БИБЛИОТЕКА" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource AppInk}" LetterSpacing="0.12" VerticalAlignment="Center" />
           </StackPanel>
 
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-            <Button Classes="topbtn" Content="⌕ Поиск" Click="OnGlobalSearch" ToolTip.Tip="Глобальный поиск (Ctrl+F)" />
-            <Button x:Name="ThemeBtn" Classes="topbtn" Content="☀" Click="OnToggleTheme" ToolTip.Tip="Светлая / тёмная тема" />
-            <Button Classes="topbtn" Content="▣ Экран" Click="OnPlayerScreen" ToolTip.Tip="Экран игроков (Ctrl+P)" />
-            <Button Classes="topbtn" Content="✧ Генераторы" Click="OnGenerators" />
+            <Button x:Name="SearchBtn" Classes="topbtn" Click="OnGlobalSearch" ToolTip.Tip="Глобальный поиск (Ctrl+F)" />
+            <Button x:Name="ThemeBtn" Classes="topbtn" Click="OnToggleTheme" ToolTip.Tip="Светлая / тёмная тема" />
+            <Button x:Name="ScreenBtn" Classes="topbtn" Click="OnPlayerScreen" ToolTip.Tip="Экран игроков (Ctrl+P)" />
+            <Button x:Name="GenBtn" Classes="topbtn" Click="OnGenerators" ToolTip.Tip="Генераторы" />
             <Button Classes="gold" Content="d20 +" Click="OnDice" />
           </StackPanel>
         </Grid>
