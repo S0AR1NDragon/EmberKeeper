@@ -69,6 +69,50 @@ public partial class MapPage : UserControl
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_FLOW") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    var hero = new Hero
+                    {
+                        Name = "Ивар",
+                        Race = "Человек",
+                        Class = "Воин",
+                        Level = "1",
+                        Hp = 12,
+                        MaxHp = 12,
+                        Ac = 16,
+                        Darkvision = 0,
+                    };
+                    AddHero(hero);
+
+                    var order = _doc.Tokens.Select(t => new Combatant
+                    {
+                        Name = t.Name,
+                        Init = t.Init == 0 ? 14 : t.Init,
+                        Hp = t.Hp,
+                        MaxHp = t.MaxHp,
+                        Ac = t.Ac,
+                        IsPc = t.Type == "player",
+                    }).OrderByDescending(c => c.Init).ToList();
+                    BattleState.Set(order, 0, 2);
+                    _view.ActiveName = BattleState.CurrentName;
+                    _view.InvalidateVisual();
+                    OpenPlayerWindow();
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(AppContext.BaseDirectory, "flow_test.txt"),
+                        $"токенов: {_doc.Tokens.Count}; бойцов: {BattleState.Order.Count}; активный: {BattleState.CurrentName}");
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.WriteAllText(
+                        System.IO.Path.Combine(AppContext.BaseDirectory, "flow_test.txt"), "ошибка: " + ex.Message);
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_BATTLE") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>

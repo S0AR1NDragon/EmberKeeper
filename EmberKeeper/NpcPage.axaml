@@ -67,7 +67,13 @@
           <WrapPanel x:Name="FilterHost" Orientation="Horizontal" />
         </StackPanel>
 
-        <ListBox x:Name="NpcList" Grid.Row="2" SelectionChanged="OnSelect" Background="Transparent" BorderThickness="0" Margin="8,0,8,8" />
+        <Grid Grid.Row="2">
+                <ListBox x:Name="NpcList" Grid.Row="2" SelectionChanged="OnSelect" Background="Transparent" BorderThickness="0" Margin="8,0,8,8" />
+                <StackPanel x:Name="EmptyHint" IsVisible="False" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8" Margin="12">
+                  <TextBlock Text="Карточек НПС пока нет" FontFamily="Georgia" FontSize="18" Foreground="{DynamicResource C_f6e7cf}" HorizontalAlignment="Center" />
+                  <TextBlock Text="Нажмите «+ НПС», чтобы создать карточку." Foreground="{DynamicResource C_9c8b78}" FontSize="12" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" />
+                </StackPanel>
+              </Grid>
       </Grid>
     </Border>
 

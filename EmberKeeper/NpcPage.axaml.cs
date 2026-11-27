@@ -107,6 +107,8 @@ public partial class NpcPage : UserControl
 
         _view = src.OrderBy(n => n.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
         NpcList.ItemsSource = _view;
+
+        if (EmptyHint != null) EmptyHint.IsVisible = NpcList.ItemCount == 0;
         NpcList.ItemTemplate = new FuncDataTemplate<Npc>((n, _) =>
         {
             var name = new TextBlock { Text = n.Name, FontSize = 13.5, FontWeight = FontWeight.SemiBold, Foreground = Pal.B("#f6e7cf") };
