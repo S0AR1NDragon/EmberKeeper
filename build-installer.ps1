@@ -54,6 +54,12 @@ try {
     $portable = Join-Path $dist "EmberKeeper-$Version-portable.zip"
     Compress-Archive -Path (Join-Path $publish "*") -DestinationPath $portable -CompressionLevel Optimal
 
+    # памятка и ключ для вашего ПК — кладём рядом с установщиком
+    $readme = Join-Path $root "packaging\README.txt"
+    if (Test-Path $readme) { Copy-Item $readme (Join-Path $dist "README.txt") -Force }
+    $myKey = Join-Path $root "lic-machine.txt"
+    if (Test-Path $myKey) { Copy-Item $myKey (Join-Path $dist "license.key") -Force }
+
     Write-Host ""
     Write-Host "Готово:" -ForegroundColor Green
     Get-ChildItem $dist | ForEach-Object {

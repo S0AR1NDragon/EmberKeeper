@@ -8,6 +8,12 @@
 !/EmberKeeper/
 !/installer/
 !/licensegen/
+!/tools/
+!/packaging/
+!/make-license.cmd
+
+/tools/license-tool/
+/licenses/
 
 # --- секреты и лицензии (НИКОГДА не коммитить) ---
 /keys/private.pem
