@@ -133,7 +133,12 @@ public sealed class MapDoc
     public void EnsureVision()
     {
         int n = Math.Max(1, Cols) * Math.Max(1, Rows);
-        if (Fog == null || Fog.Count != n) Fog = new List<bool>(new bool[n]);
+        if (Fog == null || Fog.Count != n)
+        {
+            // новые клетки открыты; темноту мастер включает кнопкой «Скрыть всё»
+            Fog = new List<bool>(new bool[n]);
+            for (int i = 0; i < n; i++) Fog[i] = true;
+        }
         if (Explored == null || Explored.Count != n) Explored = new List<bool>(new bool[n]);
     }
 
