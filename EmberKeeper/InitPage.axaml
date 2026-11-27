@@ -1,0 +1,86 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="EmberKeeper.InitPage">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource C_efe3d2}" />
+      <Setter Property="FontFamily" Value="Inter, Segoe UI" />
+    </Style>
+    <Style Selector="Button.tool">
+      <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_b7a794}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_2a211a}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="12,7" />
+      <Setter Property="FontSize" Value="12.5" />
+      <Setter Property="Margin" Value="0,0,6,0" />
+    </Style>
+    <Style Selector="Button.goldbtn">
+      <Setter Property="Background" Value="{DynamicResource C_4a3728}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_f0c27b}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_4a3728}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="14,8" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBox.field, ComboBox.field">
+      <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_efe3d2}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_2a211a}" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="FontSize" Value="13" />
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_2a211a}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto,*" Margin="22,18,22,12">
+    <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,14">
+      <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+        <Border Width="4" Height="30" CornerRadius="2" Background="{DynamicResource C_d99b4a}" />
+        <TextBlock Text="Инициатива" FontFamily="Georgia" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource C_f6e7cf}" />
+        <Border Background="{DynamicResource C_2a211a}" CornerRadius="10" Padding="12,4" Margin="10,0,0,0">
+          <TextBlock x:Name="RoundText" Text="Раунд 1" Foreground="{DynamicResource C_f0c27b}" FontSize="15" FontWeight="SemiBold" />
+        </Border>
+        <TextBlock x:Name="TurnText" Foreground="{DynamicResource C_9c8b78}" FontSize="13" VerticalAlignment="Center" />
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <Button Classes="goldbtn" Content="▶ Следующий" Click="OnNext" />
+        <Button Classes="tool" Content="Бросить всем" Click="OnRollAll" />
+        <Button Classes="tool" Content="Сортировать" Click="OnSort" />
+        <Button Classes="tool" Content="Сброс" Click="OnReset" />
+        <Border Width="1" Background="{DynamicResource C_2a211a}" Margin="6,2" />
+        <Button Classes="tool" Content="⤓ С карты" Click="OnFromMap" />
+        <Button Classes="tool" Content="⤒ На карту" Click="OnToMap" />
+        <TextBlock x:Name="SyncText" VerticalAlignment="Center" Foreground="{DynamicResource C_8d7a66}" FontSize="11.5" Margin="10,0,0,0" />
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBox x:Name="AddName" Classes="field" Width="200" Watermark="Имя" />
+        <ComboBox x:Name="AddKind" Classes="field" Width="120" SelectedIndex="0">
+          <ComboBoxItem>Персонаж</ComboBoxItem>
+          <ComboBoxItem>Монстр</ComboBoxItem>
+        </ComboBox>
+        <TextBox x:Name="AddInit" Classes="field" Width="70" Watermark="Иниц." />
+        <TextBox x:Name="AddHp" Classes="field" Width="70" Watermark="ХП" />
+        <TextBox x:Name="AddAc" Classes="field" Width="70" Watermark="КД" />
+        <Button Classes="tool" Content="＋ Добавить" Click="OnAdd" />
+      </StackPanel>
+    </StackPanel>
+
+    <Border Grid.Row="1" Classes="card">
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel x:Name="List" Spacing="4" Margin="12" />
+      </ScrollViewer>
+    </Border>
+  </Grid>
+</UserControl>

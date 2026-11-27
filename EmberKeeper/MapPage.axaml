@@ -1,0 +1,213 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="EmberKeeper.MapPage">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
+      <Setter Property="FontFamily" Value="Segoe UI" />
+    </Style>
+    <Style Selector="Button.tool">
+      <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_b7a794}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_2a211a}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="10,6" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Margin" Value="0,0,6,6" />
+    </Style>
+    <Style Selector="Button.tool.on">
+      <Setter Property="Background" Value="{DynamicResource C_4a3728}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_f0c27b}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_8c7030}" />
+    </Style>
+    <Style Selector="Button.goldbtn">
+      <Setter Property="Background" Value="{DynamicResource C_cf9245}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_241505}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_e0b072}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="12,7" />
+      <Setter Property="FontSize" Value="12.5" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Margin" Value="0,0,6,6" />
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_2a211a}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+    </Style>
+    <Style Selector="TextBox.field, ComboBox.field">
+      <Setter Property="Background" Value="{DynamicResource C_15110e}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_efe3d2}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_352a21}" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_efe3d2}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_352a21}" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="0,0,0,2" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource C_3a2d24}" />
+    </Style>
+    <Style Selector="TextBlock.sec">
+      <Setter Property="FontFamily" Value="Georgia" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{DynamicResource C_f6e7cf}" />
+      <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+    <Style Selector="TextBlock.lbl">
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="Foreground" Value="{DynamicResource C_8d7a66}" />
+      <Setter Property="Margin" Value="0,0,0,2" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto,*">
+    <!-- панель инструментов -->
+    <Border Grid.Row="0" Background="{DynamicResource C_15110e}" BorderBrush="{DynamicResource C_2a211a}" BorderThickness="0,0,0,1" Padding="12,10,12,4">
+      <WrapPanel Orientation="Horizontal">
+        <TextBlock Text="Локация:" VerticalAlignment="Center" Foreground="{DynamicResource C_9c8b78}" FontSize="12" Margin="0,0,8,0" />
+        <ComboBox x:Name="LocCombo" Width="200" Margin="0,0,6,6" SelectionChanged="OnLocationChanged" />
+        <Button Classes="tool" Content="＋ Локация" Click="OnAddLocation" />
+        <Button Classes="tool" Content="✕" Click="OnDeleteLocation" />
+        <Button Classes="tool" Content="✎ Имя" Click="OnRenameLocation" />
+        <Border Width="1" Background="{DynamicResource C_2a211a}" Margin="6,2,12,8" />
+        <Button x:Name="ToolSelect" Classes="tool on" Content="✥  Выбор" Click="OnTool" Tag="select" />
+        <Button x:Name="ToolWall" Classes="tool" Content="▭  Стена" Click="OnTool" Tag="wall" />
+        <Button x:Name="ToolFog" Classes="tool" Content="🌫 Туман" Click="OnTool" Tag="fog" />
+        <Button x:Name="ToolTemplate" Classes="tool" Content="◯ Шаблон" Click="OnTool" Tag="template" />
+        <Button x:Name="ToolProp" Classes="tool" Content="📦 Проп" Click="OnTool" Tag="prop" />
+        <Button x:Name="ToolRuler" Classes="tool" Content="📏 Линейка" Click="OnTool" Tag="ruler" />
+        <Border Width="1" Background="{DynamicResource C_2a211a}" Margin="6,2,12,8" />
+        <Button Classes="tool" Content="－" Click="OnZoomOut" />
+        <Button Classes="tool" Content="＋" Click="OnZoomIn" />
+        <Button Classes="tool" Content="⤢ По размеру" Click="OnFit" />
+        <Button Classes="tool" Content="🖼 Фон…" Click="OnBackground" />
+        <Button Classes="tool" Content="🧹 Убрать фон" Click="OnClearBackground" />
+        <Button Classes="tool" Content="👁 Игрокам" Click="OnPlayerView" />
+      </WrapPanel>
+    </Border>
+
+    <Grid Grid.Row="1" x:Name="BodyGrid" ColumnDefinitions="*,320">
+      <!-- карта -->
+      <Border Grid.Column="0" Margin="12" Classes="card" ClipToBounds="True">
+        <Grid>
+          <ContentControl x:Name="Host" />
+          <TextBlock x:Name="HintBar" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                     Margin="10,0,0,8" FontSize="10.5" Foreground="{DynamicResource C_8d7a66}"
+                     Background="{DynamicResource C_e60b0908}" Padding="6,2"
+                     Text="тащи токен мышью · Shift — привязка к клетке · Alt+ЛКМ/СКМ — панорама · колесо — масштаб · двойной клик — открыть" />
+        </Grid>
+      </Border>
+
+      <!-- правая панель -->
+      <Border Grid.Column="1" Margin="0,12,12,12" Classes="card">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <StackPanel Margin="14" Spacing="16">
+
+            <!-- ТОКЕН -->
+            <StackPanel>
+              <TextBlock Classes="sec" Text="Токен" />
+              <TextBox x:Name="EdName" Classes="field" Watermark="Имя токена" TextChanged="OnNameChanged" Margin="0,0,0,8" />
+
+              <Grid ColumnDefinitions="*,*,*" Margin="0,0,0,8">
+                <StackPanel>
+                  <TextBlock Classes="lbl" Text="РАЗМЕР, КЛЕТОК" />
+                  <NumericUpDown x:Name="EdSize" Minimum="1" Maximum="8" Width="86" ValueChanged="OnSizeChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                  <TextBlock Classes="lbl" Text="ХИТЫ" />
+                  <NumericUpDown x:Name="EdHp" Minimum="-999" Maximum="9999" Width="86" ValueChanged="OnHpChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                  <TextBlock Classes="lbl" Text="МАКС." />
+                  <NumericUpDown x:Name="EdMaxHp" Minimum="1" Maximum="9999" Width="86" ValueChanged="OnMaxHpChanged" />
+                </StackPanel>
+              </Grid>
+
+              <TextBlock Classes="lbl" Text="ЦВЕТ" />
+              <WrapPanel x:Name="ColorHost" Orientation="Horizontal" Margin="0,0,0,8" />
+
+              <CheckBox x:Name="CbAura" Content="Аура" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnAuraChanged" />
+              <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,6">
+                <TextBlock Classes="lbl" Text="РАДИУС АУРЫ, ФТ" VerticalAlignment="Center" />
+                <NumericUpDown x:Name="EdAuraFt" Grid.Column="1" Minimum="5" Maximum="200" Width="86" ValueChanged="OnAuraFtChanged" />
+              </Grid>
+
+              <CheckBox x:Name="CbLight" Content="Свет" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnLightChanged" />
+              <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,6">
+                <TextBlock Classes="lbl" Text="РАДИУС СВЕТА, ФТ" VerticalAlignment="Center" />
+                <NumericUpDown x:Name="EdLightFt" Grid.Column="1" Minimum="5" Maximum="200" Width="86" ValueChanged="OnLightFtChanged" />
+              </Grid>
+
+              <CheckBox x:Name="CbHidden" Content="Скрыт от игроков" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnHiddenChanged" Margin="0,0,0,6" />
+
+              <ComboBox x:Name="EdType" Margin="0,4,0,8" SelectedIndex="2" SelectionChanged="OnTypeChanged">
+                <ComboBoxItem Tag="player">Игрок</ComboBoxItem>
+                <ComboBoxItem Tag="npc">НПС</ComboBoxItem>
+                <ComboBoxItem Tag="mob">Моб</ComboBoxItem>
+              </ComboBox>
+
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Button Classes="tool" Content="＋ Токен" Click="OnAddToken" />
+                <Button Classes="tool" Content="✕ Удалить" Click="OnDeleteToken" />
+              </StackPanel>
+              <Button x:Name="OpenBtn" Classes="goldbtn" Content="Открыть лист" Click="OnOpenSheet" Margin="0,8,0,0" HorizontalAlignment="Stretch" />
+            </StackPanel>
+
+            <!-- КАРТА -->
+            <StackPanel>
+              <TextBlock Classes="sec" Text="Карта" />
+              <Grid ColumnDefinitions="*,*" Margin="0,0,0,8">
+                <StackPanel>
+                  <TextBlock Classes="lbl" Text="КЛЕТКА, PX" />
+                  <NumericUpDown x:Name="EdGridPx" Minimum="20" Maximum="200" Width="86" ValueChanged="OnGridPxChanged" />
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                  <TextBlock Classes="lbl" Text="ФУТОВ В КЛЕТКЕ" />
+                  <NumericUpDown x:Name="EdFeet" Minimum="1" Maximum="30" Width="86" ValueChanged="OnFeetChanged" />
+                </StackPanel>
+              </Grid>
+
+              <TextBlock Classes="lbl" Text="ТИП СЕТКИ" />
+              <ComboBox x:Name="EdGridType" Margin="0,0,0,8" SelectedIndex="0" SelectionChanged="OnGridTypeChanged">
+                <ComboBoxItem Tag="square">Квадратная</ComboBoxItem>
+                <ComboBoxItem Tag="hex">Гексагональная</ComboBoxItem>
+              </ComboBox>
+
+              <CheckBox x:Name="CbGridVisible" Content="Показывать сетку" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnGridVisibleChanged" />
+              <CheckBox x:Name="CbSnap" Content="Привязка к клеткам" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnSnapChanged" />
+              <CheckBox x:Name="CbFog" Content="Туман войны" Foreground="{DynamicResource C_efe3d2}" IsCheckedChanged="OnFogChanged" />
+
+              <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+                <Button Classes="tool" Content="🗑 Стены" Click="OnClearWalls" />
+                <Button Classes="tool" Content="🗑 Шаблоны" Click="OnClearTemplates" />
+              </StackPanel>
+            </StackPanel>
+
+            <!-- СПИСОК ТОКЕНОВ -->
+            <StackPanel>
+              <TextBlock Classes="sec" Text="Токены на карте" />
+              <ListBox x:Name="TokenList" SelectionChanged="OnTokenSelect" Background="Transparent" BorderThickness="0" MinHeight="120" />
+            </StackPanel>
+
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

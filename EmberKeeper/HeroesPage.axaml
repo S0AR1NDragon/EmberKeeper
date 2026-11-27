@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="EmberKeeper.HeroesPage">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource C_efe3d2}" />
+      <Setter Property="FontFamily" Value="Segoe UI" />
+    </Style>
+    <Style Selector="Button.tool">
+      <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_b7a794}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_2a211a}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="10,6" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Margin" Value="0,0,6,6" />
+    </Style>
+    <Style Selector="Button.goldbtn">
+      <Setter Property="Background" Value="{DynamicResource C_cf9245}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_241505}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_e0b072}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="12,7" />
+      <Setter Property="FontSize" Value="12.5" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Margin" Value="0,0,6,6" />
+    </Style>
+    <Style Selector="TextBox.field, ComboBox.field">
+      <Setter Property="Background" Value="{DynamicResource C_15110e}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_efe3d2}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_352a21}" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_2a211a}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="0,0,0,2" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource C_3a2d24}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto,*" Margin="22,18,22,12">
+    <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,12">
+      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <Border Width="4" Height="28" CornerRadius="2" Background="{DynamicResource C_d99b4a}" />
+        <TextBlock Text="Герои" FontFamily="Georgia" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource C_f6e7cf}" />
+        <TextBlock x:Name="CountText" Foreground="{DynamicResource C_9c8b78}" FontSize="12" VerticalAlignment="Center" Margin="10,0,0,0" />
+      </StackPanel>
+
+      <WrapPanel Orientation="Horizontal">
+        <TextBox x:Name="SearchBox" Classes="field" Width="240" Watermark="Поиск: имя, класс, теги…" TextChanged="OnSearch" Margin="0,0,8,6" />
+        <StackPanel x:Name="FilterHost" Orientation="Horizontal" Spacing="8" />
+      </WrapPanel>
+
+      <WrapPanel Orientation="Horizontal">
+        <Button Classes="goldbtn" Content="＋ Герой" Click="OnAdd" />
+        <Button Classes="tool" Content="⤒ Импорт JSON…" Click="OnImport" />
+        <Button Classes="tool" Content="Открыть лист" Click="OnOpen" />
+        <Button Classes="tool" Content="⇢ На карту" Click="OnToMap" />
+        <Button Classes="tool" Content="→ в НПС" Click="OnToNpc" />
+        <Button Classes="tool" Content="✕ Удалить" Click="OnDelete" />
+        <Button Classes="tool" Content="Сброс фильтров" Click="OnResetFilters" />
+      </WrapPanel>
+    </StackPanel>
+
+    <Border Grid.Row="1" Classes="card">
+      <ListBox x:Name="HeroList" SelectionChanged="OnSelect" Background="Transparent" BorderThickness="0" Margin="8" />
+    </Border>
+  </Grid>
+</UserControl>

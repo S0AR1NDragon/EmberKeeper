@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="EmberKeeper.NpcPage">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource C_efe3d2}" />
+      <Setter Property="FontFamily" Value="Segoe UI" />
+    </Style>
+    <Style Selector="Button.tool">
+      <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_b7a794}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_2a211a}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="10,6" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Margin" Value="0,0,6,6" />
+    </Style>
+    <Style Selector="Button.goldbtn">
+      <Setter Property="Background" Value="{DynamicResource C_cf9245}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_241505}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_e0b072}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="12,7" />
+      <Setter Property="FontSize" Value="12.5" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Margin" Value="0,0,6,6" />
+    </Style>
+    <Style Selector="TextBox.field, ComboBox.field">
+      <Setter Property="Background" Value="{DynamicResource C_15110e}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_efe3d2}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_352a21}" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_2a211a}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="0,0,0,2" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource C_3a2d24}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid ColumnDefinitions="340,*" Margin="22,18,22,12">
+    <Border Grid.Column="0" Classes="card" Margin="0,0,14,0">
+      <Grid RowDefinitions="Auto,Auto,*">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="14,12,14,8" Spacing="8">
+          <Border Width="4" Height="24" CornerRadius="2" Background="{DynamicResource C_d99b4a}" />
+          <TextBlock Text="НПС" FontFamily="Georgia" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource C_f6e7cf}" />
+          <TextBlock x:Name="CountText" Foreground="{DynamicResource C_9c8b78}" FontSize="11.5" VerticalAlignment="Center" />
+          <Button Classes="goldbtn" Content="＋" Click="OnAdd" />
+          <Button Classes="tool" Content="✕" Click="OnDelete" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Margin="14,0,14,8" Spacing="6">
+          <TextBox x:Name="SearchBox" Classes="field" Watermark="Поиск: имя, теги, город…" TextChanged="OnSearch" />
+          <WrapPanel x:Name="FilterHost" Orientation="Horizontal" />
+        </StackPanel>
+
+        <ListBox x:Name="NpcList" Grid.Row="2" SelectionChanged="OnSelect" Background="Transparent" BorderThickness="0" Margin="8,0,8,8" />
+      </Grid>
+    </Border>
+
+    <Border Grid.Column="1" Classes="card" Padding="18">
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="10">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBox x:Name="EdName" Classes="field" Width="220" Watermark="Имя" TextChanged="OnName" />
+            <TextBox x:Name="EdRace" Classes="field" Width="150" Watermark="Вид" TextChanged="OnRace" />
+            <TextBox x:Name="EdClass" Classes="field" Width="150" Watermark="Класс/род" TextChanged="OnClass" />
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBox x:Name="EdHp" Classes="field" Width="80" Watermark="ХП" TextChanged="OnHp" />
+            <TextBox x:Name="EdAc" Classes="field" Width="80" Watermark="КД" TextChanged="OnAc" />
+            <TextBox x:Name="EdTags" Classes="field" Width="300" Watermark="Теги через запятую" TextChanged="OnTags" />
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBox x:Name="EdFaction" Classes="field" Width="180" Watermark="Фракция" TextChanged="OnFaction" />
+            <TextBox x:Name="EdCity" Classes="field" Width="150" Watermark="Город" TextChanged="OnCity" />
+            <TextBox x:Name="EdOrg" Classes="field" Width="180" Watermark="Организация" TextChanged="OnOrg" />
+            <TextBox x:Name="EdCampaign" Classes="field" Width="150" Watermark="Кампания" TextChanged="OnCampaign" />
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Classes="tool" Content="🎵 Музыка…" Click="OnPickMusic" />
+            <Button Classes="tool" Content="▶" Click="OnPlayMusic" />
+            <Button Classes="tool" Content="■" Click="OnStopMusic" />
+            <TextBlock x:Name="MusicLabel" VerticalAlignment="Center" Foreground="{DynamicResource C_8d7a66}" FontSize="12" />
+          </StackPanel>
+
+          <TextBox x:Name="EdNotes" Classes="field" Watermark="Заметки…" AcceptsReturn="True" TextWrapping="Wrap" Height="150" TextChanged="OnNotes" />
+
+          <Button Classes="goldbtn" Content="→ в героя" HorizontalAlignment="Left" Click="OnToHero" />
+          <TextBlock Text="теги: союзник, враг, торговец…" Foreground="{DynamicResource C_83725f}" FontSize="11.5" />
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+  </Grid>
+</UserControl>

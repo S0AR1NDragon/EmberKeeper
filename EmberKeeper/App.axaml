@@ -1,0 +1,104 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="EmberKeeper.App"
+             RequestedThemeVariant="Dark">
+
+  <Application.Resources>
+    <Color x:Key="SystemAccentColor">#cf9245</Color>
+    <Color x:Key="SystemAccentColorLight1">#e0b072</Color>
+    <Color x:Key="SystemAccentColorLight2">#ecc78f</Color>
+    <Color x:Key="SystemAccentColorLight3">#f2d9b4</Color>
+    <Color x:Key="SystemAccentColorDark1">#a86a24</Color>
+    <Color x:Key="SystemAccentColorDark2">#855420</Color>
+    <Color x:Key="SystemAccentColorDark3">#5c3520</Color>
+    <SolidColorBrush x:Key="AppBg" Color="{DynamicResource C_100d0b}" />
+    <SolidColorBrush x:Key="AppBg2" Color="{DynamicResource C_15110e}" />
+    <SolidColorBrush x:Key="AppPanel" Color="{DynamicResource C_1c1714}" />
+    <SolidColorBrush x:Key="AppPanel2" Color="{DynamicResource C_221b16}" />
+    <SolidColorBrush x:Key="AppLine" Color="{DynamicResource C_352a21}" />
+    <SolidColorBrush x:Key="AppInk" Color="{DynamicResource C_efe3d2}" />
+    <SolidColorBrush x:Key="AppMuted" Color="{DynamicResource C_9c8b78}" />
+    <SolidColorBrush x:Key="AppGold" Color="{DynamicResource C_f0c27b}" />
+    <SolidColorBrush x:Key="AppAccent" Color="{DynamicResource C_cf9245}" />
+    <SolidColorBrush x:Key="AppAccentText" Color="{DynamicResource C_241505}" />
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+
+    <!-- общий стиль кнопок: убирает синие акценты Fluent во всех окнах -->
+    <Style Selector="Button">
+      <Setter Property="Background" Value="{DynamicResource AppPanel2}" />
+      <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppLine}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="10,6" />
+      <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AppPanel}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppGold}" />
+    </Style>
+    <Style Selector="Button:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AppBg2}" />
+    </Style>
+
+    <Style Selector="ComboBox">
+      <Setter Property="Background" Value="{DynamicResource AppPanel2}" />
+      <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppLine}" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <Style Selector="ComboBoxItem">
+      <Setter Property="Background" Value="{DynamicResource AppPanel2}" />
+      <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="Background" Value="{DynamicResource AppBg2}" />
+      <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppLine}" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+      <Setter Property="BorderBrush" Value="{DynamicResource AppGold}" />
+    </Style>
+    <Style Selector="CheckBox">
+      <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AppPanel}" />
+    </Style>
+    <Style Selector="NumericUpDown">
+      <Setter Property="Background" Value="{DynamicResource AppPanel2}" />
+      <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppLine}" />
+      <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    <Style Selector="NumericUpDown /template/ TextBox">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="NumericUpDown /template/ Button">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource AppMuted}" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
+      <Setter Property="Background" Value="{DynamicResource AppAccent}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppGold}" />
+    </Style>
+    <Style Selector="ToolTip">
+      <Setter Property="Background" Value="{DynamicResource AppPanel}" />
+      <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppLine}" />
+    </Style>
+  </Application.Styles>
+</Application>

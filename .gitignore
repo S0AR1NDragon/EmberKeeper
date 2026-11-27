@@ -1,0 +1,38 @@
+# --- разрешаем только исходники проекта, всё остальное игнорируем ---
+/*
+!/.gitignore
+!/README.md
+!/build-installer.ps1
+!/keys/
+!/data/
+!/EmberKeeper/
+!/installer/
+!/licensegen/
+
+# --- секреты и лицензии (НИКОГДА не коммитить) ---
+/keys/private.pem
+*.key
+license.key
+lic-*.txt
+*.pem
+!/keys/public.pem
+
+# --- сборка ---
+**/bin/
+**/obj/
+/EmberKeeper/publish/
+/installer/payload.zip
+/dist/
+/portable-test/
+**/*.exe.config
+
+# --- данные пользователя ---
+**/campaign/
+**/selftest-data/
+**/*.log
+
+# --- прочее ---
+.git/
+*.user
+.vs/
+.idea/

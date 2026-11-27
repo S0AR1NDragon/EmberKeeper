@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>EmberKeeper</AssemblyName>
+    <RootNamespace>EmberKeeper</RootNamespace>
+    <Product>EmberKeeper</Product>
+    <AssemblyTitle>EmberKeeper</AssemblyTitle>
+    <Company>EmberKeeper</Company>
+    <Version>1.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+    <ApplicationIcon>emberkeeper.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.6" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.6" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.6" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.6" />
+    <PackageReference Include="Avalonia.Headless" Version="11.3.6" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\keys\public.pem" LogicalName="public.pem" Condition="Exists('..\keys\public.pem')" />
+    <None Include="update.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('update.json')" />
+  </ItemGroup>
+
+  <Target Name="CopyData" AfterTargets="Build;Publish">
+    <ItemGroup>
+      <DataJson Include="..\data\*.json" />
+      <DataJson Include="..\dm-screen\native\data\*.json" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DataJson)" DestinationFolder="$(OutDir)data" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
