@@ -342,6 +342,7 @@ public partial class MapPage : UserControl
     {
         for (int c = 0; c < _doc.Cols; c++)
             for (int r = 0; r < _doc.Rows; r++) _doc.SetFog(c, r, false);
+        _doc.ClearExplored();
         SaveAll();
         _view.InvalidateVisual();
     }

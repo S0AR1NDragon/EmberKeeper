@@ -124,6 +124,12 @@ public sealed class MapDoc
         if (Explored == null || Explored.Count != n) Explored = new List<bool>(new bool[n]);
     }
 
+    public void ClearExplored()
+    {
+        if (Explored == null) return;
+        for (int i = 0; i < Explored.Count; i++) Explored[i] = false;
+    }
+
     public bool ExploredAt(int col, int row)
     {
         int idx = row * Cols + col;
@@ -380,7 +386,29 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
         // шаблоны
         foreach (var tp in Doc.Templates)
+        {
+            if (PlayerMode && Doc.FogOn && !CellSeen(tp.X, tp.Y)) continue;
             DrawTemplate(ctx, tp, oxG, oyG, g);
+        }
+
+        // у мастера — радиусы обзора выделенного токена
+        if (!PlayerMode && Selected != null)
+        {
+            var sel = Selected;
+            var sc = CellCenter(sel.X + sel.Cells / 2.0, sel.Y + sel.Cells / 2.0);
+            if (sel.LightOn && sel.LightFt > 0)
+            {
+                double lr = sel.LightFt / Math.Max(1, Doc.FeetPerCell) * g;
+                ctx.DrawEllipse(null, new Pen(new SolidColorBrush(Color.FromArgb(200, 240, 194, 123)), 1.6,
+                    new DashStyle(new double[] { 5, 4 }, 0)), sc, lr, lr);
+            }
+            if (sel.VisionFt > 0)
+            {
+                double vr = sel.VisionFt / Math.Max(1, Doc.FeetPerCell) * g;
+                ctx.DrawEllipse(null, new Pen(new SolidColorBrush(Color.FromArgb(190, 126, 170, 210)), 1.4,
+                    new DashStyle(new double[] { 3, 4 }, 0)), sc, vr, vr);
+            }
+        }
 
         // СЃС‚РµРЅС‹
         foreach (var w in Doc.Walls)
@@ -458,6 +486,7 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         // пропсы
         foreach (var pr in Doc.Props)
         {
+            if (PlayerMode && Doc.FogOn && !CellSeen(pr.X, pr.Y)) continue;
             double size = pr.Cells * g;
             var center = new Point(ox + (pr.X + pr.Cells / 2.0) * g, oy + (pr.Y + pr.Cells / 2.0) * g);
             double r = Math.Max(6, size * 0.34);
@@ -559,6 +588,38 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
         return false;
     }
 
+    /// <summary>Видна ли игрокам клетка с этой позиции.</summary>
+    private bool CellSeen(double x, double y)
+    {
+        if (_vis == null) return true;
+        int c = (int)Math.Floor(x), r = (int)Math.Floor(y);
+        if (c < 0 || r < 0 || c >= Doc.Cols || r >= Doc.Rows) return false;
+        return _vis[c, r];
+    }
+
+    /// <summary>Ближайшая стена рядом с точкой (для дверей).</summary>
+    private Wall? WallNear(Point m, double tol)
+    {
+        Wall? best = null;
+        double bestD = tol;
+        foreach (var w in Doc.Walls)
+        {
+            double d = DistToSegment(m, new Point(w.X1, w.Y1), new Point(w.X2, w.Y2));
+            if (d < bestD) { bestD = d; best = w; }
+        }
+        return best;
+    }
+
+    private static double DistToSegment(Point p, Point a, Point b)
+    {
+        double dx = b.X - a.X, dy = b.Y - a.Y;
+        double len2 = dx * dx + dy * dy;
+        if (len2 < 1e-9) return Math.Sqrt((p.X - a.X) * (p.X - a.X) + (p.Y - a.Y) * (p.Y - a.Y));
+        double t = Math.Clamp(((p.X - a.X) * dx + (p.Y - a.Y) * dy) / len2, 0, 1);
+        double px = a.X + t * dx, py = a.Y + t * dy;
+        return Math.Sqrt((p.X - px) * (p.X - px) + (p.Y - py) * (p.Y - py));
+    }
+
     private void PaintFog(Point m)
     {
         int c = (int)Math.Floor(m.X), r = (int)Math.Floor(m.Y);
@@ -613,6 +674,14 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             _fogErase = Doc.FogAt((int)Math.Floor(m.X), (int)Math.Floor(m.Y));
             PaintFog(m);
             e.Pointer.Capture(this);
+            return;
+        }
+
+        if (Tool == "select" && WallNear(m, 0.35) is { Kind: "door" } doorHit)
+        {
+            doorHit.Open = !doorHit.Open;
+            Save?.Invoke();
+            InvalidateVisual();
             return;
         }
 
