@@ -40,7 +40,7 @@ public partial class MapPage : UserControl
                     if (!System.IO.File.Exists(path)) path = "";
                     var bmp = string.IsNullOrEmpty(path) ? null : ImageCache.Get(path, 4000);
                     if (bmp != null)
-                        new BackgroundPreviewDialog(path, bmp.PixelSize, _doc).Show();
+                        new BackgroundPreviewDialog(path, ImageSize(path), _doc).Show();
                 }
                 catch { }
             }, Avalonia.Threading.DispatcherPriority.Loaded);
