@@ -599,6 +599,30 @@ public partial class MapPage : UserControl
         _view.InvalidateVisual();
     }
 
+    private void OnRotateToken(object? sender, RoutedEventArgs e)
+    {
+        if (_view?.Selected == null) return;
+        _view.Selected.Rotation = (_view.Selected.Rotation + 90) % 360;
+        SaveAll();
+        _view.InvalidateVisual();
+    }
+
+    private void OnFlipTokenX(object? sender, RoutedEventArgs e)
+    {
+        if (_view?.Selected == null) return;
+        _view.Selected.FlipX = !_view.Selected.FlipX;
+        SaveAll();
+        _view.InvalidateVisual();
+    }
+
+    private void OnFlipTokenY(object? sender, RoutedEventArgs e)
+    {
+        if (_view?.Selected == null) return;
+        _view.Selected.FlipY = !_view.Selected.FlipY;
+        SaveAll();
+        _view.InvalidateVisual();
+    }
+
     private void OnDeleteToken(object? sender, RoutedEventArgs e)
     {
         if (_view.Selected == null) return;

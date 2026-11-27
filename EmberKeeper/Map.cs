@@ -35,6 +35,10 @@ public sealed class Token
     public int Ac { get; set; }
     public string Speed { get; set; } = "";
     public string Notes { get; set; } = "";
+    /// <summary>Поворот картинки токена: 0/90/180/270.</summary>
+    public int Rotation { get; set; }
+    public bool FlipX { get; set; }
+    public bool FlipY { get; set; }
     /// <summary>Картинка токена (если пусто — буква на жетоне).</summary>
     public string ImagePath { get; set; } = "";
     /// <summary>Токен не виден на экране игроков.</summary>
@@ -504,8 +508,24 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
 
             if (portrait != null)
             {
-                using (ctx.PushClip(new RoundedRect(new Rect(center.X - radius, center.Y - radius, radius * 2, radius * 2), radius, radius)))
-                    ctx.DrawImage(portrait, new Rect(center.X - radius, center.Y - radius, radius * 2, radius * 2));
+                var square = new Rect(center.X - radius, center.Y - radius, radius * 2, radius * 2);
+                var clip = new RoundedRect(square, radius, radius);
+                if (t.Rotation != 0 || t.FlipX || t.FlipY)
+                {
+                    double ang = t.Rotation * Math.PI / 180.0;
+                    var m = Matrix.CreateTranslation(-center.X, -center.Y) *
+                            Matrix.CreateRotation(ang) *
+                            Matrix.CreateScale(t.FlipX ? -1 : 1, t.FlipY ? -1 : 1) *
+                            Matrix.CreateTranslation(center.X, center.Y);
+                    using (ctx.PushTransform(m))
+                    using (ctx.PushClip(clip))
+                        ctx.DrawImage(portrait, square);
+                }
+                else
+                {
+                    using (ctx.PushClip(clip))
+                        ctx.DrawImage(portrait, square);
+                }
             }
             else
             {
