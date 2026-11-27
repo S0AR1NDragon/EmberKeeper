@@ -69,6 +69,24 @@ public partial class MapPage : UserControl
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_PROP") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    var pr = _doc.Props.FirstOrDefault();
+                    if (pr != null)
+                    {
+                        _view.SelectedProp = pr;
+                        SyncProp();
+                        _view.InvalidateVisual();
+                    }
+                }
+                catch { }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_FLOW") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>

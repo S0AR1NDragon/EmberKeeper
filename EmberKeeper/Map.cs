@@ -1166,7 +1166,14 @@ public sealed class MapView : Control, Avalonia.Rendering.ICustomHitTest
             }
             else
             {
-                Doc.Props.Add(new Prop { X = Math.Floor(m.X), Y = Math.Floor(m.Y), Icon = PropIcon, Name = PropName(PropIcon) });
+                Doc.Props.Add(new Prop
+            {
+                X = Math.Floor(m.X),
+                Y = Math.Floor(m.Y),
+                Icon = PropIcon,
+                Name = PropName(PropIcon),
+                AlwaysVisible = PropIcon is "mark-excl" or "mark-quest",
+            });
                 Save?.Invoke();
             }
             e.Pointer.Capture(this);
