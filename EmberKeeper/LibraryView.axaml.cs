@@ -13,15 +13,15 @@ namespace EmberKeeper;
 
 public partial class LibraryView : UserControl
 {
-    private static readonly (string Key, string Title, string Icon)[] Cats =
+    private static readonly (string Key, string Title)[] Cats =
     {
-        ("classes", "Классы", ""),
-        ("races", "Виды", ""),
-        ("backgrounds", "Предыстории", ""),
-        ("feats", "Черты", ""),
-        ("spells", "Заклинания", ""),
-        ("items", "Предметы", ""),
-        ("bestiary", "Бестиарий", ""),
+        ("classes", "Классы"),
+        ("races", "Виды"),
+        ("backgrounds", "Предыстории"),
+        ("feats", "Черты"),
+        ("spells", "Заклинания"),
+        ("items", "Предметы"),
+        ("bestiary", "Бестиарий"),
     };
 
     private string _edition = "2014";
@@ -34,6 +34,11 @@ public partial class LibraryView : UserControl
 
     private string _fLevel = "все", _fSchool = "все", _fClass = "все", _fRarity = "все", _fType = "все", _fCr = "все", _fMtype = "все";
 
+    // состояние статьи
+    private LibEntry? _cur;
+    private string _tab = "main";
+    private int? _sub;
+
     public Action<string, string, string>? AddToMap;
 
     public LibraryView()
@@ -41,8 +46,12 @@ public partial class LibraryView : UserControl
         InitializeComponent();
         DataStore.Dir = System.IO.Path.Combine(AppContext.BaseDirectory, "data");
         _counts = DataStore.LoadCounts();
+        var libTest = Environment.GetEnvironmentVariable("EMBERKEEPER_LIB_TEST");
+        if (!string.IsNullOrEmpty(libTest)) _cat = 0;
         BuildChips();
         Reload();
+        if (libTest == "subs") { _tab = "subs"; RenderDetail(); }
+        else if (libTest == "table") { _tab = "table"; RenderDetail(); }
     }
 
     public void OpenBestiary(string search)
@@ -70,6 +79,8 @@ public partial class LibraryView : UserControl
         Reload();
     }
 
+    /* ==================== список ==================== */
+
     private void BuildChips()
     {
         Chips.Children.Clear();
@@ -89,7 +100,7 @@ public partial class LibraryView : UserControl
     {
         for (int i = 0; i < _chips.Count; i++)
         {
-            var (key, title, icon) = Cats[i];
+            var (key, title) = Cats[i];
             _counts.TryGetValue($"{_edition}-{key}", out int cnt);
             _chips[i].Content = cnt > 0 ? $"{title}  {cnt}" : title;
             _chips[i].Classes.Set("on", i == _cat);
@@ -118,7 +129,7 @@ public partial class LibraryView : UserControl
             if (_fLevel != "все")
             {
                 int lv = _fLevel == "Заговор" ? 0 : int.Parse(_fLevel.Split(' ')[0], CultureInfo.InvariantCulture);
-                q = q.Where(x => x.Lvl == lv);
+                q = q.Where(x => (x.Lvl ?? -99) == lv);
             }
             if (_fSchool != "все") q = q.Where(x => x.Sch == _fSchool);
             if (_fClass != "все") q = q.Where(x => x.Cls.Contains(_fClass));
@@ -140,34 +151,42 @@ public partial class LibraryView : UserControl
         LibList.ItemsSource = _view;
         LibList.ItemTemplate = new FuncDataTemplate<LibEntry>((e, _) => Row(e), true);
         if (_view.Count > 0) LibList.SelectedIndex = 0;
-        else RenderDetail(null);
+        else { _cur = null; RenderDetail(); }
     }
 
     private Control Row(LibEntry e)
     {
-        var name = new TextBlock { Text = e.N, FontWeight = FontWeight.SemiBold, FontSize = 14, Foreground = Pal.B("#f6e7cf") };
-        var sub = new TextBlock { Text = e.Sub, FontSize = 12, Foreground = Pal.B("#9c8b78"), Margin = new Thickness(0, 3, 0, 0) };
+        var name = new TextBlock { Text = e.N, FontWeight = FontWeight.SemiBold, FontSize = 14, Foreground = Pal.B("#f6e7cf"), TextWrapping = TextWrapping.Wrap };
+        var subText = e.S == "" ? e.E : e.S;
+        var sub = new TextBlock { Text = subText, FontSize = 11.5, Foreground = Pal.B("#9c8b78"), Margin = new Thickness(0, 3, 0, 0), TextWrapping = TextWrapping.Wrap };
         var left = new StackPanel();
         left.Children.Add(name);
-        left.Children.Add(sub);
+        if (!string.IsNullOrWhiteSpace(subText)) left.Children.Add(sub);
 
-        var badge = new Border
-        {
-            Background = Pal.B("#3a2d24"),
-            BorderBrush = Pal.B("#4a3728"),
-            BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(10),
-            Padding = new Thickness(8, 3),
-            VerticalAlignment = VerticalAlignment.Center,
-            Child = new TextBlock { Text = e.LevelText, FontSize = 11, Foreground = Pal.B("#d99b4a") },
-        };
+        var badges = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center };
+        if (!string.IsNullOrEmpty(e.LevelText))
+            badges.Children.Add(Badge(e.LevelText, "#d99b4a"));
+        if (e.Subs is { Count: > 0 })
+            badges.Children.Add(Badge(e.Subs.Count + " подкл.", "#9c8b78"));
 
-        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(10, 8) };
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(10, 9) };
         grid.Children.Add(left);
-        Grid.SetColumn(badge, 1);
-        grid.Children.Add(badge);
+        Grid.SetColumn(badges, 1);
+        grid.Children.Add(badges);
         return grid;
     }
+
+    private static Border Badge(string text, string hex) => new()
+    {
+        Background = Pal.B("#3a2d24"),
+        BorderBrush = Pal.B("#4a3728"),
+        BorderThickness = new Thickness(1),
+        CornerRadius = new CornerRadius(9),
+        Padding = new Thickness(8, 3),
+        Child = new TextBlock { Text = text, FontSize = 10.5, Foreground = Pal.B(hex) },
+    };
+
+    /* ==================== фильтры ==================== */
 
     private void BuildFilters()
     {
@@ -202,7 +221,7 @@ public partial class LibraryView : UserControl
             if (combo.SelectedItem is string s) { set(s); ApplyFilter(); }
         };
 
-        var stack = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        var stack = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 0, 14, 6) };
         stack.Children.Add(new TextBlock { Text = title, Foreground = Pal.B("#9c8b78"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
         stack.Children.Add(combo);
         Filters.Children.Add(stack);
@@ -227,96 +246,363 @@ public partial class LibraryView : UserControl
 
     private void OnSelect(object? sender, SelectionChangedEventArgs e)
     {
-        RenderDetail(LibList.SelectedItem as LibEntry);
+        _cur = LibList.SelectedItem as LibEntry;
+        _tab = "main";
+        _sub = null;
+        RenderDetail();
     }
 
-    private void RenderDetail(LibEntry? x)
+    /* ==================== статья ==================== */
+
+    private void RenderDetail()
     {
         DetailHost.Children.Clear();
-        if (x == null) return;
+        if (_cur == null) return;
+        var x = _cur;
 
-        var head = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
-        head.Children.Add(new Border { Width = 3, Height = 34, CornerRadius = new CornerRadius(2), Background = Pal.B("#d99b4a") });
-        var titles = new StackPanel();
-        titles.Children.Add(new TextBlock { Text = x.N, FontFamily = new FontFamily("Georgia"), FontSize = 30, FontWeight = FontWeight.Bold, Foreground = Pal.B("#f6e7cf") });
-        if (!string.IsNullOrEmpty(x.E))
-            titles.Children.Add(new TextBlock { Text = x.E, FontStyle = FontStyle.Italic, Foreground = Pal.B("#9c8b78") });
-        head.Children.Add(titles);
-        DetailHost.Children.Add(head);
-
-        if (!string.IsNullOrEmpty(x.S))
-            DetailHost.Children.Add(new TextBlock { Text = x.S, Foreground = Pal.B("#d99b4a"), FontSize = 14, Margin = new Thickness(13, 0, 0, 0) });
-
-        if (x.P.Count > 0)
+        // заголовок
+        var titles = new StackPanel { Spacing = 2 };
+        titles.Children.Add(new TextBlock
         {
-            var rows = new StackPanel();
-            bool alt = false;
-            foreach (var line in x.P)
+            Text = x.N,
+            FontFamily = new FontFamily("Georgia"),
+            FontSize = 30,
+            FontWeight = FontWeight.Bold,
+            Foreground = Pal.B("#f6e7cf"),
+            TextWrapping = TextWrapping.Wrap,
+        });
+        if (!string.IsNullOrWhiteSpace(x.E))
+            titles.Children.Add(new TextBlock { Text = x.E, FontStyle = FontStyle.Italic, FontSize = 13, Foreground = Pal.B("#9c8b78") });
+
+        var headRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto") };
+        headRow.Children.Add(new Border { Width = 3, CornerRadius = new CornerRadius(2), Background = Pal.B("#d99b4a"), Margin = new Thickness(0, 3, 12, 3) });
+        Grid.SetColumn(titles, 1);
+        headRow.Children.Add(titles);
+
+        var copyBtn = new Button
+        {
+            Content = "Копировать",
+            Classes = { "chip" },
+            Padding = new Thickness(12, 6),
+            FontSize = 12,
+            VerticalAlignment = VerticalAlignment.Top,
+        };
+        copyBtn.Click += async (_, _) =>
+        {
+            var clip = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clip != null) await clip.SetTextAsync(x.N + "\n\n" + x.H);
+        };
+        Grid.SetColumn(copyBtn, 2);
+        headRow.Children.Add(copyBtn);
+        DetailHost.Children.Add(headRow);
+
+        // бейджи: редакция, категория, источник
+        var meta = new WrapPanel { Orientation = Orientation.Horizontal };
+        meta.Children.Add(Badge(_edition, "#d99b4a"));
+        meta.Children.Add(Spacer());
+        meta.Children.Add(Badge(Cats[_cat].Title, "#b7a794"));
+        if (!string.IsNullOrWhiteSpace(x.Cr)) { meta.Children.Add(Spacer()); meta.Children.Add(Badge("ОП " + x.Cr, "#c98a6a")); }
+        if (!string.IsNullOrWhiteSpace(x.Rar)) { meta.Children.Add(Spacer()); meta.Children.Add(Badge(x.Rar, "#b58fc9")); }
+        foreach (var prm in x.P.Where(p => p.StartsWith("Источник", StringComparison.OrdinalIgnoreCase)))
+        {
+            meta.Children.Add(Spacer());
+            meta.Children.Add(new TextBlock { Text = prm, FontSize = 11.5, Foreground = Pal.B("#8d7a66"), VerticalAlignment = VerticalAlignment.Center });
+        }
+        DetailHost.Children.Add(meta);
+
+        // вкладки
+        var tabs = new List<(string Key, string Title)>();
+        tabs.Add(("main", "Описание"));
+        if (x.Subs is { Count: > 0 }) tabs.Add(("subs", $"Подклассы ({x.Subs.Count})"));
+        if (x.Tb is { Count: > 0 }) tabs.Add(("table", "Таблица"));
+
+        if (tabs.Count > 1)
+        {
+            var tabRow = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 12, 0, 2) };
+            foreach (var (key, title) in tabs)
             {
-                int i = line.IndexOf(':');
-                string k = i > 0 ? line[..i].Trim() : "•";
-                string v = i > 0 ? line[(i + 1)..].Trim() : line;
-
-                var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("205,*") };
-                var keyBorder = new Border
-                {
-                    BorderBrush = Pal.B("#2a211a"),
-                    BorderThickness = new Thickness(0, 0, 1, 0),
-                    Padding = new Thickness(14, 10),
-                    Child = new TextBlock { Text = k, Foreground = Pal.B("#9c8b78"), FontSize = 13 },
-                };
-                var val = new TextBlock { Text = v, Margin = new Thickness(14, 10), FontSize = 13, TextWrapping = TextWrapping.Wrap };
-                grid.Children.Add(keyBorder);
-                Grid.SetColumn(val, 1);
-                grid.Children.Add(val);
-
-                rows.Children.Add(new Border
-                {
-                    Background = alt ? Pal.B("#15110e") : Brushes.Transparent,
-                    BorderBrush = Pal.B("#2a211a"),
-                    BorderThickness = new Thickness(0, 0, 0, 1),
-                    Child = grid,
-                });
-                alt = !alt;
+                var b = new Button { Content = title, Classes = { "tab" } };
+                b.Classes.Set("on", _tab == key);
+                b.Click += (_, _) => { _tab = key; RenderDetail(); };
+                tabRow.Children.Add(b);
             }
-
             DetailHost.Children.Add(new Border
             {
-                Background = Pal.B("#1c1714"),
                 BorderBrush = Pal.B("#2a211a"),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(12),
-                Margin = new Thickness(13, 10, 0, 0),
-                Child = rows,
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                Margin = new Thickness(0, 0, 0, 6),
+                Child = tabRow,
             });
         }
 
+        if (_tab == "table" && x.Tb is { Count: > 0 }) { DetailHost.Children.Add(DataTable(x.Tb)); return; }
+        if (_tab == "subs" && x.Subs is { Count: > 0 }) { RenderSubclasses(x); return; }
+
+        // параметры таблицей
+        var prms = x.P.Where(p => !p.StartsWith("Источник", StringComparison.OrdinalIgnoreCase)).ToList();
+        if (prms.Count > 0) DetailHost.Children.Add(ParamTable(prms));
+
+        // текст статьи по абзацам
+        if (!string.IsNullOrWhiteSpace(x.H))
+            foreach (var paragraph in SplitParagraphs(x.H))
+                DetailHost.Children.Add(ParagraphBlock(paragraph));
+
+        // остальные данные — показать таблицу сразу, если она есть и текст пустой
+        if (string.IsNullOrWhiteSpace(x.H) && x.Tb is { Count: > 0 })
+            DetailHost.Children.Add(DataTable(x.Tb));
+
+        if (_cat == 6)
+        {
+            var btn = new Button
+            {
+                Content = "→ на карту",
+                Background = Pal.B("#4a3728"),
+                Foreground = Pal.B("#f0c27b"),
+                BorderBrush = Pal.B("#4a3728"),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(16, 9),
+                FontWeight = FontWeight.SemiBold,
+                Margin = new Thickness(0, 16, 0, 0),
+                HorizontalAlignment = HorizontalAlignment.Left,
+            };
+            var n = x.N; var cr = x.Cr; var mt = x.Mt;
+            btn.Click += (_, _) => AddToMap?.Invoke(n, cr, mt);
+            DetailHost.Children.Add(btn);
+        }
+    }
+
+    private void RenderSubclasses(LibEntry x)
+    {
+        var subs = x.Subs ?? new List<LibSub>();
+        var wrap = new WrapPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 4) };
+        var none = SubChip("Без подкласса", _sub == null, () => { _sub = null; RenderDetail(); });
+        wrap.Children.Add(none);
+        for (int i = 0; i < subs.Count; i++)
+        {
+            int idx = i;
+            wrap.Children.Add(SubChip(subs[i].N, _sub == idx, () => { _sub = idx; RenderDetail(); }));
+        }
+        DetailHost.Children.Add(wrap);
+
+        if (_sub == null)
+        {
+            DetailHost.Children.Add(new TextBlock
+            {
+                Text = "Выберите подкласс — покажу его умения и описание. Без выбора класс играется только с базовыми умениями.",
+                FontSize = 13,
+                Foreground = Pal.B("#8d7a66"),
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 6, 0, 0),
+            });
+            return;
+        }
+
+        var sub = subs[_sub.Value];
         DetailHost.Children.Add(new TextBlock
         {
-            Text = x.H,
-            TextWrapping = TextWrapping.Wrap,
-            FontSize = 14.5,
-            LineHeight = 24,
-            Foreground = Pal.B("#c9b8a4"),
-            Margin = new Thickness(13, 16, 0, 0),
-        });
-
-        var btn = new Button
-        {
-            Content = "→ на карту",
-            Background = Pal.B("#4a3728"),
+            Text = sub.N,
+            FontFamily = new FontFamily("Georgia"),
+            FontSize = 22,
+            FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f0c27b"),
-            BorderBrush = Pal.B("#4a3728"),
+            Margin = new Thickness(0, 10, 0, 4),
+        });
+        foreach (var paragraph in SplitParagraphs(sub.H))
+            DetailHost.Children.Add(ParagraphBlock(paragraph));
+    }
+
+    private static Button SubChip(string text, bool on, Action click)
+    {
+        var b = new Button { Content = text, Classes = { "subchip" } };
+        b.Classes.Set("on", on);
+        b.Click += (_, _) => click();
+        return b;
+    }
+
+    private static Border Spacer() => new() { Width = 8 };
+
+    /// <summary>Таблица параметров (ключ — значение) в виде аккуратной таблицы.</summary>
+    private static Control ParamTable(List<string> lines)
+    {
+        var rows = new StackPanel();
+        bool alt = false;
+        foreach (var line in lines)
+        {
+            int i = line.IndexOf(':');
+            string k = i > 0 ? line[..i].Trim() : "";
+            string v = i > 0 ? line[(i + 1)..].Trim() : line;
+
+            var grid = new Grid { ColumnDefinitions = new ColumnDefinitions(k.Length > 0 ? "190,*" : "*") };
+            if (k.Length > 0)
+            {
+                grid.Children.Add(new Border
+                {
+                    BorderBrush = Pal.B("#2a211a"),
+                    BorderThickness = new Thickness(0, 0, 1, 0),
+                    Padding = new Thickness(12, 9),
+                    Child = new TextBlock { Text = k, Foreground = Pal.B("#9c8b78"), FontSize = 12.5, TextWrapping = TextWrapping.Wrap },
+                });
+                var val = new TextBlock { Text = v, Margin = new Thickness(12, 9), FontSize = 13.5, TextWrapping = TextWrapping.Wrap, Foreground = Pal.B("#efe3d2") };
+                Grid.SetColumn(val, 1);
+                grid.Children.Add(val);
+            }
+            else
+            {
+                grid.Children.Add(new TextBlock { Text = v, Margin = new Thickness(12, 9), FontSize = 13.5, TextWrapping = TextWrapping.Wrap, Foreground = Pal.B("#c9b8a4") });
+            }
+
+            rows.Children.Add(new Border
+            {
+                Background = alt ? Pal.B("#15110e") : Brushes.Transparent,
+                BorderBrush = Pal.B("#2a211a"),
+                BorderThickness = new Thickness(0, 0, 0, 1),
+                Child = grid,
+            });
+            alt = !alt;
+        }
+
+        return new Border
+        {
+            Background = Pal.B("#1c1714"),
+            BorderBrush = Pal.B("#2a211a"),
+            BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(10),
-            Padding = new Thickness(16, 9),
-            FontWeight = FontWeight.SemiBold,
-            Margin = new Thickness(13, 18, 0, 0),
-            HorizontalAlignment = HorizontalAlignment.Left,
+            Margin = new Thickness(0, 8, 0, 0),
+            ClipToBounds = true,
+            Child = rows,
         };
-        var name = x.N;
-        var cr = x.Cr;
-        var mt = x.Mt;
-        btn.Click += (_, _) => AddToMap?.Invoke(name, cr, mt);
-        DetailHost.Children.Add(btn);
+    }
+
+    /// <summary>Таблица из данных dnd.su: шапка (иногда двухуровневая) + строки, прокрутка по горизонтали.</summary>
+    private static Control DataTable(List<List<string>> tb)
+    {
+        int cols = 0;
+        foreach (var r in tb) cols = Math.Max(cols, r.Count);
+
+        // убираем колонки, пустые во всех строках
+        var keep = new List<int>();
+        for (int c = 0; c < cols; c++)
+            if (tb.Any(r => c < r.Count && !string.IsNullOrWhiteSpace(r[c]))) keep.Add(c);
+        if (keep.Count == 0) return new TextBlock { Text = "Таблица пуста", Foreground = Pal.B("#8d7a66") };
+
+        // шапка: одна строка, иногда две (вторая — подписи уровней: «1 2 3 …»)
+        int headerRows = 1;
+        if (tb.Count > 2)
+        {
+            var second = tb[1];
+            bool shortCells = second.Where(c => !string.IsNullOrWhiteSpace(c)).All(c => c.Trim().Length <= 4);
+            if (shortCells) headerRows = 2;
+        }
+
+        var grid = new Grid();
+        foreach (var _ in keep) grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+
+        // объединённая шапка
+        for (int ci = 0; ci < keep.Count; ci++)
+        {
+            int c = keep[ci];
+            var parts = new List<string>();
+            for (int hr = 0; hr < headerRows && hr < tb.Count; hr++)
+                if (c < tb[hr].Count && !string.IsNullOrWhiteSpace(tb[hr][c])) parts.Add(tb[hr][c].Trim());
+            var head = new Border
+            {
+                Background = Pal.B("#2a211a"),
+                BorderBrush = Pal.B("#2a211a"),
+                BorderThickness = new Thickness(0, 0, 1, 1),
+                Padding = new Thickness(10, 6),
+                Child = new TextBlock
+                {
+                    Text = string.Join("\n", parts),
+                    FontSize = 11,
+                    FontWeight = FontWeight.Bold,
+                    Foreground = Pal.B("#f0c27b"),
+                    TextWrapping = TextWrapping.Wrap,
+                    MaxWidth = 240,
+                },
+            };
+            Grid.SetRow(head, 0);
+            Grid.SetColumn(head, ci);
+            grid.Children.Add(head);
+        }
+
+        int rowIndex = 1;
+        for (int r = headerRows; r < tb.Count; r++)
+        {
+            var row = tb[r];
+            for (int ci = 0; ci < keep.Count; ci++)
+            {
+                int c = keep[ci];
+                string text = c < row.Count ? row[c] : "";
+                var cell = new Border
+                {
+                    Background = rowIndex % 2 == 0 ? Pal.B("#15110e") : Brushes.Transparent,
+                    BorderBrush = Pal.B("#2a211a"),
+                    BorderThickness = new Thickness(0, 0, 1, 1),
+                    Padding = new Thickness(10, 6),
+                    MinWidth = 52,
+                    Child = new TextBlock
+                    {
+                        Text = text,
+                        FontSize = 12.5,
+                        Foreground = Pal.B("#efe3d2"),
+                        TextWrapping = TextWrapping.Wrap,
+                        MaxWidth = 240,
+                    },
+                };
+                Grid.SetRow(cell, rowIndex);
+                Grid.SetColumn(cell, ci);
+                grid.Children.Add(cell);
+            }
+            rowIndex++;
+        }
+
+        for (int i = 0; i < rowIndex; i++) grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+
+        return new Border
+        {
+            Background = Pal.B("#1c1714"),
+            BorderBrush = Pal.B("#2a211a"),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(10),
+            Margin = new Thickness(0, 10, 0, 0),
+            Padding = new Thickness(1),
+            Child = new ScrollViewer
+            {
+                HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+                Content = grid,
+            },
+        };
+    }
+
+    private static IEnumerable<string> SplitParagraphs(string text)
+    {
+        var parts = text.Replace("\r\n", "\n").Split('\n');
+        var buffer = "";
+        foreach (var raw in parts)
+        {
+            var line = raw.TrimEnd();
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                if (buffer.Length > 0) { yield return buffer.Trim(); buffer = ""; }
+                continue;
+            }
+            buffer += (buffer.Length > 0 ? " " : "") + line.Trim();
+        }
+        if (buffer.Length > 0) yield return buffer.Trim();
+    }
+
+    private static Control ParagraphBlock(string text)
+    {
+        bool bullet = text.StartsWith("•", StringComparison.Ordinal) || text.StartsWith("-", StringComparison.Ordinal);
+        return new TextBlock
+        {
+            Text = text,
+            TextWrapping = TextWrapping.Wrap,
+            FontSize = 14,
+            LineHeight = 23,
+            Foreground = Pal.B(bullet ? "#c9b8a4" : "#e9dccb"),
+            Margin = new Thickness(bullet ? 16 : 0, 3, 0, 3),
+        };
     }
 }

@@ -24,9 +24,16 @@ public sealed class LibEntry
     [JsonPropertyName("mt")] public string Mt { get; set; } = "";
     [JsonPropertyName("at")] public int At { get; set; }
     [JsonPropertyName("src")] public string Src { get; set; } = "";
+    [JsonPropertyName("sub")] public List<LibSub>? Subs { get; set; }
 
     public string LevelText => Lvl == null ? "" : (Lvl == 0 ? "Заговор" : $"{Lvl} ур.");
     public string Sub => string.IsNullOrEmpty(S) ? E : S;
+}
+
+public sealed class LibSub
+{
+    [JsonPropertyName("n")] public string N { get; set; } = "";
+    [JsonPropertyName("h")] public string H { get; set; } = "";
 }
 
 public static class DataStore
@@ -45,11 +52,57 @@ public static class DataStore
         {
             string path = System.IO.Path.Combine(Dir, key + ".json");
             if (File.Exists(path))
+            {
                 list = JsonSerializer.Deserialize<List<LibEntry>>(File.ReadAllText(path)) ?? new();
+                foreach (var e in list) Clean(e);
+            }
         }
         catch { }
         Cache[key] = list;
         return list;
+    }
+
+    private static readonly Dictionary<string, string> Entities = new()
+    {
+        ["&thinsp;"] = " ", ["&nbsp;"] = " ", ["&amp;"] = "&", ["&quot;"] = "\"",
+        ["&lt;"] = "<", ["&gt;"] = ">", ["&mdash;"] = "—", ["&ndash;"] = "–",
+        ["&laquo;"] = "«", ["&raquo;"] = "»", ["&hellip;"] = "…", ["&#39;"] = "'",
+        ["&apos;"] = "'", ["&times;"] = "×", ["&middot;"] = "·", ["&deg;"] = "°",
+        ["&minus;"] = "−", ["&plusmn;"] = "±", ["&rsquo;"] = "’", ["&lsquo;"] = "‘",
+        ["&rdquo;"] = "”", ["&ldquo;"] = "“", ["&bdquo;"] = "„", ["&frac12;"] = "½",
+        ["&frac14;"] = "¼", ["&sup2;"] = "²", ["&sup3;"] = "³",
+    };
+
+    /// <summary>Убирает HTML-сущности и теги, оставляя читаемый текст.</summary>
+    private static string CleanText(string? raw)
+    {
+        if (string.IsNullOrEmpty(raw)) return "";
+        var s = raw.Replace("<br>", "\n").Replace("<br/>", "\n").Replace("<br />", "\n")
+                   .Replace("</p>", "\n").Replace("</li>", "\n").Replace("<li>", "• ");
+        foreach (var kv in Entities) s = s.Replace(kv.Key, kv.Value);
+        s = System.Text.RegularExpressions.Regex.Replace(s, "<[^>]{1,80}>", "");
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"&#(\d{1,5});", m =>
+        {
+            int code = int.Parse(m.Groups[1].Value);
+            return code < 0x10000 ? ((char)code).ToString() : "";
+        });
+        s = s.Replace("&nbsp;", " ").Replace("&thinsp;", " ");
+        while (s.Contains("\n\n\n")) s = s.Replace("\n\n\n", "\n\n");
+        return s.Trim();
+    }
+
+    private static void Clean(LibEntry e)
+    {
+        e.N = CleanText(e.N);
+        e.E = CleanText(e.E);
+        e.S = CleanText(e.S);
+        e.H = CleanText(e.H);
+        for (int i = 0; i < e.P.Count; i++) e.P[i] = CleanText(e.P[i]);
+        if (e.Tb != null)
+            for (int r = 0; r < e.Tb.Count; r++)
+                for (int c = 0; c < e.Tb[r].Count; c++) e.Tb[r][c] = CleanText(e.Tb[r][c]);
+        if (e.Subs != null)
+            foreach (var sb in e.Subs) { sb.N = CleanText(sb.N); sb.H = CleanText(sb.H); }
     }
 
     public static Dictionary<string, int> LoadCounts()

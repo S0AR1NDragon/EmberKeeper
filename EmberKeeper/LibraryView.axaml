@@ -20,7 +20,7 @@
     <Style Selector="Button.chip.on">
       <Setter Property="Background" Value="{DynamicResource C_4a3728}" />
       <Setter Property="Foreground" Value="{DynamicResource C_f0c27b}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource C_4a3728}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_d99b4a}" />
     </Style>
     <Style Selector="Button.seg">
       <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
@@ -35,6 +35,36 @@
       <Setter Property="Background" Value="{DynamicResource C_4a3728}" />
       <Setter Property="Foreground" Value="{DynamicResource C_f0c27b}" />
       <Setter Property="BorderBrush" Value="{DynamicResource C_4a3728}" />
+    </Style>
+    <Style Selector="Button.tab">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource C_9c8b78}" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0,0,0,2" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="Padding" Value="4,8" />
+      <Setter Property="Margin" Value="0,0,18,0" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.tab.on">
+      <Setter Property="Foreground" Value="{DynamicResource C_f0c27b}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_d99b4a}" />
+    </Style>
+    <Style Selector="Button.subchip">
+      <Setter Property="Background" Value="{DynamicResource C_15110e}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_b7a794}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_2a211a}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="10,6" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Margin" Value="0,0,6,6" />
+    </Style>
+    <Style Selector="Button.subchip.on">
+      <Setter Property="Background" Value="{DynamicResource C_4a3728}" />
+      <Setter Property="Foreground" Value="{DynamicResource C_f0c27b}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource C_d99b4a}" />
     </Style>
     <Style Selector="ComboBox">
       <Setter Property="Background" Value="{DynamicResource C_1c1714}" />
@@ -67,8 +97,8 @@
     </Style>
   </UserControl.Styles>
 
-  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
-    <Grid Grid.Row="0" Margin="22,18,22,10" ColumnDefinitions="Auto,Auto,Auto,*,Auto">
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+    <Grid Grid.Row="0" Margin="22,18,22,10" ColumnDefinitions="Auto,Auto,*,Auto">
       <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
         <Border Width="4" Height="30" CornerRadius="2" Background="{DynamicResource C_d99b4a}" />
         <TextBlock Text="Библиотека" FontFamily="Georgia" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource C_f6e7cf}" VerticalAlignment="Center" />
@@ -77,25 +107,25 @@
         <Button x:Name="Ed2014" Classes="seg on" Content="2014" Click="OnEdition" Tag="2014" />
         <Button x:Name="Ed2024" Classes="seg" Content="2024" Margin="6,0,0,0" Click="OnEdition" Tag="2024" />
       </StackPanel>
-      <TextBox x:Name="SearchBox" Grid.Column="2" Width="340" Margin="22,0,0,0"
+      <TextBox x:Name="SearchBox" Grid.Column="2" Width="360" Margin="22,0,22,0" HorizontalAlignment="Left"
                Watermark="Поиск по названию и тексту…" TextChanged="OnSearch" />
-      <TextBlock x:Name="CountText" Grid.Column="4" Text="" Foreground="{DynamicResource C_9c8b78}" FontSize="12" VerticalAlignment="Center" />
+      <TextBlock x:Name="CountText" Grid.Column="3" Text="" Foreground="{DynamicResource C_9c8b78}" FontSize="12" VerticalAlignment="Center" />
     </Grid>
 
     <StackPanel x:Name="Chips" Grid.Row="1" Orientation="Horizontal" Margin="22,0,22,12" />
 
-    <Grid Grid.Row="2" ColumnDefinitions="410,*" Margin="22,0,22,0">
+    <Grid Grid.Row="2" ColumnDefinitions="400,*" Margin="22,0,22,0">
       <Border Grid.Column="0" Classes="card" Margin="0,0,14,12">
         <Grid RowDefinitions="Auto,*">
-          <StackPanel x:Name="Filters" Grid.Row="0" Orientation="Horizontal" Margin="14,12,14,10" Spacing="12" />
+          <WrapPanel x:Name="Filters" Grid.Row="0" Margin="14,12,14,10" Orientation="Horizontal" />
           <ListBox x:Name="LibList" Grid.Row="1" Margin="6,0,6,8"
                    SelectionChanged="OnSelect" Background="Transparent" BorderThickness="0" />
         </Grid>
       </Border>
 
       <Border Grid.Column="1" Classes="card" Margin="0,0,0,12">
-        <ScrollViewer Padding="30,22,30,40" HorizontalScrollBarVisibility="Disabled">
-          <StackPanel x:Name="DetailHost" Spacing="8" />
+        <ScrollViewer x:Name="DetailScroll" Padding="26,20,30,40" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel x:Name="DetailHost" Spacing="10" />
         </ScrollViewer>
       </Border>
     </Grid>
@@ -103,7 +133,7 @@
     <Border Grid.Row="3" Background="{DynamicResource C_0b0908}" BorderBrush="{DynamicResource C_2a211a}" BorderThickness="0,1,0,0" Padding="22,7">
       <Grid ColumnDefinitions="*,Auto">
         <TextBlock x:Name="StatusText" Text="" Foreground="{DynamicResource C_8d7a66}" FontSize="11.5" />
-        <TextBlock Grid.Column="1" Text="двойной клик — открыть · колесо — прокрутка" Foreground="{DynamicResource C_83725f}" FontSize="11.5" />
+        <TextBlock Grid.Column="1" Text="колесо — прокрутка · вкладки — разделы статьи" Foreground="{DynamicResource C_83725f}" FontSize="11.5" />
       </Grid>
     </Border>
   </Grid>
