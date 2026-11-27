@@ -19,6 +19,7 @@ public partial class NpcPage : UserControl
     private bool _sync;
     private string _q = "";
     public Action<Npc>? ToHero;
+    public Action<Npc>? ToMap;
 
     private readonly Dictionary<string, ComboBox> _filters = new();
 
@@ -210,7 +211,11 @@ public partial class NpcPage : UserControl
         if (Cur is Npc n) { _npcs.Remove(n); NpcStore.Save(_npcs); Refresh(); }
     }
 
-    private void Save() => NpcStore.Save(_npcs);
+    private void Save()
+    {
+        NpcStore.Save(_npcs);
+        if (Cur is Npc n) TokenSync.SyncNpc(n);
+    }
 
     private void OnName(object? s, TextChangedEventArgs e) { if (!_sync && Cur is Npc n) { n.Name = EdName.Text ?? ""; Save(); Refresh(); NpcList.SelectedItem = n; } }
     private void OnRace(object? s, TextChangedEventArgs e) { if (!_sync && Cur is Npc n) { n.Race = EdRace.Text ?? ""; Save(); } }
@@ -248,6 +253,11 @@ public partial class NpcPage : UserControl
     {
         Audio.Stop();
         MusicLabel.Text = "остановлено";
+    }
+
+    private void OnToMap(object? sender, RoutedEventArgs e)
+    {
+        if (Cur is Npc n) ToMap?.Invoke(n);
     }
 
     private void OnToHero(object? sender, RoutedEventArgs e)

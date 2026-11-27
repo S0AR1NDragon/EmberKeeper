@@ -109,6 +109,7 @@
           <TextBox x:Name="EdNotes" Classes="field" Watermark="Заметки…" AcceptsReturn="True" TextWrapping="Wrap" Height="150" TextChanged="OnNotes" />
 
           <Button Classes="goldbtn" Content="→ в героя" HorizontalAlignment="Left" Click="OnToHero" />
+            <Button Classes="goldbtn" Content="→ на карту" HorizontalAlignment="Left" Click="OnToMap" />
           <TextBlock Text="теги: союзник, враг, торговец…" Foreground="{DynamicResource C_83725f}" FontSize="11.5" />
         </StackPanel>
       </ScrollViewer>

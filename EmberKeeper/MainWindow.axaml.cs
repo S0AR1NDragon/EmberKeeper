@@ -69,6 +69,7 @@ public partial class MainWindow : Window
         _heroes.ToMap = h => { _map.AddHero(h); ShowTab(IxMap); };
         _heroes.ToNpc = h => { _npcs.AddFromHero(h); ShowTab(IxNpc); };
         _npcs.ToHero = n => { _heroes.AddFromNpc(n); ShowTab(IxHeroes); };
+        _npcs.ToMap = n => { _map.AddNpc(n); ShowTab(IxMap); };
         _lib.AddToMap = (name, cr, mt) => { _map.AddFromBestiary(name, cr, mt); ShowTab(IxMap); };
         _lib.CreateHero = (klass, sub, hitDie) => { _heroes.CreateFromClass(klass, sub, hitDie); ShowTab(IxHeroes); };
 

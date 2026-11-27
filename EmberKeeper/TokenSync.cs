@@ -117,6 +117,45 @@ public static class TokenSync
         catch { }
     }
 
+    /// <summary>Обновить токены НПС (имя, ХП, КД) после правки карточки.</summary>
+    public static void SyncNpc(Npc n)
+    {
+        try
+        {
+            bool changed = false;
+            if (Live.Doc != null) changed = ApplyNpc(Live.Doc, n);
+            else
+            {
+                var book = MapStore.Load();
+                foreach (var m in book.Maps) if (ApplyNpc(m, n)) changed = true;
+                if (changed) { MapStore.Save(book); }
+            }
+            if (changed)
+            {
+                Live.RaiseMapChanged();
+                TokensUpdated?.Invoke();
+            }
+        }
+        catch { }
+    }
+
+    private static bool ApplyNpc(MapDoc doc, Npc n)
+    {
+        bool changed = false;
+        foreach (var t in doc.Tokens)
+        {
+            if (t.Type == "player") continue;
+            if (t.Ref != n.Id && !string.Equals(t.Name, n.Name, StringComparison.CurrentCultureIgnoreCase)) continue;
+            t.Ref = n.Id;
+            t.Name = n.Name;
+            t.Hp = n.Hp;
+            t.MaxHp = Math.Max(t.MaxHp, n.Hp);
+            t.Ac = n.Ac;
+            changed = true;
+        }
+        return changed;
+    }
+
     private static bool Apply(MapDoc doc, Hero h)
     {
         bool changed = false;

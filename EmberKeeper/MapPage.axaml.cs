@@ -71,6 +71,28 @@ public partial class MapPage : UserControl
             }, Avalonia.Threading.DispatcherPriority.Loaded);
         }
 
+        if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_NPC") == "1")
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    var npc = new Npc { Name = "Кузнец Борин", Hp = 15, Ac = 12, Race = "Дварф", City = "Каменный Брод" };
+                    AddNpc(npc);
+                    int before = _doc.Tokens.Count;
+                    npc.Hp = 7; npc.Ac = 14; npc.Name = "Кузнец Борин (ранен)";
+                    TokenSync.SyncNpc(npc);
+                    var tok = _doc.Tokens.FirstOrDefault(t => t.Ref == npc.Id);
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "npc_test.txt"),
+                        $"tokens={_doc.Tokens.Count} before={before} tokenHp={tok?.Hp} tokenAc={tok?.Ac} tokenName={tok?.Name} selected={_view.Selected?.Name}");
+                }
+                catch (Exception ex)
+                {
+                    System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "npc_test.txt"), "ошибка: " + ex.Message);
+                }
+            }, Avalonia.Threading.DispatcherPriority.Loaded);
+        }
+
         if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_MOVE") == "1")
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -1259,6 +1281,39 @@ public partial class MapPage : UserControl
             Init = h.Init,
             VisionFt = h.Darkvision,
             Notes = string.Join(" · ", new[] { h.Class, h.Race }.Where(x => !string.IsNullOrWhiteSpace(x))),
+        };
+        _doc.Tokens.Add(token);
+        SaveAll();
+        _view.SetSelected(token);
+        Sync();
+        _view.InvalidateVisual();
+    }
+
+    public void AddNpc(Npc n)
+    {
+        var existing = _doc.Tokens.FirstOrDefault(t =>
+            t.Type != "player" && (t.Ref == n.Id || string.Equals(t.Name, n.Name, StringComparison.CurrentCultureIgnoreCase)));
+        if (existing != null)
+        {
+            _view.SetSelected(existing);
+            Sync();
+            _view.InvalidateVisual();
+            return;
+        }
+
+        var token = new Token
+        {
+            Name = n.Name,
+            Type = "mob",
+            Ref = n.Id,
+            Color = "#70a3a2",
+            X = 5 + _doc.Tokens.Count % 10,
+            Y = 5 + _doc.Tokens.Count / 10,
+            Hp = n.Hp,
+            MaxHp = n.Hp,
+            Ac = n.Ac,
+            Notes = string.Join(" · ", new[] { n.Race, n.Class, n.Faction, n.City }
+                .Where(x => !string.IsNullOrWhiteSpace(x))),
         };
         _doc.Tokens.Add(token);
         SaveAll();
