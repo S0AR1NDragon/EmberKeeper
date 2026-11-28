@@ -150,9 +150,6 @@ public sealed class HomePage : UserControl
         pauseBtn.Click += (_, _) => OnPause?.Invoke();
         var finishBtn = new Button { Content = Icons.Row("flag", "Завершить сессию", 15, "#efe3d2", "#efe3d2") };
         finishBtn.Click += (_, _) => OnFinish?.Invoke();
-        var updateBtn = new Button { Content = Icons.Row("refresh", "Обновления", 15, "#efe3d2", "#efe3d2") };
-        updateBtn.Click += (_, _) => OnUpdates?.Invoke();
-        actions.Children.Add(updateBtn);
         actions.Children.Add(pauseBtn);
         actions.Children.Add(finishBtn);
         stack.Children.Add(actions);
@@ -249,7 +246,16 @@ public sealed class HomePage : UserControl
             };
             var sp = new StackPanel { Spacing = 6 };
             var top = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
-            top.Children.Add(Icons.Make(icon, 22, "#d99b4a"));
+            var tile = new Border
+            {
+                Width = 36, Height = 36, CornerRadius = new CornerRadius(11),
+                Background = new SolidColorBrush(Avalonia.Media.Color.FromArgb(30, Pal.C("#cf9245").R, Pal.C("#cf9245").G, Pal.C("#cf9245").B)),
+                BorderBrush = new SolidColorBrush(Avalonia.Media.Color.FromArgb(70, Pal.C("#cf9245").R, Pal.C("#cf9245").G, Pal.C("#cf9245").B)),
+                BorderThickness = new Thickness(1),
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Child = Icons.Make(icon, 20, "#d99b4a"),
+            };
+            top.Children.Add(tile);
             top.Children.Add(new TextBlock { Text = title, FontFamily = new FontFamily(Fonts.Heading), FontSize = 16, FontWeight = FontWeight.Bold, Foreground = new SolidColorBrush(Ink), VerticalAlignment = VerticalAlignment.Center });
             sp.Children.Add(top);
             sp.Children.Add(new TextBlock { Text = desc, FontSize = 11.5, Foreground = new SolidColorBrush(Muted), TextWrapping = TextWrapping.Wrap });

@@ -14,7 +14,7 @@ public partial class MainWindow : Window
     // индексы разделов (совпадают с порядком Nav)
     private const int IxHome = 0, IxMap = 1, IxInit = 2, IxSlides = 3, IxHeroes = 4, IxLib = 5, IxNpc = 6, IxRel = 7, IxCodex = 8;
 
-    private static readonly (string Icon, string Label, string Hint)[] Nav =
+    public static readonly (string Icon, string Label, string Hint)[] Nav =
     {
         ("home", "Главная", "Обзор и последняя сессия"),
         ("map", "Карта", "Локации и туман"),
@@ -150,10 +150,13 @@ public partial class MainWindow : Window
         _navHints.Clear();
         _navIcons.Clear();
 
-        for (int i = 0; i < Nav.Length; i++)
+        var order = Settings.LoadNavOrder();
+        if (order == null || order.Count != Nav.Length || order.Distinct().Count() != Nav.Length)
+            order = Enumerable.Range(0, Nav.Length).ToList();
+
+        foreach (int idx in order)
         {
-            int idx = i;
-            var (icon, label, hint) = Nav[i];
+            var (icon, label, hint) = Nav[idx];
 
             var iconTb = Icons.Make(icon, 20, "#b98f52");
             var labelTb = new TextBlock { Text = label, FontSize = 13.5, FontWeight = FontWeight.Bold, Foreground = Pal.B("#b7a794"), Margin = new Thickness(2, 0, 0, 0) };
@@ -241,6 +244,13 @@ public partial class MainWindow : Window
     }
 
     private bool IsActive(int i) => i == _current;
+
+    /// <summary>Перестроить меню после изменения порядка разделов в настройках.</summary>
+    public void ApplyNavOrderNow()
+    {
+        BuildNav();
+        if (_current >= 0) ShowTab(_current);
+    }
 
     private void OpenSheet(string type, string reference)
     {

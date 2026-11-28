@@ -174,6 +174,7 @@ public static class Settings
         public string Design { get; set; } = "b";
         public string Layout { get; set; } = "rail";
         public string Fonts { get; set; } = "f5";
+        public System.Collections.Generic.List<int> NavOrder { get; set; } = new();
         public int StartTab { get; set; }
     }
 
@@ -184,6 +185,15 @@ public static class Settings
     public static string LoadDesign() => Load().Design;
     public static string LoadLayout() => Load().Layout;
     public static string LoadFonts() => Load().Fonts;
+
+    public static System.Collections.Generic.List<int> LoadNavOrder() => Load().NavOrder;
+
+    public static void SaveNavOrder(System.Collections.Generic.List<int> order)
+    {
+        var d = Load();
+        d.NavOrder = order;
+        Save(d);
+    }
     public static int LoadStartTab() => Load().StartTab;
 
     private static Data Load()
