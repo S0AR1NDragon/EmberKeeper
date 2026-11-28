@@ -11,7 +11,7 @@ namespace EmberKeeperSetup;
 internal static class Program
 {
     private const string AppName = "EmberKeeper";
-    private const string Version = "1.0.4";
+    private const string Version = "1.0.5";
     private const string RegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\EmberKeeper";
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
