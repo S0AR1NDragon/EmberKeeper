@@ -75,6 +75,8 @@ public static class Design
         {
             res["AppBackdrop"] = new SolidColorBrush(bg);
             res["AppGlow"] = Brushes.Transparent;
+            res["AppGlow2"] = Brushes.Transparent;
+            res["AppVignette"] = Brushes.Transparent;
             res["AppSidebar"] = new SolidColorBrush(Pal.C("#15110e"));
             res["AppHeader"] = new SolidColorBrush(Pal.C("#15110e"));
             res["AppCard"] = new SolidColorBrush(panel);
@@ -82,62 +84,115 @@ public static class Design
             res["AppCardLine"] = new SolidColorBrush(Pal.C("#352a21"));
             res["AppShadow"] = default(BoxShadows);
             res["AppRadius"] = new CornerRadius(12);
-            res["AppGlow2"] = Brushes.Transparent;
-            res["AppVignette"] = Brushes.Transparent;
             return;
         }
 
-        Fonts.ApplyResources();
+        bool light = !Pal.Dark;
 
-        switch (Variant)
+        // мягкая тень: в светлой теме почти прозрачная и тёплая
+        string softShadow = light ? "0 6 20 0 #1e000000" : "0 10 30 0 #55000000";
+        string deepShadow = light ? "0 10 30 0 #2a000000" : "0 16 44 0 #70000000";
+
+        if (!light)
         {
-            case "a": // «Аврора»: диагональная цветная заливка + два свечения
-                res["AppBackdrop"] = Gradient(A(accent, 20), bg, 135);
-                res["AppGlow"] = Radial(A(accent, 85), A(accent, 0), new RelativePoint(0.88, 0.03, RelativeUnit.Relative));
-                res["AppGlow2"] = Radial(A(accent, 40), A(accent, 0), new RelativePoint(0.05, 0.97, RelativeUnit.Relative));
-                res["AppVignette"] = Brushes.Transparent;
-                res["AppSidebar"] = new SolidColorBrush(A("#100d0b", 165));
-                res["AppHeader"] = new SolidColorBrush(A("#100d0b", 135));
-                res["AppCard"] = new SolidColorBrush(A("#1c1714", 200));
-                res["AppCardHover"] = new SolidColorBrush(A("#2e241c", 225));
-                res["AppCardLine"] = new SolidColorBrush(A(accent, 95));
-                res["AppShadow"] = BoxShadows.Parse("0 16 44 0 #78000000");
-                res["AppRadius"] = new CornerRadius(16);
-                break;
-            case "b": // «Угли»: тёплое свечение снизу, градиентные карточки
-                res["AppBackdrop"] = Gradient(bg2, Pal.C("#0b0806"), 90);
-                res["AppGlow"] = Radial(A(accent, 90), A(accent, 0), new RelativePoint(0.5, 1.12, RelativeUnit.Relative));
-                res["AppGlow2"] = Radial(A(accent, 45), A(accent, 0), new RelativePoint(0.02, 0.05, RelativeUnit.Relative));
-                res["AppVignette"] = Brushes.Transparent;
-                res["AppSidebar"] = new SolidColorBrush(A("#15110e", 150));
-                res["AppHeader"] = new SolidColorBrush(A("#15110e", 120));
-                res["AppCard"] = Gradient(A("#2c2218", 248), A("#1a1411", 242), 90);
-                res["AppCardHover"] = new SolidColorBrush(A("#3a2d21", 250));
-                res["AppCardLine"] = new SolidColorBrush(A(accent, 110));
-                res["AppShadow"] = BoxShadows.Parse("0 20 52 0 #88000000");
-                res["AppRadius"] = new CornerRadius(14);
-                break;
-            default: // "c" — «Стекло»: прозрачные карточки, светлая кромка, туманное свечение
-                res["AppBackdrop"] = Gradient(A(Pal.C("#b7a794"), 22), Pal.C("#0b0908"), 155);
-                res["AppGlow"] = Radial(A(Pal.C("#efe3d2"), 40), A(Pal.C("#efe3d2"), 0), new RelativePoint(0.5, 0.32, RelativeUnit.Relative));
-                res["AppGlow2"] = Radial(A(accent, 55), A(accent, 0), new RelativePoint(0.95, 0.95, RelativeUnit.Relative));
-                var vig = new RadialGradientBrush
-                {
-                    Center = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
-                    GradientOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
-                    Radius = 1.2,
-                };
-                vig.GradientStops.Add(new GradientStop(Color.FromArgb(0, 0, 0, 0), 0.4));
-                vig.GradientStops.Add(new GradientStop(Color.FromArgb(170, 0, 0, 0), 1));
-                res["AppVignette"] = vig;
-                res["AppSidebar"] = new SolidColorBrush(A("#13100d", 110));
-                res["AppHeader"] = new SolidColorBrush(A("#13100d", 90));
-                res["AppCard"] = new SolidColorBrush(A("#1c1714", 140));
-                res["AppCardHover"] = new SolidColorBrush(A("#2a211a", 190));
-                res["AppCardLine"] = new SolidColorBrush(A("#efe3d2", 105));
-                res["AppShadow"] = BoxShadows.Parse("0 24 64 0 #95000000");
-                res["AppRadius"] = new CornerRadius(18);
-                break;
+            switch (Variant)
+            {
+                case "a":
+                    res["AppBackdrop"] = Gradient(A(accent, 20), bg, 135);
+                    res["AppGlow"] = Radial(A(accent, 85), A(accent, 0), new RelativePoint(0.88, 0.03, RelativeUnit.Relative));
+                    res["AppGlow2"] = Radial(A(accent, 40), A(accent, 0), new RelativePoint(0.05, 0.97, RelativeUnit.Relative));
+                    res["AppVignette"] = Brushes.Transparent;
+                    res["AppSidebar"] = new SolidColorBrush(A("#100d0b", 165));
+                    res["AppHeader"] = new SolidColorBrush(A("#100d0b", 135));
+                    res["AppCard"] = new SolidColorBrush(A("#1c1714", 200));
+                    res["AppCardHover"] = new SolidColorBrush(A("#2e241c", 225));
+                    res["AppCardLine"] = new SolidColorBrush(A(accent, 95));
+                    res["AppShadow"] = BoxShadows.Parse(deepShadow);
+                    res["AppRadius"] = new CornerRadius(16);
+                    break;
+                case "b":
+                    res["AppBackdrop"] = Gradient(bg2, Pal.C("#0b0806"), 90);
+                    res["AppGlow"] = Radial(A(accent, 90), A(accent, 0), new RelativePoint(0.5, 1.12, RelativeUnit.Relative));
+                    res["AppGlow2"] = Radial(A(accent, 45), A(accent, 0), new RelativePoint(0.02, 0.05, RelativeUnit.Relative));
+                    res["AppVignette"] = Brushes.Transparent;
+                    res["AppSidebar"] = new SolidColorBrush(A("#15110e", 150));
+                    res["AppHeader"] = new SolidColorBrush(A("#15110e", 120));
+                    res["AppCard"] = Gradient(A("#2c2218", 248), A("#1a1411", 242), 90);
+                    res["AppCardHover"] = new SolidColorBrush(A("#3a2d21", 250));
+                    res["AppCardLine"] = new SolidColorBrush(A(accent, 110));
+                    res["AppShadow"] = BoxShadows.Parse(softShadow);
+                    res["AppRadius"] = new CornerRadius(14);
+                    break;
+                default:
+                    res["AppBackdrop"] = Gradient(Pal.C("#0d0b08"), Pal.C("#171410"), 160);
+                    res["AppGlow"] = Radial(A("#efe3d2", 30), A("#efe3d2", 0), new RelativePoint(0.5, 0.10, RelativeUnit.Relative));
+                    res["AppGlow2"] = Radial(A(accent, 55), A(accent, 0), new RelativePoint(0.95, 0.95, RelativeUnit.Relative));
+                    var vig = new RadialGradientBrush
+                    {
+                        Center = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
+                        GradientOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
+                        Radius = 1.2,
+                    };
+                    vig.GradientStops.Add(new GradientStop(Color.FromArgb(0, 0, 0, 0), 0.4));
+                    vig.GradientStops.Add(new GradientStop(Color.FromArgb(170, 0, 0, 0), 1));
+                    res["AppVignette"] = vig;
+                    res["AppSidebar"] = new SolidColorBrush(A("#13100d", 110));
+                    res["AppHeader"] = new SolidColorBrush(A("#13100d", 90));
+                    res["AppCard"] = new SolidColorBrush(A("#1c1714", 140));
+                    res["AppCardHover"] = new SolidColorBrush(A("#2a211a", 190));
+                    res["AppCardLine"] = new SolidColorBrush(A("#efe3d2", 105));
+                    res["AppShadow"] = BoxShadows.Parse(deepShadow);
+                    res["AppRadius"] = new CornerRadius(18);
+                    break;
+            }
+        }
+        else
+        {
+            // светлая тема: мягкие тёплые градиенты, без чёрных теней
+            var l1 = Pal.C("#fdf8ef");
+            var l2 = Pal.C("#eee3d2");
+            switch (Variant)
+            {
+                case "a":
+                    res["AppBackdrop"] = Gradient(l1, l2, 135);
+                    res["AppGlow"] = Radial(A(accent, 60), A(accent, 0), new RelativePoint(0.88, 0.03, RelativeUnit.Relative));
+                    res["AppGlow2"] = Radial(A(accent, 30), A(accent, 0), new RelativePoint(0.05, 0.97, RelativeUnit.Relative));
+                    res["AppVignette"] = Brushes.Transparent;
+                    res["AppSidebar"] = new SolidColorBrush(A("#fbf6ee", 235));
+                    res["AppHeader"] = new SolidColorBrush(A("#fbf6ee", 220));
+                    res["AppCard"] = new SolidColorBrush(A("#fffdf8", 250));
+                    res["AppCardHover"] = new SolidColorBrush(A("#f7efe2", 255));
+                    res["AppCardLine"] = new SolidColorBrush(A(accent, 70));
+                    res["AppShadow"] = BoxShadows.Parse(softShadow);
+                    res["AppRadius"] = new CornerRadius(16);
+                    break;
+                case "b":
+                    res["AppBackdrop"] = Gradient(Pal.C("#fbf4e8"), Pal.C("#eadfcd"), 90);
+                    res["AppGlow"] = Radial(A(accent, 70), A(accent, 0), new RelativePoint(0.5, 1.1, RelativeUnit.Relative));
+                    res["AppGlow2"] = Radial(A(accent, 35), A(accent, 0), new RelativePoint(0.02, 0.05, RelativeUnit.Relative));
+                    res["AppVignette"] = Brushes.Transparent;
+                    res["AppSidebar"] = new SolidColorBrush(A("#fbf6ee", 230));
+                    res["AppHeader"] = new SolidColorBrush(A("#fbf6ee", 210));
+                    res["AppCard"] = Gradient(A("#ffffff", 255), A("#f4e9d8", 252), 90);
+                    res["AppCardHover"] = new SolidColorBrush(A("#fff6e7", 255));
+                    res["AppCardLine"] = new SolidColorBrush(A(accent, 80));
+                    res["AppShadow"] = BoxShadows.Parse(softShadow);
+                    res["AppRadius"] = new CornerRadius(14);
+                    break;
+                default:
+                    res["AppBackdrop"] = Gradient(Pal.C("#f7f2e8"), Pal.C("#e6dbc9"), 160);
+                    res["AppGlow"] = Radial(A("#ffffff", 120), A("#ffffff", 0), new RelativePoint(0.5, 0.1, RelativeUnit.Relative));
+                    res["AppGlow2"] = Radial(A(accent, 45), A(accent, 0), new RelativePoint(0.95, 0.95, RelativeUnit.Relative));
+                    res["AppVignette"] = Brushes.Transparent;
+                    res["AppSidebar"] = new SolidColorBrush(A("#faf5ea", 200));
+                    res["AppHeader"] = new SolidColorBrush(A("#faf5ea", 185));
+                    res["AppCard"] = new SolidColorBrush(A("#ffffff", 190));
+                    res["AppCardHover"] = new SolidColorBrush(A("#ffffff", 240));
+                    res["AppCardLine"] = new SolidColorBrush(A("#efe3d2", 120));
+                    res["AppShadow"] = BoxShadows.Parse(softShadow);
+                    res["AppRadius"] = new CornerRadius(18);
+                    break;
+            }
         }
     }
 }

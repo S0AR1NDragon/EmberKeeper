@@ -70,7 +70,16 @@ public partial class App : Application
                 return;
             }
 
-            desktop.MainWindow = new MainWindow();
+            var mainWin = new MainWindow();
+            desktop.MainWindow = mainWin;
+
+            if (int.TryParse(Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_TAB"), out var testTab))
+            {
+                Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                {
+                    try { mainWin.SelectTab(testTab); } catch { }
+                }, TimeSpan.FromMilliseconds(700));
+            }
 
             if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_SETTINGS") == "1")
             {

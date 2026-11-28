@@ -249,8 +249,8 @@ public sealed class HomePage : UserControl
             var tile = new Border
             {
                 Width = 36, Height = 36, CornerRadius = new CornerRadius(11),
-                Background = new SolidColorBrush(Avalonia.Media.Color.FromArgb(30, Pal.C("#cf9245").R, Pal.C("#cf9245").G, Pal.C("#cf9245").B)),
-                BorderBrush = new SolidColorBrush(Avalonia.Media.Color.FromArgb(70, Pal.C("#cf9245").R, Pal.C("#cf9245").G, Pal.C("#cf9245").B)),
+                Background = new SolidColorBrush(Avalonia.Media.Color.FromArgb((byte)(Pal.Dark ? 30 : 16), Pal.C("#cf9245").R, Pal.C("#cf9245").G, Pal.C("#cf9245").B)),
+                BorderBrush = new SolidColorBrush(Avalonia.Media.Color.FromArgb((byte)(Pal.Dark ? 70 : 45), Pal.C("#cf9245").R, Pal.C("#cf9245").G, Pal.C("#cf9245").B)),
                 BorderThickness = new Thickness(1),
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                 Child = Icons.Make(icon, 20, "#d99b4a"),

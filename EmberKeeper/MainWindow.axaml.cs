@@ -278,6 +278,8 @@ public partial class MainWindow : Window
         }
     }
 
+    public void SelectTab(int idx) => ShowTab(idx);
+
     private void ShowTab(int idx)
     {
         _current = idx;
@@ -317,6 +319,7 @@ public partial class MainWindow : Window
     private void ApplySidebar()
     {
         if (Design.Layout == "top") { Sidebar.IsVisible = false; return; }
+        if (Design.Layout == "rail") { Sidebar.IsVisible = true; return; }
         Sidebar.IsVisible = _sidebarVisible;
         MenuBtn.Content = Icons.Make(_sidebarVisible ? "close" : "menu", 16, "#efe3d2");
     }
