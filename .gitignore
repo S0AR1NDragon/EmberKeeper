@@ -42,3 +42,7 @@ lic-*.txt
 *.user
 .vs/
 .idea/
+
+dist/licensegen/
+dist/EmberKeeperLicenseGen-1.0.1.zip
+

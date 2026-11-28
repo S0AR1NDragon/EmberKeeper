@@ -70,7 +70,7 @@
 
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
             <Button x:Name="SearchBtn" Classes="topbtn" Click="OnGlobalSearch" ToolTip.Tip="Глобальный поиск (Ctrl+F)" />
-            <Button x:Name="ThemeBtn" Classes="topbtn" Click="OnToggleTheme" ToolTip.Tip="Светлая / тёмная тема" />
+            <Button x:Name="ThemeBtn" Classes="topbtn" Click="OnSettings" ToolTip.Tip="Настройки: темы, лицензия" />
             <Button x:Name="ScreenBtn" Classes="topbtn" Click="OnPlayerScreen" ToolTip.Tip="Экран игроков (Ctrl+P)" />
             <Button x:Name="GenBtn" Classes="topbtn" Click="OnGenerators" ToolTip.Tip="Генераторы" />
             <Button Classes="gold" Content="d20 +" Click="OnDice" />

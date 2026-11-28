@@ -16,7 +16,7 @@ public sealed class ActivationWindow : Window
 
     public ActivationWindow()
     {
-        Pal.Set(Settings.LoadDark());
+        Pal.Set(Settings.LoadDark(), Settings.LoadStyle());
 
         Title = "EmberKeeper — активация";
         Width = 620;

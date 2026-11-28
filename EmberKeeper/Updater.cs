@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
@@ -279,5 +279,5 @@ public static class AppInfo
     public static string Version { get; } =
         typeof(AppInfo).Assembly.GetName().Version is { } v
             ? $"{v.Major}.{v.Minor}.{v.Build}"
-            : "1.0.1";
+            : "1.0.2";
 }

@@ -1,10 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <AssemblyName>EmberKeeperLicenseGen</AssemblyName>
     <RootNamespace>EmberKeeperLicenseGen</RootNamespace>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <DebugType>none</DebugType>
+    <ApplicationIcon>..\EmberKeeper\emberkeeper.ico</ApplicationIcon>
+    <AssemblyTitle>EmberKeeper License Generator</AssemblyTitle>
+    <Product>EmberKeeper License Generator</Product>
+    <Version>1.2.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.6" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.6" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.6" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\keys\private.pem" LogicalName="private.pem" Condition="Exists('..\keys\private.pem')" />
+    <EmbeddedResource Include="..\keys\public.pem" LogicalName="public.pem" Condition="Exists('..\keys\public.pem')" />
+  </ItemGroup>
 </Project>

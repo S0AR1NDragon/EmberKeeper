@@ -2,7 +2,7 @@
 # Запуск:  pwsh -File build-installer.ps1
 
 param(
-    [string]$Version = "1.0.1",
+    [string]$Version = "1.0.2",
     [string]$Dotnet = "$env:USERPROFILE\.dotnet\dotnet.exe"
 )
 

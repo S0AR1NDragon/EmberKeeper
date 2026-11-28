@@ -29,7 +29,7 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            Pal.Set(Settings.LoadDark());
+            Pal.Set(Settings.LoadDark(), Settings.LoadStyle());
 
             // лицензионная защита: без действующей лицензии программа не запускается
             var testKey = Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_LICENSE");
@@ -71,6 +71,23 @@ public partial class App : Application
             }
 
             desktop.MainWindow = new MainWindow();
+
+            if (Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_SETTINGS") == "1")
+            {
+                Avalonia.Threading.DispatcherTimer.RunOnce(() =>
+                {
+                    try
+                    {
+                        var sw = new SettingsWindow();
+                        sw.Closed += (_, _) => { };
+                        sw.Show();
+                    }
+                    catch (Exception ex)
+                    {
+                        try { System.IO.File.WriteAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "settings-test.log"), ex.ToString()); } catch { }
+                    }
+                }, TimeSpan.FromMilliseconds(800));
+            }
 
             var updRepo = Environment.GetEnvironmentVariable("EMBERKEEPER_TEST_UPDATE");
             if (!string.IsNullOrWhiteSpace(updRepo))

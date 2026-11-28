@@ -300,6 +300,12 @@ public partial class MainWindow : Window
         await win.ShowDialog(this);
     }
 
+    private async void OnSettings(object? sender, RoutedEventArgs e)
+    {
+        var win = new SettingsWindow();
+        await win.ShowDialog(this);
+    }
+
     private void OnToggleTheme(object? sender, RoutedEventArgs e)
     {
         var dark = !Pal.Dark;
