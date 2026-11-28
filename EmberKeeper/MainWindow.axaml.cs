@@ -74,6 +74,7 @@ public partial class MainWindow : Window
         _lib.CreateHero = (klass, sub, hitDie) => { _heroes.CreateFromClass(klass, sub, hitDie); ShowTab(IxHeroes); };
 
         SetupTopbar();
+        ApplyLayoutChrome();
         Background = Pal.B(Pal.Dark ? "#100d0b" : "#f7f1e6");
 
         KeyDown += OnHotkey;
@@ -120,9 +121,30 @@ public partial class MainWindow : Window
         GenBtn.Content = Icons.Row("sparkles", "Генераторы", 15, "#efe3d2", "#efe3d2");
     }
 
+    /// <summary>Радикальная раскладка: меню сверху или узкая колонка иконок.</summary>
+    private void ApplyLayoutChrome()
+    {
+        if (Design.Layout == "top")
+        {
+            Sidebar.IsVisible = false;
+            MenuBtn.IsVisible = false;
+            TopNavHost.IsVisible = true;
+            Background = Brushes.Transparent;
+        }
+        else if (Design.Layout == "rail")
+        {
+            Sidebar.Width = 84;
+            BrandName.IsVisible = false;
+            BrandSub.IsVisible = false;
+            MenuBtn.IsVisible = false;
+            FooterSaved.IsVisible = false;
+        }
+    }
+
     private void BuildNav()
     {
         NavHost.Children.Clear();
+        TopNavHost.Children.Clear();
         _navItems.Clear();
         _navLabels.Clear();
         _navHints.Clear();
@@ -142,29 +164,79 @@ public partial class MainWindow : Window
             copy.Children.Add(hintTb);
 
             var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("32,*") };
-            grid.Children.Add(iconTb);
             Grid.SetColumn(copy, 1);
             grid.Children.Add(copy);
 
-            var border = new Border
+            Border border;
+            var displayIcon = iconTb;
+            var displayLabel = labelTb;
+            if (Design.Layout == "top")
             {
-                Child = grid,
-                Padding = new Thickness(10),
-                CornerRadius = new CornerRadius(8),
-                BorderThickness = new Thickness(1),
-                BorderBrush = Brushes.Transparent,
-                Background = Brushes.Transparent,
-                Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
-            };
+                displayIcon = Icons.Make(icon, 18, "#b98f52");
+                displayLabel = new TextBlock
+                {
+                    Text = label, FontSize = 13, FontWeight = FontWeight.Bold,
+                    Foreground = Pal.B("#b7a794"), VerticalAlignment = VerticalAlignment.Center,
+                };
+                var hsp = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+                hsp.Children.Add(displayIcon);
+                hsp.Children.Add(displayLabel);
+                hintTb.IsVisible = false;
+                labelTb.Margin = new Thickness(0);
+                border = new Border
+                {
+                    Child = hsp,
+                    Padding = new Thickness(12, 7),
+                    CornerRadius = new CornerRadius(10),
+                    BorderThickness = new Thickness(1),
+                    BorderBrush = Brushes.Transparent,
+                    Background = Brushes.Transparent,
+                    Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+                };
+            }
+            else if (Design.Layout == "rail")
+            {
+                labelTb.IsVisible = false;
+                hintTb.IsVisible = false;
+                displayIcon = Icons.Make(icon, 22, "#b98f52");
+                var center = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center };
+                center.Children.Add(displayIcon);
+                border = new Border
+                {
+                    Child = center,
+                    Padding = new Thickness(10, 12),
+                    CornerRadius = new CornerRadius(10),
+                    BorderThickness = new Thickness(1),
+                    BorderBrush = Brushes.Transparent,
+                    Background = Brushes.Transparent,
+                    Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+                };
+                ToolTip.SetTip(border, label + " — " + hint);
+            }
+            else
+            {
+                grid.Children.Add(iconTb);
+                border = new Border
+                {
+                    Child = grid,
+                    Padding = new Thickness(10),
+                    CornerRadius = new CornerRadius(8),
+                    BorderThickness = new Thickness(1),
+                    BorderBrush = Brushes.Transparent,
+                    Background = Brushes.Transparent,
+                    Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+                };
+            }
             border.PointerEntered += (_, _) => { if (!IsActive(idx)) border.Background = Pal.B("#1f1915"); };
             border.PointerExited += (_, _) => { if (!IsActive(idx)) border.Background = Brushes.Transparent; };
             border.PointerPressed += (_, _) => ShowTab(idx);
 
             _navItems.Add(border);
-            _navLabels.Add(labelTb);
+            _navLabels.Add(displayLabel);
             _navHints.Add(hintTb);
-            _navIcons.Add(iconTb);
-            NavHost.Children.Add(border);
+            _navIcons.Add(displayIcon);
+            if (Design.Layout == "top") TopNavHost.Children.Add(border);
+            else NavHost.Children.Add(border);
         }
     }
 
@@ -235,6 +307,7 @@ public partial class MainWindow : Window
 
     private void ApplySidebar()
     {
+        if (Design.Layout == "top") { Sidebar.IsVisible = false; return; }
         Sidebar.IsVisible = _sidebarVisible;
         MenuBtn.Content = Icons.Make(_sidebarVisible ? "close" : "menu", 16, "#efe3d2");
     }

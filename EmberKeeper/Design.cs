@@ -16,6 +16,12 @@ public static class Design
 
     public static bool Modern => Variant is "a" or "b" or "c";
 
+    /// <summary>Раскладка: classic / top (меню сверху) / rail (узкая колонка иконок).</summary>
+    public static string Layout { get; } =
+        (Environment.GetEnvironmentVariable("EMBERKEEPER_LAYOUT") ?? "classic").Trim().ToLowerInvariant();
+
+    public static bool LayoutModern => Layout is "top" or "rail";
+
     public static double Radius => Variant switch { "a" => 16, "b" => 14, "c" => 18, _ => 12 };
 
     private static Color A(string hex, byte alpha) => Color.FromArgb(alpha, Pal.C(hex).R, Pal.C(hex).G, Pal.C(hex).B);

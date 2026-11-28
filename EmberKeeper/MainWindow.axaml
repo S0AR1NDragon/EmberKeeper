@@ -8,7 +8,7 @@
   <Window.Styles>
     <Style Selector="TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
-      <Setter Property="FontFamily" Value="Segoe UI" />
+      <Setter Property="FontFamily" Value="Inter, Segoe UI" />
       <Setter Property="FontSize" Value="14" />
     </Style>
 
@@ -45,8 +45,8 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="2,2,2,14">
           <ContentControl x:Name="BrandIcon" VerticalAlignment="Center" Margin="0,0,4,0" />
           <StackPanel Spacing="0">
-            <TextBlock Text="EMBERKEEPER" FontFamily="Georgia" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AppGold}" LetterSpacing="0.16" />
-            <TextBlock Text="рабочий стол мастера" FontSize="10" Foreground="{DynamicResource AppMuted}" />
+            <TextBlock x:Name="BrandName" Text="EMBERKEEPER" FontFamily="Georgia" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AppGold}" LetterSpacing="0.16" />
+            <TextBlock x:Name="BrandSub" Text="рабочий стол мастера" FontSize="10" Foreground="{DynamicResource AppMuted}" />
           </StackPanel>
         </StackPanel>
 
@@ -54,7 +54,7 @@
 
         <StackPanel Grid.Row="3" Spacing="4" Margin="0,10,0,0">
           <Border Height="1" Background="{DynamicResource AppLine}" Margin="0,4" />
-          <TextBlock Text="Все изменения сохранены" FontSize="10.5" Foreground="{DynamicResource AppMuted}" Margin="4,6,0,0" />
+          <TextBlock x:Name="FooterSaved" Text="Все изменения сохранены" FontSize="10.5" Foreground="{DynamicResource AppMuted}" Margin="4,6,0,0" />
         </StackPanel>
       </Grid>
     </Border>
@@ -63,13 +63,16 @@
     <Grid Grid.Column="1" RowDefinitions="Auto,*">
       <Border Grid.Row="0" Background="{DynamicResource AppHeader}"
               BorderBrush="{DynamicResource AppLine}" BorderThickness="0,0,0,1" Padding="16,10">
-        <Grid ColumnDefinitions="Auto,*,Auto">
+        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
           <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
             <Button x:Name="MenuBtn" Classes="topbtn" Click="OnToggleSidebar" ToolTip.Tip="Меню разделов" />
             <TextBlock Text="EMBERKEEPER" FontSize="10.5" Foreground="{DynamicResource AppMuted}" LetterSpacing="0.12" VerticalAlignment="Center" Margin="6,0,0,0" />
             <TextBlock Text="/" Foreground="{DynamicResource AppMuted}" VerticalAlignment="Center" />
             <TextBlock x:Name="Crumbs" Text="БИБЛИОТЕКА" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource AppInk}" LetterSpacing="0.12" VerticalAlignment="Center" />
           </StackPanel>
+
+          <StackPanel x:Name="TopNavHost" Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal"
+                      Spacing="4" Margin="0,10,0,0" IsVisible="False" />
 
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
             <Button x:Name="SearchBtn" Classes="topbtn" Click="OnGlobalSearch" ToolTip.Tip="Глобальный поиск (Ctrl+F)" />
