@@ -39,7 +39,7 @@ public sealed class HomePage : UserControl
         // шапка
         var head = new StackPanel { Spacing = 4 };
         var brand = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
-        brand.Children.Add(Icons.Make("sparkle", 30, "#d99b4a"));
+        brand.Children.Add(Brand.Image(42));
         brand.Children.Add(new TextBlock
         {
             Text = "EMBERKEEPER",

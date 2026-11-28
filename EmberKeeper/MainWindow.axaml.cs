@@ -48,6 +48,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Icon = Brand.WindowIcon();
 
         _home = new HomePage();
         _lib = new LibraryView();
@@ -113,7 +114,7 @@ public partial class MainWindow : Window
 
     private void SetupTopbar()
     {
-        BrandIcon.Content = Icons.Make("sparkle", 26, "#d99b4a");
+        BrandIcon.Content = Brand.Image(30);
         MenuBtn.Content = Icons.Make(_sidebarVisible ? "close" : "menu", 16, "#efe3d2");
         ThemeBtn.Content = Icons.Make("gear", 16, "#efe3d2");
         SearchBtn.Content = Icons.Row("search", "Поиск", 15, "#efe3d2", "#efe3d2");

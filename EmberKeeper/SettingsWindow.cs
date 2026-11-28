@@ -24,6 +24,7 @@ public sealed class SettingsWindow : Window
 
     public SettingsWindow()
     {
+        Icon = Brand.WindowIcon();
         Title = "EmberKeeper — настройки";
         Width = 660;
         Height = 880;

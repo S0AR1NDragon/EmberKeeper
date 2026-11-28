@@ -18,6 +18,7 @@ public sealed class ActivationWindow : Window
     {
         Pal.Set(Settings.LoadDark(), Settings.LoadStyle());
 
+        Icon = Brand.WindowIcon();
         Title = "EmberKeeper — активация";
         Width = 620;
         Height = 520;

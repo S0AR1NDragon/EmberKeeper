@@ -39,6 +39,7 @@ public sealed class PlayerWindow : Window
         Live.AttachDoc(doc);
         Live.Window = this;
 
+        Icon = Brand.WindowIcon();
         Title = "Экран игроков";
         Background = Pal.B("#0b0908");
         Width = 1280;
