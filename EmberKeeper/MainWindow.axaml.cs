@@ -115,7 +115,7 @@ public partial class MainWindow : Window
     {
         BrandIcon.Content = Icons.Make("sparkle", 26, "#d99b4a");
         MenuBtn.Content = Icons.Make(_sidebarVisible ? "close" : "menu", 16, "#efe3d2");
-        ThemeBtn.Content = Icons.Make(Pal.Dark ? "sun" : "moon", 16, "#efe3d2");
+        ThemeBtn.Content = Icons.Make("gear", 16, "#efe3d2");
         SearchBtn.Content = Icons.Row("search", "Поиск", 15, "#efe3d2", "#efe3d2");
         ScreenBtn.Content = Icons.Row("screen", "Экран", 15, "#efe3d2", "#efe3d2");
         GenBtn.Content = Icons.Row("sparkles", "Генераторы", 15, "#efe3d2", "#efe3d2");

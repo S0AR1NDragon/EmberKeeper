@@ -171,6 +171,9 @@ public static class Settings
     {
         public bool Dark { get; set; } = true;
         public string Style { get; set; } = "amber";
+        public string Design { get; set; } = "b";
+        public string Layout { get; set; } = "rail";
+        public string Fonts { get; set; } = "f2";
         public int StartTab { get; set; }
     }
 
@@ -178,6 +181,9 @@ public static class Settings
 
     public static bool LoadDark() => Load().Dark;
     public static string LoadStyle() => Load().Style;
+    public static string LoadDesign() => Load().Design;
+    public static string LoadLayout() => Load().Layout;
+    public static string LoadFonts() => Load().Fonts;
     public static int LoadStartTab() => Load().StartTab;
 
     private static Data Load()
@@ -203,6 +209,15 @@ public static class Settings
     }
 
     public static void SaveDark(bool dark) => SaveTheme(dark, Load().Style);
+
+    public static void SaveInterface(string design, string layout, string fonts)
+    {
+        var d = Load();
+        d.Design = design;
+        d.Layout = layout;
+        d.Fonts = fonts;
+        Save(d);
+    }
 
     private static void Save(Data d)
     {

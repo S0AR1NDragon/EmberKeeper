@@ -43,7 +43,7 @@ public sealed class HomePage : UserControl
         brand.Children.Add(new TextBlock
         {
             Text = "EMBERKEEPER",
-            FontFamily = new FontFamily(Design.LayoutModern ? "Bahnschrift, Segoe UI" : "Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = Design.LayoutModern ? 38 : 34,
             FontWeight = FontWeight.Bold,
             Foreground = new SolidColorBrush(Gold),

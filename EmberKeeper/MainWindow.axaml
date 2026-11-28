@@ -8,7 +8,7 @@
   <Window.Styles>
     <Style Selector="TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource AppInk}" />
-      <Setter Property="FontFamily" Value="Inter, Segoe UI" />
+      <Setter Property="FontFamily" Value="{DynamicResource AppBodyFont}" />
       <Setter Property="FontSize" Value="14" />
     </Style>
 
@@ -45,7 +45,7 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="2,2,2,14">
           <ContentControl x:Name="BrandIcon" VerticalAlignment="Center" Margin="0,0,4,0" />
           <StackPanel Spacing="0">
-            <TextBlock x:Name="BrandName" Text="EMBERKEEPER" FontFamily="Georgia" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AppGold}" LetterSpacing="0.16" />
+            <TextBlock x:Name="BrandName" Text="EMBERKEEPER" FontFamily="{DynamicResource AppHeadingFont}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AppGold}" LetterSpacing="0.16" />
             <TextBlock x:Name="BrandSub" Text="рабочий стол мастера" FontSize="10" Foreground="{DynamicResource AppMuted}" />
           </StackPanel>
         </StackPanel>
@@ -76,7 +76,7 @@
 
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
             <Button x:Name="SearchBtn" Classes="topbtn" Click="OnGlobalSearch" ToolTip.Tip="Глобальный поиск (Ctrl+F)" />
-            <Button x:Name="ThemeBtn" Classes="topbtn" Click="OnSettings" ToolTip.Tip="Настройки: темы, лицензия" />
+            <Button x:Name="ThemeBtn" Classes="topbtn" Click="OnSettings" ToolTip.Tip="Настройки: оформление, шрифты, лицензия" />
             <Button x:Name="ScreenBtn" Classes="topbtn" Click="OnPlayerScreen" ToolTip.Tip="Экран игроков (Ctrl+P)" />
             <Button x:Name="GenBtn" Classes="topbtn" Click="OnGenerators" ToolTip.Tip="Генераторы" />
             <Button Classes="gold" Content="d20 +" Click="OnDice" />

@@ -11,16 +11,24 @@ namespace EmberKeeper;
 /// </summary>
 public static class Design
 {
-    public static string Variant { get; } =
-        (Environment.GetEnvironmentVariable("EMBERKEEPER_DESIGN") ?? "classic").Trim().ToLowerInvariant();
+    public static string Variant { get; private set; } =
+        (Environment.GetEnvironmentVariable("EMBERKEEPER_DESIGN") ?? Settings.LoadDesign()).Trim().ToLowerInvariant();
 
     public static bool Modern => Variant is "a" or "b" or "c";
 
     /// <summary>Раскладка: classic / top (меню сверху) / rail (узкая колонка иконок).</summary>
-    public static string Layout { get; } =
-        (Environment.GetEnvironmentVariable("EMBERKEEPER_LAYOUT") ?? "classic").Trim().ToLowerInvariant();
+    public static string Layout { get; private set; } =
+        (Environment.GetEnvironmentVariable("EMBERKEEPER_LAYOUT") ?? Settings.LoadLayout()).Trim().ToLowerInvariant();
 
     public static bool LayoutModern => Layout is "top" or "rail";
+
+    public static void Set(string design, string layout)
+    {
+        if (design is "a" or "b" or "c" or "classic") Variant = design;
+        if (layout is "classic" or "top" or "rail") Layout = layout;
+        Settings.SaveInterface(Variant, Layout, Fonts.Current);
+        ApplyResources();
+    }
 
     public static double Radius => Variant switch { "a" => 16, "b" => 14, "c" => 18, _ => 12 };
 
@@ -78,6 +86,8 @@ public static class Design
             res["AppVignette"] = Brushes.Transparent;
             return;
         }
+
+        Fonts.ApplyResources();
 
         switch (Variant)
         {
