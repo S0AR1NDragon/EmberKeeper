@@ -57,6 +57,17 @@ public static class Updater
         }
     }
 
+    public static void Log(string text)
+    {
+        try
+        {
+            Directory.CreateDirectory(DownloadDir);
+            File.AppendAllText(Path.Combine(DownloadDir, "update.log"),
+                DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  " + text + "\n");
+        }
+        catch { }
+    }
+
     public static string DownloadDir
     {
         get
@@ -97,7 +108,8 @@ public static class Updater
             if (!IsNewer(latest, Version))
                 return (null, "");
 
-            UpdateInfo? best = null;
+            UpdateInfo? installer = null;
+            UpdateInfo? portable = null;
             if (root.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
             {
                 foreach (var a in assets.EnumerateArray())
@@ -121,10 +133,11 @@ public static class Updater
                         Url = dl,
                         Size = a.TryGetProperty("size", out var s) && s.TryGetInt64(out var sz) ? sz : 0,
                     };
-                    if (isZip) { best = cand; break; }
-                    best ??= cand;
+                    if (isZip) portable ??= cand;
+                    else installer ??= cand;
                 }
             }
+            var best = installer ?? portable;
 
             if (best == null)
                 return (null, $"Новая версия {latest} есть, но в релизе нет .exe-файла.\nПрикрепите установщик EmberKeeperSetup.");
@@ -279,5 +292,5 @@ public static class AppInfo
     public static string Version { get; } =
         typeof(AppInfo).Assembly.GetName().Version is { } v
             ? $"{v.Major}.{v.Minor}.{v.Build}"
-            : "1.0.2";
+            : "1.0.3";
 }

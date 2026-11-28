@@ -6,11 +6,11 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>EmberKeeper</AssemblyName>
     <RootNamespace>EmberKeeper</RootNamespace>
-    <Product>EmberKeeper 1.0.2 demo</Product>
+    <Product>EmberKeeper 1.0.3 demo</Product>
     <AssemblyTitle>EmberKeeper</AssemblyTitle>
     <Company>EmberKeeper</Company>
-    <Version>1.0.2</Version>
-    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.3</Version>
+    <FileVersion>1.0.3.0</FileVersion>
     <ApplicationIcon>emberkeeper.ico</ApplicationIcon>
   </PropertyGroup>
 

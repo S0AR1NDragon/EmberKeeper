@@ -166,6 +166,7 @@ public sealed class UpdateWindow : Window
             _status.Text = $"Загружено {p * 100:0}%";
         });
 
+        Updater.Log("download start: " + _update.AssetName + " (" + _update.Size + ")");
         var (path, error) = await Updater.DownloadAsync(_update, progress);
         if (path == null)
         {
@@ -177,6 +178,7 @@ public sealed class UpdateWindow : Window
 
         var installDir = AppContext.BaseDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar);
         string runError;
+        Updater.Log("downloaded: " + path + " -> install dir " + installDir);
 
         if (_update.AssetName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
         {
@@ -199,9 +201,12 @@ public sealed class UpdateWindow : Window
         }
         else
         {
+            Updater.Log("installer started");
             _status.Text = "Устанавливаю — программа закроется и запустится снова…";
             await Task.Delay(1500);
         }
+
+        Updater.Log("shutdown");
         if (Application.Current?.ApplicationLifetime is
             Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime life)
             life.Shutdown();
