@@ -42,9 +42,9 @@
             Background="{DynamicResource AppSidebar}"
             BorderBrush="{DynamicResource AppLine}" BorderThickness="0,0,1,0">
       <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="14,18">
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="2,2,2,14">
+        <StackPanel x:Name="BrandRow" Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="2,2,2,14">
           <ContentControl x:Name="BrandIcon" VerticalAlignment="Center" Margin="0,0,4,0" />
-          <StackPanel Spacing="0">
+          <StackPanel x:Name="BrandText" Spacing="0">
             <TextBlock x:Name="BrandName" Text="EMBERKEEPER" FontFamily="{DynamicResource AppHeadingFont}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AppGold}" LetterSpacing="0.16" />
             <TextBlock x:Name="BrandSub" Text="рабочий стол мастера" FontSize="10" Foreground="{DynamicResource AppMuted}" />
           </StackPanel>

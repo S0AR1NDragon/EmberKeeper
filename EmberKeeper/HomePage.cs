@@ -38,7 +38,7 @@ public sealed class HomePage : UserControl
 
         // шапка
         var head = new StackPanel { Spacing = 4 };
-        var brand = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+        var brand = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, VerticalAlignment = VerticalAlignment.Center };
         brand.Children.Add(Brand.Image(42));
         brand.Children.Add(new TextBlock
         {

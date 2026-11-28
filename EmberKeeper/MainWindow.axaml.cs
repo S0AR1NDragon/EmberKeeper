@@ -134,9 +134,14 @@ public partial class MainWindow : Window
         }
         else if (Design.Layout == "rail")
         {
-            Sidebar.Width = 84;
+            Sidebar.Width = 88;
             BrandName.IsVisible = false;
             BrandSub.IsVisible = false;
+            BrandText.IsVisible = false;
+            BrandRow.Spacing = 0;
+            BrandRow.HorizontalAlignment = HorizontalAlignment.Center;
+            BrandRow.Margin = new Thickness(0, 2, 0, 16);
+            NavHost.HorizontalAlignment = HorizontalAlignment.Center;
             MenuBtn.IsVisible = false;
             FooterSaved.IsVisible = false;
         }
@@ -208,8 +213,10 @@ public partial class MainWindow : Window
                 border = new Border
                 {
                     Child = center,
-                    Padding = new Thickness(10, 12),
-                    CornerRadius = new CornerRadius(10),
+                    Width = 54,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Padding = new Thickness(0, 12),
+                    CornerRadius = new CornerRadius(12),
                     BorderThickness = new Thickness(1),
                     BorderBrush = Brushes.Transparent,
                     Background = Brushes.Transparent,
