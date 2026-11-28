@@ -107,12 +107,17 @@ public sealed class HomePage : UserControl
         Margin = new Thickness(0, 8, 0, 0),
     };
 
+    private static IBrush Res(string key, Color fallback) =>
+        Avalonia.Application.Current?.Resources[key] as IBrush ?? new SolidColorBrush(fallback);
+
     private static Border Card(Control content) => new()
     {
-        Background = new SolidColorBrush(Panel),
-        BorderBrush = new SolidColorBrush(Line),
+        Background = Res("AppCard", Panel),
+        BorderBrush = Res("AppCardLine", Line),
         BorderThickness = new Thickness(1),
-        CornerRadius = new CornerRadius(12),
+        CornerRadius = new CornerRadius(Design.Radius),
+        BoxShadow = Avalonia.Application.Current?.Resources["AppShadow"] is BoxShadows sh
+            ? sh : default,
         Padding = new Thickness(16),
         Child = content,
     };
@@ -233,10 +238,12 @@ public sealed class HomePage : UserControl
             {
                 MinWidth = 180,
                 Margin = new Thickness(0, 0, 12, 12),
-                Background = new SolidColorBrush(Panel),
-                BorderBrush = new SolidColorBrush(Line),
+                Background = Res("AppCard", Panel),
+                BorderBrush = Res("AppCardLine", Line),
                 BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(12),
+                CornerRadius = new CornerRadius(Design.Radius),
+                BoxShadow = Avalonia.Application.Current?.Resources["AppShadow"] is BoxShadows sh
+                    ? sh : default,
                 Padding = new Thickness(14),
                 Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
             };
@@ -248,7 +255,7 @@ public sealed class HomePage : UserControl
             sp.Children.Add(new TextBlock { Text = desc, FontSize = 11.5, Foreground = new SolidColorBrush(Muted), TextWrapping = TextWrapping.Wrap });
             card.Child = sp;
 
-            card.PointerEntered += (_, _) => card.Background = new SolidColorBrush(Pal.C("#221b16"));
+            card.PointerEntered += (_, _) => card.Background = Res("AppCardHover", Pal.C("#221b16"));
             card.PointerExited += (_, _) => card.Background = new SolidColorBrush(Panel);
             card.PointerPressed += (_, _) => Navigate?.Invoke(i);
 

@@ -59,7 +59,7 @@ public static class Pal
     // цвета-статусы, которые не перекрашиваем стилем
     private static readonly HashSet<string> Semantic = new(StringComparer.OrdinalIgnoreCase)
     {
-        "#7c2a2c", "#8a2b3a", "#7fa66e", "#70a3a2", "#d99b4a",
+        "#7c2a2c", "#8a2b3a", "#7fa66e", "#70a3a2",
     };
 
     public static Color C(string hex)
@@ -160,6 +160,7 @@ public static class Pal
         res["AppAccentText"] = B("#241505");
         foreach (var hx in XamlColors)
             res["C_" + hx] = B("#" + hx);
+        Design.ApplyResources();
     }
 }
 

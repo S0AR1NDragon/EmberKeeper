@@ -33,10 +33,13 @@
     </Style>
   </Window.Styles>
 
-  <Grid x:Name="Shell" ColumnDefinitions="Auto,*">
+  <Grid x:Name="Shell" ColumnDefinitions="Auto,*" Background="{DynamicResource AppBackdrop}">
+    <Border Grid.ColumnSpan="2" Background="{DynamicResource AppGlow}" IsHitTestVisible="False" />
+    <Border Grid.ColumnSpan="2" Background="{DynamicResource AppGlow2}" IsHitTestVisible="False" />
+    <Border Grid.ColumnSpan="2" Background="{DynamicResource AppVignette}" IsHitTestVisible="False" />
     <!-- ================= сайдбар ================= -->
     <Border x:Name="Sidebar" Grid.Column="0" Width="248"
-            Background="{DynamicResource AppBg2}"
+            Background="{DynamicResource AppSidebar}"
             BorderBrush="{DynamicResource AppLine}" BorderThickness="0,0,1,0">
       <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="14,18">
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="2,2,2,14">
@@ -58,7 +61,7 @@
 
     <!-- ================= основная область ================= -->
     <Grid Grid.Column="1" RowDefinitions="Auto,*">
-      <Border Grid.Row="0" Background="{DynamicResource AppBg2}"
+      <Border Grid.Row="0" Background="{DynamicResource AppHeader}"
               BorderBrush="{DynamicResource AppLine}" BorderThickness="0,0,0,1" Padding="16,10">
         <Grid ColumnDefinitions="Auto,*,Auto">
           <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
