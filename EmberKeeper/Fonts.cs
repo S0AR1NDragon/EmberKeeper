@@ -12,6 +12,9 @@ public static class Fonts
         ("f2", "Современный", "Bahnschrift, Segoe UI", "Inter, Segoe UI"),
         ("f3", "Книжный", "Constantia, Georgia", "Segoe UI"),
         ("f4", "Академический", "Palatino Linotype, Book Antiqua", "Segoe UI"),
+        ("f5", "Свэг", "avares://EmberKeeper/Assets/Fonts#Quicksand", "avares://EmberKeeper/Assets/Fonts#Quicksand"),
+        ("f6", "Мягкий", "avares://EmberKeeper/Assets/Fonts#Comfortaa", "avares://EmberKeeper/Assets/Fonts#Nunito"),
+        ("f7", "Дружелюбный", "avares://EmberKeeper/Assets/Fonts#Fredoka", "avares://EmberKeeper/Assets/Fonts#Nunito"),
     };
 
     public static string Current { get; private set; } =
