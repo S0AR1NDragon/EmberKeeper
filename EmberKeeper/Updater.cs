@@ -279,5 +279,5 @@ public static class AppInfo
     public static string Version { get; } =
         typeof(AppInfo).Assembly.GetName().Version is { } v
             ? $"{v.Major}.{v.Minor}.{v.Build}"
-            : "1.0.4";
+            : "1.0.2";
 }
