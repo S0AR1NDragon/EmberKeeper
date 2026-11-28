@@ -144,7 +144,7 @@ public sealed class RelationsPage : UserControl
             Children =
             {
                 new Border { Width = 4, Height = 26, CornerRadius = new CornerRadius(2), Background = Pal.B("#d99b4a") },
-                new TextBlock { Text = "Связи", FontFamily = new FontFamily("Georgia"), FontSize = 26, FontWeight = FontWeight.Bold, Foreground = Pal.B("#f6e7cf") },
+                new TextBlock { Text = "Связи", FontFamily = new FontFamily(Fonts.Heading), FontSize = 26, FontWeight = FontWeight.Bold, Foreground = Pal.B("#f6e7cf") },
             },
         };
         root.Children.Add(head);
@@ -292,7 +292,7 @@ public sealed class RelationsPage : UserControl
                         new TextBlock
                         {
                             Text = n.Name,
-                            FontFamily = new FontFamily("Georgia"),
+                            FontFamily = new FontFamily(Fonts.Heading),
                             FontSize = 12,
                             FontWeight = FontWeight.Bold,
                             Foreground = Pal.B("#f6e7cf"),

@@ -49,7 +49,7 @@ public sealed class DiceWindow : Window
         root.Children.Add(new TextBlock
         {
             Text = "Кости",
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 26,
             FontWeight = FontWeight.Bold,
             Foreground = new SolidColorBrush(Pal.C("#f6e7cf")),
@@ -134,7 +134,7 @@ public sealed class DiceWindow : Window
         _sumText = new TextBlock
         {
             Text = "—",
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 54,
             FontWeight = FontWeight.Bold,
             Foreground = new SolidColorBrush(Gold),

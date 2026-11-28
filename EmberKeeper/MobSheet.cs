@@ -28,7 +28,7 @@ public sealed class MobSheet : Window
         var title = new TextBlock
         {
             Text = t.Name,
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 26,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f6e7cf"),

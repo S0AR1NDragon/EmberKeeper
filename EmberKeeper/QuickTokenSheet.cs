@@ -32,7 +32,7 @@ public sealed class QuickTokenSheet : Window
         root.Children.Add(new TextBlock
         {
             Text = "Быстрый лист",
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 20,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f6e7cf"),

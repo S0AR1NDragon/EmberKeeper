@@ -25,7 +25,7 @@ public sealed class BackgroundPreviewDialog : Window
         root.Children.Add(new TextBlock
         {
             Text = "Предпросмотр фона",
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 22,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f6e7cf"),

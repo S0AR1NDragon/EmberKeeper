@@ -59,14 +59,14 @@ public sealed class SettingsWindow : Window
             BorderBrush = Pal.B("#e0b072"), BorderThickness = new Thickness(1),
             Child = new TextBlock
             {
-                Text = "E", FontFamily = new FontFamily("Georgia"), FontSize = 14, FontWeight = FontWeight.Bold,
+                Text = "E", FontFamily = new FontFamily(Fonts.Heading), FontSize = 14, FontWeight = FontWeight.Bold,
                 Foreground = Pal.B("#f0c27b"), HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
             },
         });
         brand.Children.Add(new TextBlock
         {
-            Text = "Настройки", FontFamily = new FontFamily("Georgia"), FontSize = 17, FontWeight = FontWeight.Bold,
+            Text = "Настройки", FontFamily = new FontFamily(Fonts.Heading), FontSize = 17, FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f6e7cf"), VerticalAlignment = VerticalAlignment.Center,
         });
         hrow.Children.Add(brand);
@@ -133,6 +133,25 @@ public sealed class SettingsWindow : Window
         modes.Children.Add(ModeButton("Тёмная", true));
         modes.Children.Add(ModeButton("Светлая", false));
         content.Children.Add(modes);
+
+        content.Children.Add(new Border { Height = 1, Background = Pal.B("#2a211a"), Margin = new Thickness(0, 4) });
+
+        /* ---------- интерфейс ---------- */
+        content.Children.Add(Section("ИНТЕРФЕЙС"));
+        content.Children.Add(PillGroup("Раскладка", new[]
+        {
+            ("rail", "Колонка иконок"), ("top", "Меню сверху"), ("classic", "Классика"),
+        }, () => Design.Layout, v => ApplyInterface(Design.Variant, v, Fonts.Current)));
+
+        content.Children.Add(PillGroup("Оформление", new[]
+        {
+            ("classic", "Классика"), ("a", "Аврора"), ("b", "Угли"), ("c", "Стекло"),
+        }, () => Design.Variant, v => ApplyInterface(v, Design.Layout, Fonts.Current)));
+
+        content.Children.Add(PillGroup("Шрифт", new[]
+        {
+            ("f5", "Свэг"), ("f7", "Дружелюбный"), ("f4", "Академический"), ("f2", "Современный"), ("f1", "Классика"),
+        }, () => Fonts.Current, v => ApplyInterface(Design.Variant, Design.Layout, v)));
 
         content.Children.Add(new Border { Height = 1, Background = Pal.B("#2a211a"), Margin = new Thickness(0, 4) });
 
@@ -222,6 +241,50 @@ public sealed class SettingsWindow : Window
         root.Children.Add(scroll);
         shell.Child = root;
         Content = shell;
+    }
+
+    private Control PillGroup(string label, (string Id, string Label)[] items, Func<string> current, Action<string> pick)
+    {
+        var root = new StackPanel { Spacing = 6 };
+        root.Children.Add(new TextBlock
+        {
+            Text = label, FontSize = 11, LetterSpacing = 0.6, Foreground = Pal.B("#9c8b78"),
+        });
+        var row = new WrapPanel { Orientation = Orientation.Horizontal, ItemSpacing = 8, LineSpacing = 8 };
+        foreach (var (id, text) in items)
+        {
+            bool on = current() == id;
+            var b = new Button
+            {
+                Content = text, Padding = new Thickness(13, 6), CornerRadius = new CornerRadius(9),
+                FontSize = 11.5, FontWeight = on ? FontWeight.Bold : FontWeight.Normal,
+                Background = on ? Pal.B("#cf9245") : Pal.B("#221b16"),
+                Foreground = on ? Pal.B("#241505") : Pal.B("#efe3d2"),
+                BorderBrush = on ? Pal.B("#e0b072") : Pal.B("#352a21"),
+                BorderThickness = new Thickness(1),
+            };
+            var captured = id;
+            b.Click += (_, _) => pick(captured);
+            row.Children.Add(b);
+        }
+        root.Children.Add(row);
+        return root;
+    }
+
+    private void ApplyInterface(string design, string layout, string fonts)
+    {
+        Design.Set(design, layout);
+        Fonts.Set(fonts);
+        Pal.Set(Settings.LoadDark(), Settings.LoadStyle());
+
+        if (Owner is MainWindow main)
+        {
+            var state = main.WindowState;
+            var next = new MainWindow { WindowState = state };
+            next.Show();
+            main.Close();
+        }
+        Close();
     }
 
     private Button TitleButton(string text) => new()

@@ -26,7 +26,7 @@ public static class Fonts
     private static (string Id, string Label, string Heading, string Body) Preset()
     {
         foreach (var p in Presets) if (p.Id == Current) return p;
-        return Presets[1];
+        return Presets[4];
     }
 
     public static string Label => Preset().Label;
@@ -35,8 +35,12 @@ public static class Fonts
     {
         if (string.IsNullOrWhiteSpace(id)) return;
         Current = id;
+        Settings.SaveInterface(Design.Variant, Design.Layout, id);
         Design.ApplyResources();
     }
+
+    /// <summary>Список пресетов, доступных в настройках.</summary>
+    public static readonly string[] Switchable = { "f5", "f7", "f4", "f2", "f1" };
 
     public static void ApplyResources()
     {

@@ -57,7 +57,7 @@ public sealed class SlidesPage : UserControl
         _stage.Children.Add(_bg);
 
         _stageSub = new TextBlock { FontSize = 20, Foreground = Pal.B("#f0c27b"), TextWrapping = TextWrapping.Wrap, MaxWidth = 1100 };
-        _stageTitle = new TextBlock { FontFamily = new FontFamily("Georgia"), FontSize = 52, FontWeight = FontWeight.Bold, Foreground = Pal.B("#f6e7cf"), TextWrapping = TextWrapping.Wrap, MaxWidth = 1100 };
+        _stageTitle = new TextBlock { FontFamily = new FontFamily(Fonts.Heading), FontSize = 52, FontWeight = FontWeight.Bold, Foreground = Pal.B("#f6e7cf"), TextWrapping = TextWrapping.Wrap, MaxWidth = 1100 };
         _stageText = new TextBlock { FontSize = 20, Foreground = Pal.B("#c9b8a4"), TextWrapping = TextWrapping.Wrap, MaxWidth = 900 };
         Canvas.SetLeft(_stageSub, 70); Canvas.SetTop(_stageSub, 460);
         Canvas.SetLeft(_stageTitle, 70); Canvas.SetTop(_stageTitle, 492);
@@ -85,7 +85,7 @@ public sealed class SlidesPage : UserControl
     {
         var head = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(14, 12, 14, 8) };
         head.Children.Add(new Border { Width = 4, Height = 22, CornerRadius = new CornerRadius(2), Background = Pal.B("#d99b4a") });
-        head.Children.Add(new TextBlock { Text = "Сцены", FontFamily = new FontFamily("Georgia"), FontSize = 20, FontWeight = FontWeight.Bold, Foreground = Pal.B("#f6e7cf") });
+        head.Children.Add(new TextBlock { Text = "Сцены", FontFamily = new FontFamily(Fonts.Heading), FontSize = 20, FontWeight = FontWeight.Bold, Foreground = Pal.B("#f6e7cf") });
         head.Children.Add(Btn("+", AddScene));
         head.Children.Add(Btn("Удалить", DeleteScene));
 
@@ -592,7 +592,7 @@ public sealed class SlidesPage : UserControl
         Canvas.SetLeft(sub, 70); Canvas.SetTop(sub, 460);
         canvas.Children.Add(sub);
 
-        var title = new TextBlock { Text = _current.Name, FontFamily = new FontFamily("Georgia"), FontSize = 52, FontWeight = FontWeight.Bold, Foreground = Pal.B("#f6e7cf") };
+        var title = new TextBlock { Text = _current.Name, FontFamily = new FontFamily(Fonts.Heading), FontSize = 52, FontWeight = FontWeight.Bold, Foreground = Pal.B("#f6e7cf") };
         Canvas.SetLeft(title, 70); Canvas.SetTop(title, 492);
         canvas.Children.Add(title);
 

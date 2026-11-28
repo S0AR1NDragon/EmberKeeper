@@ -187,7 +187,7 @@ public sealed class HomePage : UserControl
         sp.Children.Add(new TextBlock
         {
             Text = value.ToString(),
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 30,
             FontWeight = FontWeight.Bold,
             Foreground = new SolidColorBrush(Gold),
@@ -249,14 +249,14 @@ public sealed class HomePage : UserControl
             };
             var sp = new StackPanel { Spacing = 6 };
             var top = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
-            top.Children.Add(Icons.Make(icon, 20, "#d99b4a"));
-            top.Children.Add(new TextBlock { Text = title, FontFamily = new FontFamily("Georgia"), FontSize = 16, FontWeight = FontWeight.Bold, Foreground = new SolidColorBrush(Ink), VerticalAlignment = VerticalAlignment.Center });
+            top.Children.Add(Icons.Make(icon, 22, "#d99b4a"));
+            top.Children.Add(new TextBlock { Text = title, FontFamily = new FontFamily(Fonts.Heading), FontSize = 16, FontWeight = FontWeight.Bold, Foreground = new SolidColorBrush(Ink), VerticalAlignment = VerticalAlignment.Center });
             sp.Children.Add(top);
             sp.Children.Add(new TextBlock { Text = desc, FontSize = 11.5, Foreground = new SolidColorBrush(Muted), TextWrapping = TextWrapping.Wrap });
             card.Child = sp;
 
             card.PointerEntered += (_, _) => card.Background = Res("AppCardHover", Pal.C("#221b16"));
-            card.PointerExited += (_, _) => card.Background = new SolidColorBrush(Panel);
+            card.PointerExited += (_, _) => card.Background = Res("AppCard", Panel);
             card.PointerPressed += (_, _) => Navigate?.Invoke(i);
 
             grid.Children.Add(card);

@@ -136,7 +136,7 @@ public sealed class HeroSheet : Window
         portraitInner.Children.Add(new TextBlock
         {
             Text = string.IsNullOrEmpty(_h.Name) ? "?" : _h.Name.Substring(0, 1).ToUpperInvariant(),
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 32,
             FontWeight = FontWeight.Bold,
             Foreground = new SolidColorBrush(Gold),
@@ -151,7 +151,7 @@ public sealed class HeroSheet : Window
         var nameRow = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto") };
         var nameBox = Field(_h.Name, "Имя");
         nameBox.FontSize = 22;
-        nameBox.FontFamily = new FontFamily("Georgia");
+        nameBox.FontFamily = new FontFamily(Fonts.Heading);
         nameBox.FontWeight = FontWeight.Bold;
         nameBox.TextChanged += (_, _) => { _h.Name = nameBox.Text ?? ""; Title = "Лист персонажа — " + _h.Name; Save(); };
         nameRow.Children.Add(nameBox);
@@ -218,7 +218,7 @@ public sealed class HeroSheet : Window
             };
             _abilInputs.Add(n);
             cell.Children.Add(n);
-            var mod = new TextBlock { Text = Fmt(_h.Mod(_h.Ability(Hero.AbilKeys[i]))), FontFamily = new FontFamily("Georgia"), FontSize = 16, FontWeight = FontWeight.Bold, Foreground = new SolidColorBrush(Gold), HorizontalAlignment = HorizontalAlignment.Center };
+            var mod = new TextBlock { Text = Fmt(_h.Mod(_h.Ability(Hero.AbilKeys[i]))), FontFamily = new FontFamily(Fonts.Heading), FontSize = 16, FontWeight = FontWeight.Bold, Foreground = new SolidColorBrush(Gold), HorizontalAlignment = HorizontalAlignment.Center };
             _abilMods.Add(mod);
             cell.Children.Add(mod);
             abil.Children.Add(cell);

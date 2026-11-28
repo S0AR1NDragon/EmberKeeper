@@ -268,16 +268,7 @@ public partial class MainWindow : Window
         {
             bool on = i == idx;
             _navItems[i].Background = on
-                ? new LinearGradientBrush
-                {
-                    StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
-                    EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
-                    GradientStops =
-                    {
-                        new GradientStop(Pal.C("#2d1f14"), 0),
-                        new GradientStop(Pal.C("#1a120d"), 1),
-                    },
-                }
+                ? new SolidColorBrush(Color.FromArgb(38, Pal.C("#cf9245").R, Pal.C("#cf9245").G, Pal.C("#cf9245").B))
                 : Brushes.Transparent;
             _navItems[i].BorderBrush = on ? Pal.B("#4a3728") : Brushes.Transparent;
             _navLabels[i].Foreground = Pal.B(on ? "#f3e6d4" : "#b7a794");

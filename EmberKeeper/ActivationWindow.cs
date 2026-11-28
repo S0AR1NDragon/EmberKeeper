@@ -30,7 +30,7 @@ public sealed class ActivationWindow : Window
         root.Children.Add(new TextBlock
         {
             Text = "EMBERKEEPER",
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 30,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f0c27b"),

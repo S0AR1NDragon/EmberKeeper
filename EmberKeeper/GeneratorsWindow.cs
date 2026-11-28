@@ -118,7 +118,7 @@ public sealed class GeneratorsWindow : Window
         Grid.SetRow(listScroll, 1);
         leftGrid.Children.Add(listScroll);
 
-        _title.FontFamily = new FontFamily("Georgia");
+        _title.FontFamily = new FontFamily(Fonts.Heading);
         _title.FontSize = 24;
         _title.FontWeight = FontWeight.Bold;
         _title.Foreground = Pal.B("#f6e7cf");
@@ -232,7 +232,7 @@ public sealed class GeneratorsWindow : Window
             sp.Children.Add(new TextBlock
             {
                 Text = r.Main,
-                FontFamily = new FontFamily("Georgia"),
+                FontFamily = new FontFamily(Fonts.Heading),
                 FontSize = 20,
                 FontWeight = FontWeight.Bold,
                 Foreground = Pal.B("#f0c27b"),

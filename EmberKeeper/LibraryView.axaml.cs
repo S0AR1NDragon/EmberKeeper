@@ -315,7 +315,7 @@ public partial class LibraryView : UserControl
         titles.Children.Add(new TextBlock
         {
             Text = x.N,
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 30,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f6e7cf"),
@@ -432,7 +432,7 @@ public partial class LibraryView : UserControl
         titles.Children.Add(new TextBlock
         {
             Text = x.N,
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 30,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f6e7cf"),
@@ -713,7 +713,7 @@ public partial class LibraryView : UserControl
     private static Control SectionTitle(string text) => new TextBlock
     {
         Text = text,
-        FontFamily = new FontFamily("Georgia"),
+        FontFamily = new FontFamily(Fonts.Heading),
         FontSize = 18,
         FontWeight = FontWeight.Bold,
         Foreground = Pal.B("#f0c27b"),
@@ -794,7 +794,7 @@ public partial class LibraryView : UserControl
         DetailHost.Children.Add(new TextBlock
         {
             Text = sub.N,
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 22,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f0c27b"),

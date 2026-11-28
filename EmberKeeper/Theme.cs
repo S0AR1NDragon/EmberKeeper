@@ -173,7 +173,7 @@ public static class Settings
         public string Style { get; set; } = "amber";
         public string Design { get; set; } = "b";
         public string Layout { get; set; } = "rail";
-        public string Fonts { get; set; } = "f2";
+        public string Fonts { get; set; } = "f5";
         public int StartTab { get; set; }
     }
 

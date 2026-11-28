@@ -40,7 +40,7 @@ public sealed class GlossaryPage : UserControl
         var title = new TextBlock
         {
             Text = "Справочник",
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 28,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f6e7cf"),

@@ -105,7 +105,7 @@ public sealed class PlayerWindow : Window
         _nowText = new TextBlock
         {
             Text = "—",
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 22,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f6e7cf"),
@@ -210,7 +210,7 @@ public sealed class PlayerWindow : Window
                 grid.Children.Add(new TextBlock
                 {
                     Text = (i + 1).ToString(),
-                    FontFamily = new FontFamily("Georgia"),
+                    FontFamily = new FontFamily(Fonts.Heading),
                     FontSize = 13,
                     Foreground = current ? Pal.B("#f0c27b") : Pal.B("#8d7a66"),
                     VerticalAlignment = VerticalAlignment.Center,
@@ -290,7 +290,7 @@ public sealed class PlayerWindow : Window
             var title = new TextBlock
             {
                 Text = scene.Name,
-                FontFamily = new FontFamily("Georgia"),
+                FontFamily = new FontFamily(Fonts.Heading),
                 FontSize = 52,
                 FontWeight = FontWeight.Bold,
                 Foreground = Pal.B("#f6e7cf"),
@@ -331,7 +331,7 @@ public sealed class PlayerWindow : Window
         sp.Children.Add(new TextBlock
         {
             Text = "EMBERKEEP",
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 44,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f0c27b"),

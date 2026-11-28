@@ -29,7 +29,7 @@ public sealed class GridSetupDialog : Window
         root.Children.Add(new TextBlock
         {
             Text = "Настройка сетки",
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 22,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f6e7cf"),

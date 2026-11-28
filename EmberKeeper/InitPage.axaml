@@ -46,7 +46,7 @@
     <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,14">
       <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
         <Border Width="4" Height="30" CornerRadius="2" Background="{DynamicResource C_d99b4a}" />
-        <TextBlock Text="Инициатива" FontFamily="Georgia" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource C_f6e7cf}" />
+        <TextBlock Text="Инициатива" FontFamily="{DynamicResource AppHeadingFont}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource C_f6e7cf}" />
         <Border Background="{DynamicResource C_2a211a}" CornerRadius="10" Padding="12,4" Margin="10,0,0,0">
           <TextBlock x:Name="RoundText" Text="Раунд 1" Foreground="{DynamicResource C_f0c27b}" FontSize="15" FontWeight="SemiBold" />
         </Border>
@@ -83,7 +83,7 @@
           <StackPanel x:Name="List" Spacing="4" Margin="12" />
         </ScrollViewer>
         <StackPanel x:Name="EmptyHint" IsVisible="False" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
-          <TextBlock Text="Бой ещё не начат" FontFamily="Georgia" FontSize="22" Foreground="{DynamicResource C_f6e7cf}" HorizontalAlignment="Center" />
+          <TextBlock Text="Бой ещё не начат" FontFamily="{DynamicResource AppHeadingFont}" FontSize="22" Foreground="{DynamicResource C_f6e7cf}" HorizontalAlignment="Center" />
           <TextBlock Text="Добавьте бойцов сверху или нажмите «С карты»." Foreground="{DynamicResource C_9c8b78}" FontSize="12.5" HorizontalAlignment="Center" />
         </StackPanel>
       </Grid>

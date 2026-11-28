@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -36,7 +36,7 @@ public sealed class UpdateWindow : Window
         root.Children.Add(new TextBlock
         {
             Text = "Обновления",
-            FontFamily = new FontFamily("Georgia"),
+            FontFamily = new FontFamily(Fonts.Heading),
             FontSize = 26,
             FontWeight = FontWeight.Bold,
             Foreground = Pal.B("#f0c27b"),

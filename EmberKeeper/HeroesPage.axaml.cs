@@ -170,7 +170,7 @@ public partial class HeroesPage : UserControl
             Child = new TextBlock
             {
                 Text = string.IsNullOrEmpty(h.Name) ? "?" : h.Name.Substring(0, 1).ToUpperInvariant(),
-                FontFamily = new FontFamily("Georgia"),
+                FontFamily = new FontFamily(Fonts.Heading),
                 FontSize = 18,
                 FontWeight = FontWeight.Bold,
                 Foreground = Pal.B("#f0c27b"),
